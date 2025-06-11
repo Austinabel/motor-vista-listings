@@ -1,18 +1,21 @@
 
 import { Button } from "@/components/ui/button";
 import { Car, Search } from "lucide-react";
+import Squares from "./Squares";
 
 export const Hero = () => {
   return (
     <section className="relative bg-gradient-to-r from-red-600 to-red-700 text-white py-32 pt-40 overflow-hidden">
-      {/* Animated background boxes */}
+      {/* Animated Squares background */}
       <div className="absolute inset-0">
-        <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-lg animate-pulse"></div>
-        <div className="absolute top-20 right-20 w-16 h-16 bg-white/5 rounded-lg animate-bounce" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-20 w-24 h-24 bg-white/10 rounded-lg animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-10 right-10 w-18 h-18 bg-white/5 rounded-lg animate-bounce" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-white/10 rounded-lg animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-        <div className="absolute top-1/3 right-1/3 w-14 h-14 bg-white/5 rounded-lg animate-bounce" style={{ animationDelay: '2.5s' }}></div>
+        <Squares 
+          direction="diagonal"
+          speed={0.5}
+          borderColor="rgba(255, 255, 255, 0.1)"
+          squareSize={50}
+          hoverFillColor="rgba(255, 255, 255, 0.05)"
+          className="opacity-30"
+        />
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
@@ -39,7 +42,7 @@ export const Hero = () => {
             <img 
               src="/lovable-uploads/dcc60f45-82ad-459b-8fb0-d1cd9fc186ea.png" 
               alt="Car showcase" 
-              className="w-full h-auto rounded-lg shadow-2xl"
+              className="w-full h-auto rounded-lg"
             />
           </div>
         </div>
