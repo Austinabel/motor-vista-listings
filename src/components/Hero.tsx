@@ -37,7 +37,7 @@ export const Hero = () => {
           </div>
           <div className="lg:w-1/2">
             <img 
-              src="/lovable-uploads/8ed7331e-9e69-40c7-956c-21e5c5e7050a.png" 
+              src="/lovable-uploads/dcc60f45-82ad-459b-8fb0-d1cd9fc186ea.png" 
               alt="Car showcase" 
               className="w-full h-auto rounded-lg shadow-2xl"
             />
