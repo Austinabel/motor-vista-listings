@@ -1,4 +1,3 @@
-
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { SearchFilters } from "@/components/SearchFilters";
@@ -11,6 +10,7 @@ import { ToolsSection } from "@/components/ToolsSection";
 import { DownloadApp } from "@/components/DownloadApp";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
+import { VerifiedDealers } from "@/components/VerifiedDealers";
 
 const Index = () => {
   return (
@@ -20,6 +20,7 @@ const Index = () => {
       <SearchFilters />
       <BrandCarousel />
       <FeaturedListings />
+      <VerifiedDealers />
       <TrustedPartners />
       <HelpIcons />
       <Testimonials />
