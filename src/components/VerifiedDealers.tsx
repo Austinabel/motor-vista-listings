@@ -1,205 +1,173 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, CheckCircle, MapPin, Star } from "lucide-react";
+import { Shield, MapPin, Phone, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
-const allDealers = [
+const dealers = [
   {
     id: 1,
     name: "Premium Auto Lagos",
     location: "Victoria Island, Lagos",
+    phone: "+234 801 234 5678",
     rating: 4.8,
     totalCars: 45,
+    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
-    specialization: "Luxury Cars"
   },
   {
     id: 2,
-    name: "Capital Motors Abuja",
-    location: "Maitama, Abuja",
-    rating: 4.7,
+    name: "Royal Motors Abuja",
+    location: "Wuse 2, Abuja",
+    phone: "+234 802 345 6789",
+    rating: 4.9,
     totalCars: 32,
+    image: "https://images.unsplash.com/photo-1562141961-f1e70c7d2ac6?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-    specialization: "Foreign Used"
   },
   {
     id: 3,
-    name: "Elite Car Gallery",
+    name: "Elite Car Center",
     location: "GRA, Port Harcourt",
-    rating: 4.9,
+    phone: "+234 803 456 7890",
+    rating: 4.7,
     totalCars: 28,
+    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-    specialization: "SUVs & Trucks"
   },
   {
     id: 4,
-    name: "Royal Auto Collection",
+    name: "Luxury Auto Hub",
     location: "Ikeja, Lagos",
+    phone: "+234 804 567 8901",
     rating: 4.6,
     totalCars: 38,
+    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-    specialization: "Sports Cars"
   },
   {
     id: 5,
-    name: "Metro Car Hub",
-    location: "Wuse, Abuja",
+    name: "Metro Car Sales",
+    location: "Surulere, Lagos",
+    phone: "+234 805 678 9012",
     rating: 4.5,
-    totalCars: 55,
+    totalCars: 25,
+    image: "https://images.unsplash.com/photo-1517524206127-6d22353d8482?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
-    specialization: "Family Cars"
   },
   {
     id: 6,
-    name: "Prestige Motors",
-    location: "Lekki, Lagos",
+    name: "Crown Motors",
+    location: "Kaduna",
+    phone: "+234 806 789 0123",
     rating: 4.8,
-    totalCars: 42,
+    totalCars: 31,
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-    specialization: "Brand New"
   },
   {
     id: 7,
-    name: "Executive Auto",
-    location: "Garki, Abuja",
+    name: "Diamond Auto",
+    location: "Enugu",
+    phone: "+234 807 890 1234",
     rating: 4.7,
-    totalCars: 35,
+    totalCars: 22,
+    image: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-    specialization: "Executive Cars"
   },
   {
     id: 8,
-    name: "Grand Motors",
-    location: "Old GRA, Port Harcourt",
+    name: "Golden Gate Motors",
+    location: "Ilorin",
+    phone: "+234 808 901 2345",
     rating: 4.6,
     totalCars: 29,
+    image: "https://images.unsplash.com/photo-1549924231-f129b911e442?w=300&h=200&fit=crop",
     verified: true,
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-    specialization: "Commercial Vehicles"
   },
-  {
-    id: 9,
-    name: "First Class Auto",
-    location: "Victoria Island, Lagos",
-    rating: 4.9,
-    totalCars: 48,
-    verified: true,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
-    specialization: "Exotic Cars"
-  },
-  {
-    id: 10,
-    name: "Sterling Motors",
-    location: "Asokoro, Abuja",
-    rating: 4.4,
-    totalCars: 33,
-    verified: true,
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-    specialization: "Hybrid & Electric"
-  },
-  {
-    id: 11,
-    name: "Luxury Auto Mall",
-    location: "Surulere, Lagos",
-    rating: 4.7,
-    totalCars: 41,
-    verified: true,
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-    specialization: "Luxury & Premium"
-  },
-  {
-    id: 12,
-    name: "Crown Motors",
-    location: "Gwarinpa, Abuja",
-    rating: 4.5,
-    totalCars: 36,
-    verified: true,
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-    specialization: "Affordable Cars"
-  }
 ];
 
 export const VerifiedDealers = () => {
-  const [visibleRows, setVisibleRows] = useState(3);
-  const dealersPerRow = 4;
-  const totalDealersPerPage = visibleRows * dealersPerRow;
-  const maxRows = 6;
-
-  const displayedDealers = allDealers.slice(0, totalDealersPerPage);
-  const canLoadMore = visibleRows < maxRows;
-  const isViewListings = visibleRows >= maxRows;
+  const [visibleDealers, setVisibleDealers] = useState(8);
+  const [showLoadMore, setShowLoadMore] = useState(true);
 
   const handleLoadMore = () => {
-    if (canLoadMore) {
-      setVisibleRows(prev => prev + 3);
+    if (visibleDealers >= dealers.length) {
+      setShowLoadMore(false);
+      return;
+    }
+    
+    const newVisible = Math.min(visibleDealers + 4, dealers.length);
+    setVisibleDealers(newVisible);
+    
+    if (newVisible >= dealers.length) {
+      setShowLoadMore(false);
     }
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-gradient-to-b from-red-600 to-white">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900">Verified Dealers</h2>
-          <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
-            View All Dealers
-          </Button>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-white mb-4">Verified Dealers</h2>
+          <p className="text-white/90 text-lg">Trusted car dealers verified by our team</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayedDealers.map((dealer) => (
-            <Card key={dealer.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+          {dealers.slice(0, visibleDealers).map((dealer) => (
+            <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105 border-4 border-lime-400">
               <div className="relative">
-                <img src={dealer.image} alt={dealer.name} className="w-full h-48 object-cover" />
-                <Badge className="absolute top-2 right-2 bg-green-600 hover:bg-green-700">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Verified
-                </Badge>
+                <img 
+                  src={dealer.image} 
+                  alt={dealer.name}
+                  className="w-full h-48 object-cover rounded-t-lg"
+                />
+                {dealer.verified && (
+                  <Badge className="absolute top-2 right-2 bg-green-500 hover:bg-green-600">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Verified
+                  </Badge>
+                )}
               </div>
               <CardContent className="p-4">
                 <h3 className="font-bold text-lg mb-2">{dealer.name}</h3>
-                <div className="flex items-center text-sm text-gray-600 mb-2">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  {dealer.location}
-                </div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex items-center">
-                    <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                    <span className="font-medium">{dealer.rating}</span>
+                    <MapPin className="w-4 h-4 mr-2" />
+                    <span>{dealer.location}</span>
                   </div>
-                  <span className="text-sm text-gray-600">{dealer.totalCars} cars</span>
+                  <div className="flex items-center">
+                    <Phone className="w-4 h-4 mr-2" />
+                    <span>{dealer.phone}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
+                      <span>{dealer.rating}</span>
+                    </div>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      {dealer.totalCars} cars
+                    </span>
+                  </div>
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {dealer.specialization}
-                </Badge>
-              </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button className="w-full">
-                  <Eye className="mr-2 h-4 w-4" />
+                <Button className="w-full mt-4 bg-red-600 hover:bg-red-700">
                   View Dealer
                 </Button>
-              </CardFooter>
+              </CardContent>
             </Card>
           ))}
         </div>
         
-        <div className="flex justify-center mt-12">
-          <Button 
-            onClick={handleLoadMore}
-            variant="outline" 
-            className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3"
-            disabled={!canLoadMore && !isViewListings}
-          >
-            {isViewListings ? 'View All Dealers' : 'Load More'}
-          </Button>
-        </div>
+        {showLoadMore && (
+          <div className="text-center mt-8">
+            <Button 
+              onClick={handleLoadMore}
+              className="bg-white text-red-600 hover:bg-gray-100 border-2 border-red-600"
+            >
+              Load More Dealers
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );
