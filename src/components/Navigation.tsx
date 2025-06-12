@@ -39,25 +39,25 @@ export const Navigation = () => {
                 }`}>
                   <div className="py-2">
                     <Link 
-                      to="#" 
+                      to="/cars" 
                       className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
                     >
                       Brand New
                     </Link>
                     <Link 
-                      to="#" 
+                      to="/cars" 
                       className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
                     >
                       Foreign Used Cars
                     </Link>
                     <Link 
-                      to="#" 
+                      to="/cars" 
                       className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
                     >
                       Local Used Cars
                     </Link>
                     <Link 
-                      to="#" 
+                      to="/cars" 
                       className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium border-t border-gray-100"
                     >
                       Check All Listings
@@ -66,10 +66,10 @@ export const Navigation = () => {
                 </div>
               </div>
               
-              <Link to="#" className="text-gray-700 hover:text-red-600 font-medium">
+              <Link to="/sell" className="text-gray-700 hover:text-red-600 font-medium">
                 Sell Your Car
               </Link>
-              <Link to="#" className="text-gray-700 hover:text-red-600 font-medium">
+              <Link to="/dealers" className="text-gray-700 hover:text-red-600 font-medium">
                 Dealers
               </Link>
             </div>
@@ -102,24 +102,24 @@ export const Navigation = () => {
                     Buy Car
                   </button>
                   <div className="ml-4 space-y-2">
-                    <Link to="#" className="block text-sm text-gray-600 hover:text-red-600">
+                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
                       Brand New
                     </Link>
-                    <Link to="#" className="block text-sm text-gray-600 hover:text-red-600">
+                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
                       Foreign Used Cars
                     </Link>
-                    <Link to="#" className="block text-sm text-gray-600 hover:text-red-600">
+                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
                       Local Used Cars
                     </Link>
-                    <Link to="#" className="block text-sm text-gray-600 hover:text-red-600">
+                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
                       Check All Listings
                     </Link>
                   </div>
                 </div>
-                <Link to="#" className="text-gray-700 hover:text-red-600 font-medium">
+                <Link to="/sell" className="text-gray-700 hover:text-red-600 font-medium">
                   Sell Your Car
                 </Link>
-                <Link to="#" className="text-gray-700 hover:text-red-600 font-medium">
+                <Link to="/dealers" className="text-gray-700 hover:text-red-600 font-medium">
                   Dealers
                 </Link>
                 <div className="flex flex-col space-y-2 pt-4 border-t">

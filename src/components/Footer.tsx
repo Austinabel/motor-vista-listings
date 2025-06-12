@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Building } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
@@ -13,19 +14,25 @@ export const Footer = () => {
             <p className="text-gray-400 mb-4">
               Nigeria's most trusted car marketplace connecting buyers with verified dealers.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 mb-4">
               <Facebook className="h-5 w-5 cursor-pointer hover:text-red-400" />
               <Twitter className="h-5 w-5 cursor-pointer hover:text-red-400" />
               <Instagram className="h-5 w-5 cursor-pointer hover:text-red-400" />
             </div>
+            <Link to="/dealers">
+              <Button className="bg-red-600 hover:bg-red-700">
+                <Building className="mr-2 h-4 w-4" />
+                Become a Dealer
+              </Button>
+            </Link>
           </div>
           
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-white">Browse Cars</a></li>
-              <li><a href="#" className="hover:text-white">Sell Your Car</a></li>
-              <li><a href="#" className="hover:text-white">Dealer Login</a></li>
+              <li><Link to="/cars" className="hover:text-white">Browse Cars</Link></li>
+              <li><Link to="/sell" className="hover:text-white">Sell Your Car</Link></li>
+              <li><Link to="/dealers" className="hover:text-white">Find Dealers</Link></li>
               <li><a href="#" className="hover:text-white">About Us</a></li>
             </ul>
           </div>

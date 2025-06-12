@@ -115,7 +115,7 @@ export const VerifiedDealers = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {dealers.slice(0, visibleDealers).map((dealer) => (
-            <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105 border-4 border-lime-400">
+            <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="relative">
                 <img 
                   src={dealer.image} 
