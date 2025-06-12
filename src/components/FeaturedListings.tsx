@@ -38,11 +38,11 @@ const featuredCars = [
 
 export const FeaturedListings = () => {
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-gradient-to-r from-red-600 to-red-700 text-white">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
-          <h2 className="text-3xl font-bold">Featured Listings</h2>
-          <Button variant="outline">View All</Button>
+          <h2 className="text-3xl font-bold text-white">Featured Listings</h2>
+          <Button variant="outline" className="border-white text-white hover:bg-white hover:text-red-600">View All</Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {featuredCars.map((car) => (

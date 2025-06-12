@@ -1,4 +1,3 @@
-
 import { useRef, useEffect } from 'react';
 import './Squares.css';
 
@@ -10,16 +9,19 @@ const Squares = ({
   hoverFillColor = '#222',
   className = ''
 }) => {
-  const canvasRef = useRef(null);
-  const requestRef = useRef(null);
-  const numSquaresX = useRef();
-  const numSquaresY = useRef();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const requestRef = useRef<number | null>(null);
+  const numSquaresX = useRef<number>(0);
+  const numSquaresY = useRef<number>(0);
   const gridOffset = useRef({ x: 0, y: 0 });
-  const hoveredSquare = useRef(null);
+  const hoveredSquare = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
@@ -97,7 +99,7 @@ const Squares = ({
       requestRef.current = requestAnimationFrame(updateAnimation);
     };
 
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
@@ -128,7 +130,9 @@ const Squares = ({
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(requestRef.current);
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
     };

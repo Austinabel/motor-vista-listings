@@ -7,7 +7,7 @@ import { TrustedPartners } from "@/components/TrustedPartners";
 import { HelpIcons } from "@/components/HelpIcons";
 import { Testimonials } from "@/components/Testimonials";
 import { ToolsSection } from "@/components/ToolsSection";
-import { BlogSection } from "@/components/BlogSection";
+import { DownloadApp } from "@/components/DownloadApp";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 
@@ -22,7 +22,7 @@ const Index = () => {
       <HelpIcons />
       <Testimonials />
       <ToolsSection />
-      <BlogSection />
+      <DownloadApp />
       <FAQ />
       <Footer />
     </div>
