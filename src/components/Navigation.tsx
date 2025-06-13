@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, User, ChevronDown } from "lucide-react";
@@ -11,6 +12,29 @@ export const Navigation = () => {
   const isActiveLink = (path: string) => {
     return location.pathname === path;
   };
+
+  const carCategories = [
+    { name: "Brand New", link: "/cars?type=brand-new" },
+    { name: "Foreign Used Cars", link: "/cars?type=foreign-used" },
+    { name: "Local Used Cars", link: "/cars?type=local-used" },
+    { name: "Electric Cars", link: "/cars?category=electric", logo: "⚡" },
+    { name: "Tricycles", link: "/cars?category=tricycles", logo: "🛺" },
+    { name: "Trucks", link: "/cars?category=trucks", logo: "🚛" },
+    { name: "Motorbikes", link: "/cars?category=motorbikes", logo: "🏍️" },
+    { name: "Buses & Shuttles", link: "/cars?category=buses", logo: "🚌" },
+  ];
+
+  const carBrands = [
+    { name: "Toyota", link: "/cars?brand=toyota", logo: "🚗" },
+    { name: "Ford", link: "/cars?brand=ford", logo: "🚙" },
+    { name: "Honda", link: "/cars?brand=honda", logo: "🚗" },
+    { name: "Lexus", link: "/cars?brand=lexus", logo: "🏎️" },
+    { name: "Mercedes Benz", link: "/cars?brand=mercedes", logo: "🚘" },
+    { name: "BMW", link: "/cars?brand=bmw", logo: "🚗" },
+    { name: "Acura", link: "/cars?brand=acura", logo: "🚙" },
+    { name: "Innoson", link: "/cars?brand=innoson", logo: "🚐" },
+    { name: "Nissan", link: "/cars?brand=nissan", logo: "🚗" },
+  ];
 
   return (
     <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-6xl">
@@ -38,36 +62,50 @@ export const Navigation = () => {
                 </button>
                 
                 {/* Dropdown Menu */}
-                <div className={`absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 transform ${
+                <div className={`absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 transform ${
                   isDropdownOpen 
                     ? 'opacity-100 translate-y-0 visible' 
                     : 'opacity-0 -translate-y-2 invisible'
                 }`}>
                   <div className="py-2">
-                    <Link 
-                      to="/cars" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
-                    >
-                      Brand New
-                    </Link>
-                    <Link 
-                      to="/cars" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
-                    >
-                      Foreign Used Cars
-                    </Link>
-                    <Link 
-                      to="/cars" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
-                    >
-                      Local Used Cars
-                    </Link>
-                    <Link 
-                      to="/cars" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium border-t border-gray-100"
-                    >
-                      Check All Listings
-                    </Link>
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Vehicle Types</div>
+                    {carCategories.map((category, index) => (
+                      <Link 
+                        key={index}
+                        to={category.link} 
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      >
+                        {category.logo && (
+                          <span className="w-6 h-6 mr-3 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                            {category.logo}
+                          </span>
+                        )}
+                        {category.name}
+                      </Link>
+                    ))}
+                    
+                    <div className="border-t border-gray-100 px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Popular Brands</div>
+                    {carBrands.map((brand, index) => (
+                      <Link 
+                        key={index}
+                        to={brand.link} 
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      >
+                        <span className="w-6 h-6 mr-3 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                          {brand.logo}
+                        </span>
+                        {brand.name}
+                      </Link>
+                    ))}
+                    
+                    <div className="border-t border-gray-100">
+                      <Link 
+                        to="/cars" 
+                        className="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
+                      >
+                        View All Listings
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -79,6 +117,14 @@ export const Navigation = () => {
                 }`}
               >
                 Sell Your Car
+              </Link>
+              <Link 
+                to="/buy-from-abroad" 
+                className={`font-medium transition-colors ${
+                  isActiveLink('/buy-from-abroad') ? 'text-red-600' : 'text-gray-700 hover:text-red-600'
+                }`}
+              >
+                Buy From Abroad
               </Link>
               <Link 
                 to="/dealers" 
@@ -122,34 +168,39 @@ export const Navigation = () => {
                     Buy Car
                   </button>
                   <div className="ml-4 space-y-2">
-                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
-                      Brand New
-                    </Link>
-                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
-                      Foreign Used Cars
-                    </Link>
-                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
-                      Local Used Cars
-                    </Link>
-                    <Link to="/cars" className="block text-sm text-gray-600 hover:text-red-600">
-                      Check All Listings
-                    </Link>
+                    {[...carCategories, ...carBrands].map((item, index) => (
+                      <Link key={index} to={item.link} className="flex items-center text-sm text-gray-600 hover:text-red-600">
+                        {item.logo && (
+                          <span className="w-5 h-5 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                            {item.logo}
+                          </span>
+                        )}
+                        {item.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
                 <Link to="/sell" className="text-gray-700 hover:text-red-600 font-medium">
                   Sell Your Car
                 </Link>
+                <Link to="/buy-from-abroad" className="text-gray-700 hover:text-red-600 font-medium">
+                  Buy From Abroad
+                </Link>
                 <Link to="/dealers" className="text-gray-700 hover:text-red-600 font-medium">
                   Dealers
                 </Link>
                 <div className="flex flex-col space-y-2 pt-4 border-t">
-                  <Button variant="outline" size="sm">
-                    <User className="h-4 w-4 mr-2" />
-                    Login
-                  </Button>
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700">
-                    Register
-                  </Button>
+                  <Link to="/login">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button size="sm" className="bg-red-600 hover:bg-red-700 w-full">
+                      Register
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
