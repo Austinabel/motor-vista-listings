@@ -13,17 +13,20 @@ import Dealers from "./pages/Dealers";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import SellYourCar from "./pages/SellYourCar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
   const isHomepage = location.pathname === "/";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
   return (
     <>
-      <Navigation />
-      <div className={isHomepage ? "" : "pt-24"}>
+      {!isAuthPage && <Navigation />}
+      <div className={isHomepage || isAuthPage ? "" : "pt-24"}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cars" element={<CarListings />} />
@@ -32,6 +35,8 @@ const AppContent = () => {
           <Route path="/dealer/:id" element={<DealerProfile />} />
           <Route path="/sell" element={<SellYourCar />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

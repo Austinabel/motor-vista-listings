@@ -1,12 +1,16 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, User, ChevronDown } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const location = useLocation();
+
+  const isActiveLink = (path: string) => {
+    return location.pathname === path;
+  };
 
   return (
     <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-6xl">
@@ -26,7 +30,9 @@ export const Navigation = () => {
                 onMouseEnter={() => setIsDropdownOpen(true)}
                 onMouseLeave={() => setIsDropdownOpen(false)}
               >
-                <button className="flex items-center text-gray-700 hover:text-red-600 font-medium transition-colors">
+                <button className={`flex items-center font-medium transition-colors ${
+                  location.pathname === '/cars' ? 'text-red-600' : 'text-gray-700 hover:text-red-600'
+                }`}>
                   Buy Car
                   <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -66,22 +72,36 @@ export const Navigation = () => {
                 </div>
               </div>
               
-              <Link to="/sell" className="text-gray-700 hover:text-red-600 font-medium">
+              <Link 
+                to="/sell" 
+                className={`font-medium transition-colors ${
+                  isActiveLink('/sell') ? 'text-red-600' : 'text-gray-700 hover:text-red-600'
+                }`}
+              >
                 Sell Your Car
               </Link>
-              <Link to="/dealers" className="text-gray-700 hover:text-red-600 font-medium">
+              <Link 
+                to="/dealers" 
+                className={`font-medium transition-colors ${
+                  isActiveLink('/dealers') ? 'text-red-600' : 'text-gray-700 hover:text-red-600'
+                }`}
+              >
                 Dealers
               </Link>
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                <User className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-              <Button size="sm" className="bg-red-600 hover:bg-red-700">
-                Register
-              </Button>
+              <Link to="/login">
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4 mr-2" />
+                  Login
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button size="sm" className="bg-red-600 hover:bg-red-700">
+                  Register
+                </Button>
+              </Link>
             </div>
 
             {/* Mobile menu button */}
