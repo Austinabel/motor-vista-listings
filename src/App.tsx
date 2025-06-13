@@ -23,16 +23,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Navigation />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/cars" element={<CarListings />} />
-          <Route path="/cars/:id" element={<CarDetail />} />
-          <Route path="/dealers" element={<Dealers />} />
-          <Route path="/dealer/:id" element={<DealerProfile />} />
-          <Route path="/sell" element={<SellYourCar />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="pt-24">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/cars" element={<CarListings />} />
+            <Route path="/cars/:id" element={<CarDetail />} />
+            <Route path="/dealers" element={<Dealers />} />
+            <Route path="/dealer/:id" element={<DealerProfile />} />
+            <Route path="/sell" element={<SellYourCar />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
