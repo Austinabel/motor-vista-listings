@@ -120,123 +120,231 @@ const CarListings = () => {
             <TabsTrigger value="foreign-used">Foreign Used</TabsTrigger>
             <TabsTrigger value="local-used">Local Used</TabsTrigger>
           </TabsList>
-        </Tabs>
 
-        {/* Popular Brands */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">Popular Brands</h3>
-          <div className="flex flex-wrap gap-3">
-            {popularBrands.map((brand) => (
-              <Button
-                key={brand}
-                variant={selectedBrand === brand ? "default" : "outline"}
-                size="sm"
-                className="rounded-full"
-                onClick={() => setSelectedBrand(selectedBrand === brand ? "" : brand)}
-              >
-                {brand}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-            <Card className="p-6">
-              <h3 className="font-bold text-lg mb-4">Filters</h3>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="priceRange">Price Range (₦)</Label>
-                  <div className="flex gap-2">
-                    <Input placeholder="Min" />
-                    <Input placeholder="Max" />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="make">Make</Label>
-                  <Input placeholder="Select make" />
-                </div>
-                <div>
-                  <Label htmlFor="model">Model</Label>
-                  <Input placeholder="Select model" />
-                </div>
-                <div>
-                  <Label htmlFor="year">Year</Label>
-                  <div className="flex gap-2">
-                    <Input placeholder="From" />
-                    <Input placeholder="To" />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="mileage">Mileage (km)</Label>
-                  <div className="flex gap-2">
-                    <Input placeholder="Min" />
-                    <Input placeholder="Max" />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="transmission">Transmission</Label>
-                  <Input placeholder="Any" />
-                </div>
-                <div>
-                  <Label htmlFor="fuel">Fuel Type</Label>
-                  <Input placeholder="Any" />
-                </div>
-                <div>
-                  <Label htmlFor="location">Location</Label>
-                  <Input placeholder="Location" />
-                </div>
-                <div>
-                  <Label htmlFor="condition">Condition</Label>
-                  <Input placeholder="Any condition" />
-                </div>
-                <Button className="w-full bg-red-600 hover:bg-red-700">Apply Filters</Button>
-                <Button variant="outline" className="w-full">Reset Filters</Button>
-              </div>
-            </Card>
+          {/* Popular Brands */}
+          <div className="mb-8 mt-6">
+            <h3 className="text-lg font-semibold mb-4">Popular Brands</h3>
+            <div className="flex flex-wrap gap-3">
+              {popularBrands.map((brand) => (
+                <Button
+                  key={brand}
+                  variant={selectedBrand === brand ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setSelectedBrand(selectedBrand === brand ? "" : brand)}
+                >
+                  {brand}
+                </Button>
+              ))}
+            </div>
           </div>
 
-          {/* Car Grid */}
-          <div className="lg:w-3/4">
-            <TabsContent value={selectedTab}>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredCars.map((car) => (
-                  <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="relative">
-                      <img src={car.image} alt={car.title} className="w-full h-48 object-cover" />
-                      <Button size="sm" variant="secondary" className="absolute top-2 right-2">
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                      <div className="absolute top-2 left-2">
-                        <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
-                          {car.type === "brand-new" ? "Brand New" : 
-                           car.type === "foreign-used" ? "Foreign Used" : "Local Used"}
-                        </span>
-                      </div>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Filters Sidebar */}
+            <div className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+              <Card className="p-6">
+                <h3 className="font-bold text-lg mb-4">Filters</h3>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="priceRange">Price Range (₦)</Label>
+                    <div className="flex gap-2">
+                      <Input placeholder="Min" />
+                      <Input placeholder="Max" />
                     </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-bold text-lg mb-2">{car.title}</h3>
-                      <p className="text-2xl font-bold text-red-600 mb-2">{car.price}</p>
-                      <p className="text-sm text-gray-600 mb-4">{car.location}</p>
-                      <div className="grid grid-cols-3 gap-2 text-sm">
-                        <span>{car.mileage}</span>
-                        <span>{car.fuel}</span>
-                        <span>{car.transmission}</span>
+                  </div>
+                  <div>
+                    <Label htmlFor="make">Make</Label>
+                    <Input placeholder="Select make" />
+                  </div>
+                  <div>
+                    <Label htmlFor="model">Model</Label>
+                    <Input placeholder="Select model" />
+                  </div>
+                  <div>
+                    <Label htmlFor="year">Year</Label>
+                    <div className="flex gap-2">
+                      <Input placeholder="From" />
+                      <Input placeholder="To" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="mileage">Mileage (km)</Label>
+                    <div className="flex gap-2">
+                      <Input placeholder="Min" />
+                      <Input placeholder="Max" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="transmission">Transmission</Label>
+                    <Input placeholder="Any" />
+                  </div>
+                  <div>
+                    <Label htmlFor="fuel">Fuel Type</Label>
+                    <Input placeholder="Any" />
+                  </div>
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input placeholder="Location" />
+                  </div>
+                  <div>
+                    <Label htmlFor="condition">Condition</Label>
+                    <Input placeholder="Any condition" />
+                  </div>
+                  <Button className="w-full bg-red-600 hover:bg-red-700">Apply Filters</Button>
+                  <Button variant="outline" className="w-full">Reset Filters</Button>
+                </div>
+              </Card>
+            </div>
+
+            {/* Car Grid */}
+            <div className="lg:w-3/4">
+              <TabsContent value="all">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {cars.map((car) => (
+                    <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative">
+                        <img src={car.image} alt={car.title} className="w-full h-48 object-cover" />
+                        <Button size="sm" variant="secondary" className="absolute top-2 right-2">
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                        <div className="absolute top-2 left-2">
+                          <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
+                            {car.type === "brand-new" ? "Brand New" : 
+                             car.type === "foreign-used" ? "Foreign Used" : "Local Used"}
+                          </span>
+                        </div>
                       </div>
-                    </CardContent>
-                    <CardFooter className="p-4 pt-0">
-                      <Button className="w-full bg-red-600 hover:bg-red-700">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-lg mb-2">{car.title}</h3>
+                        <p className="text-2xl font-bold text-red-600 mb-2">{car.price}</p>
+                        <p className="text-sm text-gray-600 mb-4">{car.location}</p>
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <span>{car.mileage}</span>
+                          <span>{car.fuel}</span>
+                          <span>{car.transmission}</span>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        <Button className="w-full bg-red-600 hover:bg-red-700">
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="brand-new">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {filteredCars.map((car) => (
+                    <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative">
+                        <img src={car.image} alt={car.title} className="w-full h-48 object-cover" />
+                        <Button size="sm" variant="secondary" className="absolute top-2 right-2">
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                        <div className="absolute top-2 left-2">
+                          <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
+                            Brand New
+                          </span>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-lg mb-2">{car.title}</h3>
+                        <p className="text-2xl font-bold text-red-600 mb-2">{car.price}</p>
+                        <p className="text-sm text-gray-600 mb-4">{car.location}</p>
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <span>{car.mileage}</span>
+                          <span>{car.fuel}</span>
+                          <span>{car.transmission}</span>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        <Button className="w-full bg-red-600 hover:bg-red-700">
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="foreign-used">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {filteredCars.map((car) => (
+                    <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative">
+                        <img src={car.image} alt={car.title} className="w-full h-48 object-cover" />
+                        <Button size="sm" variant="secondary" className="absolute top-2 right-2">
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                        <div className="absolute top-2 left-2">
+                          <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
+                            Foreign Used
+                          </span>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-lg mb-2">{car.title}</h3>
+                        <p className="text-2xl font-bold text-red-600 mb-2">{car.price}</p>
+                        <p className="text-sm text-gray-600 mb-4">{car.location}</p>
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <span>{car.mileage}</span>
+                          <span>{car.fuel}</span>
+                          <span>{car.transmission}</span>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        <Button className="w-full bg-red-600 hover:bg-red-700">
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="local-used">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {filteredCars.map((car) => (
+                    <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative">
+                        <img src={car.image} alt={car.title} className="w-full h-48 object-cover" />
+                        <Button size="sm" variant="secondary" className="absolute top-2 right-2">
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                        <div className="absolute top-2 left-2">
+                          <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
+                            Local Used
+                          </span>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-lg mb-2">{car.title}</h3>
+                        <p className="text-2xl font-bold text-red-600 mb-2">{car.price}</p>
+                        <p className="text-sm text-gray-600 mb-4">{car.location}</p>
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <span>{car.mileage}</span>
+                          <span>{car.fuel}</span>
+                          <span>{car.transmission}</span>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        <Button className="w-full bg-red-600 hover:bg-red-700">
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </div>
           </div>
-        </div>
+        </Tabs>
       </div>
     </div>
   );
