@@ -89,7 +89,7 @@ const dealers = [
 ];
 
 export const VerifiedDealers = () => {
-  const [visibleDealers, setVisibleDealers] = useState(8);
+  const [visibleDealers, setVisibleDealers] = useState(12);
   const [showLoadMore, setShowLoadMore] = useState(true);
 
   const handleLoadMore = () => {
@@ -98,7 +98,7 @@ export const VerifiedDealers = () => {
       return;
     }
     
-    const newVisible = Math.min(visibleDealers + 4, dealers.length);
+    const newVisible = Math.min(visibleDealers + 6, dealers.length);
     setVisibleDealers(newVisible);
     
     if (newVisible >= dealers.length) {
@@ -113,44 +113,44 @@ export const VerifiedDealers = () => {
           <h2 className="text-3xl font-bold text-white mb-4">Verified Dealers</h2>
           <p className="text-white/90 text-lg">Trusted car dealers verified by our team</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {dealers.slice(0, visibleDealers).map((dealer) => (
             <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="relative">
                 <img 
                   src={dealer.image} 
                   alt={dealer.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
+                  className="w-full h-32 object-cover rounded-t-lg"
                 />
                 {dealer.verified && (
-                  <Badge className="absolute top-2 right-2 bg-green-500 hover:bg-green-600">
-                    <Shield className="w-3 h-3 mr-1" />
+                  <Badge className="absolute top-1 right-1 bg-green-500 hover:bg-green-600 text-xs">
+                    <Shield className="w-2 h-2 mr-1" />
                     Verified
                   </Badge>
                 )}
               </div>
-              <CardContent className="p-4">
-                <h3 className="font-bold text-lg mb-2">{dealer.name}</h3>
-                <div className="space-y-2 text-sm text-gray-600">
+              <CardContent className="p-3">
+                <h3 className="font-bold text-sm mb-2 truncate">{dealer.name}</h3>
+                <div className="space-y-1 text-xs text-gray-600">
                   <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    <span>{dealer.location}</span>
+                    <MapPin className="w-3 h-3 mr-1" />
+                    <span className="truncate">{dealer.location}</span>
                   </div>
                   <div className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2" />
-                    <span>{dealer.phone}</span>
+                    <Phone className="w-3 h-3 mr-1" />
+                    <span className="truncate">{dealer.phone}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
+                      <Star className="w-3 h-3 mr-1 text-yellow-400 fill-current" />
                       <span>{dealer.rating}</span>
                     </div>
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                    <span className="text-xs bg-gray-100 px-1 py-0.5 rounded">
                       {dealer.totalCars} cars
                     </span>
                   </div>
                 </div>
-                <Button className="w-full mt-4 bg-red-600 hover:bg-red-700">
+                <Button className="w-full mt-3 bg-red-600 hover:bg-red-700 text-xs py-1">
                   View Dealer
                 </Button>
               </CardContent>

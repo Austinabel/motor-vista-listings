@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -189,7 +188,7 @@ const allCars = [
 
 export const FeaturedListings = () => {
   const [visibleRows, setVisibleRows] = useState(3);
-  const carsPerRow = 4;
+  const carsPerRow = 6;
   const totalCarsPerPage = visibleRows * carsPerRow;
   const maxRows = 6;
 
@@ -210,28 +209,27 @@ export const FeaturedListings = () => {
           <h2 className="text-3xl font-bold text-white">Featured Listings</h2>
           <Button variant="outline" className="border-white text-white hover:bg-white hover:text-red-600">View All</Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {displayedCars.map((car) => (
             <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
-                <img src={car.image} alt={car.title} className="w-full h-48 object-cover" />
-                <Button size="sm" variant="secondary" className="absolute top-2 right-2">
-                  <Heart className="h-4 w-4" />
+                <img src={car.image} alt={car.title} className="w-full h-32 object-cover" />
+                <Button size="sm" variant="secondary" className="absolute top-1 right-1 p-1">
+                  <Heart className="h-3 w-3" />
                 </Button>
               </div>
-              <CardContent className="p-4">
-                <h3 className="font-bold text-lg mb-2">{car.title}</h3>
-                <p className="text-2xl font-bold text-red-600 mb-2">{car.price}</p>
-                <p className="text-sm text-gray-600 mb-4">{car.location}</p>
-                <div className="grid grid-cols-3 gap-2 text-sm">
-                  <span>{car.mileage}</span>
-                  <span>{car.fuel}</span>
-                  <span>{car.transmission}</span>
+              <CardContent className="p-3">
+                <h3 className="font-bold text-sm mb-2 truncate">{car.title}</h3>
+                <p className="text-lg font-bold text-red-600 mb-1">{car.price}</p>
+                <p className="text-xs text-gray-600 mb-2 truncate">{car.location}</p>
+                <div className="grid grid-cols-1 gap-1 text-xs">
+                  <span className="truncate">{car.mileage}</span>
+                  <span className="truncate">{car.fuel} • {car.transmission}</span>
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button className="w-full">
-                  <Eye className="mr-2 h-4 w-4" />
+              <CardFooter className="p-3 pt-0">
+                <Button className="w-full text-xs py-1">
+                  <Eye className="mr-1 h-3 w-3" />
                   View Details
                 </Button>
               </CardFooter>
