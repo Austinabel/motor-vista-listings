@@ -65,16 +65,14 @@ export const Footer = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>support@motorvista.ng</span>
+                <span>support@motorcars.ng</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-2" />
                 <span>Lagos, Nigeria</span>
               </div>
             </div>
-            <p className="text-gray-400">
-              © 2024 MotorVista. All rights reserved.
-            </p>
+            <p className="text-gray-400">© 2025 Motorcars. All rights reserved.</p>
           </div>
         </div>
       </div>
