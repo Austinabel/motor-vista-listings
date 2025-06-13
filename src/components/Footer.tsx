@@ -1,16 +1,13 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Building } from "lucide-react";
 import { Link } from "react-router-dom";
-
 export const Footer = () => {
-  return (
-    <footer className="bg-gray-900 text-white py-16">
+  return <footer className="bg-gray-900 text-white py-16">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-bold text-xl mb-4">MotorVista</h3>
+            <h3 className="font-bold text-xl mb-4">Motorcars.ng</h3>
             <p className="text-gray-400 mb-4">
               Nigeria's most trusted car marketplace connecting buyers with verified dealers.
             </p>
@@ -81,6 +78,5 @@ export const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
