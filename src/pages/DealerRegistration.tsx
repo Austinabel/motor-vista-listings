@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Footer } from "@/components/Footer";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,13 @@ import { IdCard, Upload } from "lucide-react";
 
 const states = [
   "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo"
+];
+
+const idCardTypes = [
+  { value: "national_id", label: "National Identity Card" },
+  { value: "drivers_license", label: "Driver's License" },
+  { value: "international_passport", label: "International Passport" },
+  { value: "voters_card", label: "Voter's Card" }
 ];
 
 const DealerRegistration = () => {
@@ -32,6 +40,7 @@ const DealerRegistration = () => {
     description: "",
     website: "",
     monthlyInventory: "",
+    idCardType: "",
     idCardNumber: "",
   });
 
@@ -148,6 +157,11 @@ const DealerRegistration = () => {
     e.preventDefault();
     
     // Validate required fields
+    if (!formData.idCardType) {
+      toast.error("Please select your ID card type");
+      return;
+    }
+    
     if (!formData.idCardNumber) {
       toast.error("Please enter your ID card number");
       return;
@@ -210,41 +224,57 @@ const DealerRegistration = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
+                      <Label htmlFor="idCardType">ID Card Type *</Label>
+                      <Select value={formData.idCardType} onValueChange={(value) => handleInputChange('idCardType', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select ID card type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {idCardTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                       <Label htmlFor="idCardNumber">ID Card Number *</Label>
                       <Input 
                         id="idCardNumber" 
-                        placeholder="Enter your National ID, Driver's License, or Passport number" 
+                        placeholder="Enter your ID card number" 
                         required 
                         value={formData.idCardNumber}
                         onChange={(e) => handleInputChange('idCardNumber', e.target.value)}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="idCardUpload">Upload ID Card *</Label>
-                      <div className="relative">
-                        <Input 
-                          id="idCardUpload" 
-                          type="file" 
-                          accept=".pdf,.jpg,.jpeg,.png" 
-                          required
-                          onChange={handleIdCardUpload}
-                          className="cursor-pointer"
-                        />
-                        <Upload className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Upload clear image/scan of your National ID, Driver's License, or International Passport (PDF, JPG, PNG - Max 5MB)
-                      </p>
-                      {idCardFile && (
-                        <p className="text-sm text-green-600 mt-1">
-                          ✓ {idCardFile.name} uploaded successfully
-                        </p>
-                      )}
+                  </div>
+                  
+                  <div className="mt-4">
+                    <Label htmlFor="idCardUpload">Upload ID Card *</Label>
+                    <div className="relative">
+                      <Input 
+                        id="idCardUpload" 
+                        type="file" 
+                        accept=".pdf,.jpg,.jpeg,.png" 
+                        required
+                        onChange={handleIdCardUpload}
+                        className="cursor-pointer"
+                      />
+                      <Upload className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Upload clear image/scan of your selected ID document (PDF, JPG, PNG - Max 5MB)
+                    </p>
+                    {idCardFile && (
+                      <p className="text-sm text-green-600 mt-1">
+                        ✓ {idCardFile.name} uploaded successfully
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* Existing form fields */}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="businessName">Business Name *</Label>
