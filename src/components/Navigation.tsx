@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, ChevronDown, LogOut } from "lucide-react";
+import { Car, Menu, X, User, ChevronDown, LogOut, Edit, Heart, MessageSquare, Zap } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +14,33 @@ export const Navigation = () => {
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
+
+  // Fetch user profile to get the name
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  const getUserDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return user?.email || '';
+  };
 
   const isActiveLink = (path: string) => {
     return location.pathname === path;
@@ -176,19 +205,49 @@ export const Navigation = () => {
                     className="flex items-center space-x-2"
                   >
                     <User className="h-4 w-4" />
-                    <span className="max-w-24 truncate">{user.email}</span>
+                    <span className="max-w-32 truncate">{getUserDisplayName()}</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                   
                   {isUserDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
-                      <button
-                        onClick={handleSignOut}
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                      <Link
+                        to="/profile/edit"
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
                       >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                      </button>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Link>
+                      <Link
+                        to="/profile/favorites"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                      >
+                        <Heart className="h-4 w-4 mr-2" />
+                        Favorites
+                      </Link>
+                      <Link
+                        to="/profile/messages"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Messages
+                      </Link>
+                      <Link
+                        to="/profile/boost-sales"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Boost Sales
+                      </Link>
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sign Out
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -251,7 +310,23 @@ export const Navigation = () => {
                 <div className="flex flex-col space-y-2 pt-4 border-t">
                   {user ? (
                     <>
-                      <span className="text-sm text-gray-600 truncate">{user.email}</span>
+                      <span className="text-sm text-gray-600 truncate">{getUserDisplayName()}</span>
+                      <Link to="/profile/edit" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Link>
+                      <Link to="/profile/favorites" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                        <Heart className="h-4 w-4 mr-2" />
+                        Favorites
+                      </Link>
+                      <Link to="/profile/messages" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Messages
+                      </Link>
+                      <Link to="/profile/boost-sales" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                        <Zap className="h-4 w-4 mr-2" />
+                        Boost Sales
+                      </Link>
                       <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full">
                         <LogOut className="h-4 w-4 mr-2" />
                         Sign Out
