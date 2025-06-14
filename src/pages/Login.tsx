@@ -1,22 +1,66 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Car } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signIn, signInWithGoogle, user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", { email, password });
+    setLoading(true);
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in."
+      });
+      navigate("/");
+    }
+
+    setLoading(false);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    const { error } = await signInWithGoogle();
+
+    if (error) {
+      toast({
+        title: "Google Sign In Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -88,10 +132,35 @@ const Login = () => {
                   </Link>
                 </div>
 
-                <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-                  Sign In
+                <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={loading}>
+                  {loading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
+
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGoogleSignIn}
+                  variant="outline"
+                  className="w-full mt-4"
+                  disabled={loading}
+                >
+                  <img
+                    src="/lovable-uploads/8ed7331e-9e69-40c7-956c-21e5c5e7050a.png"
+                    alt="Google"
+                    className="w-5 h-5 mr-2"
+                  />
+                  Sign in with Google
+                </Button>
+              </div>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">

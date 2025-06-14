@@ -1,15 +1,36 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, ChevronDown } from "lucide-react";
+import { Car, Menu, X, User, ChevronDown, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut, loading } = useAuth();
+  const { toast } = useToast();
 
   const isActiveLink = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Sign Out Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out."
+      });
+    }
   };
 
   const carCategories = [
@@ -144,17 +165,48 @@ export const Navigation = () => {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Link to="/login">
-                <Button variant="outline" size="sm">
-                  <User className="h-4 w-4 mr-2" />
-                  Login
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button size="sm" className="bg-red-600 hover:bg-red-700">
-                  Register
-                </Button>
-              </Link>
+              {loading ? (
+                <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+              ) : user ? (
+                <div className="relative">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                    className="flex items-center space-x-2"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="max-w-24 truncate">{user.email}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                  
+                  {isUserDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="outline" size="sm">
+                      <User className="h-4 w-4 mr-2" />
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button size="sm" className="bg-red-600 hover:bg-red-700">
+                      Register
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -197,17 +249,29 @@ export const Navigation = () => {
                   Dealers
                 </Link>
                 <div className="flex flex-col space-y-2 pt-4 border-t">
-                  <Link to="/login">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <User className="h-4 w-4 mr-2" />
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to="/register">
-                    <Button size="sm" className="bg-red-600 hover:bg-red-700 w-full">
-                      Register
-                    </Button>
-                  </Link>
+                  {user ? (
+                    <>
+                      <span className="text-sm text-gray-600 truncate">{user.email}</span>
+                      <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full">
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login">
+                        <Button variant="outline" size="sm" className="w-full">
+                          <User className="h-4 w-4 mr-2" />
+                          Login
+                        </Button>
+                      </Link>
+                      <Link to="/register">
+                        <Button size="sm" className="bg-red-600 hover:bg-red-700 w-full">
+                          Register
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

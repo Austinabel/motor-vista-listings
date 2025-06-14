@@ -1,9 +1,11 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import CarListings from "./pages/CarListings";
 import CarDetail from "./pages/CarDetail";
@@ -16,6 +18,7 @@ import Admin from "./pages/Admin";
 import SellYourCar from "./pages/SellYourCar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import About from "./pages/About";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
@@ -32,7 +35,7 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const location = useLocation();
   const isHomepage = location.pathname === "/";
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/forgot-password";
   const isAdminAuthPage = location.pathname === "/admin/login" || location.pathname === "/admin/register";
 
   return (
@@ -51,6 +54,7 @@ const AppContent = () => {
           <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/about" element={<About />} />
           <Route path="/help" element={<Help />} />
           <Route path="/contact" element={<Contact />} />
@@ -74,7 +78,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppContent />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

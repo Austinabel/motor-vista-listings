@@ -1,16 +1,19 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Car } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -21,6 +24,16 @@ const Register = () => {
     userType: "buyer"
   });
 
+  const { signUp, signInWithGoogle, user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
@@ -28,14 +41,58 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match!",
+        variant: "destructive"
+      });
       return;
     }
-    // Handle registration logic here
-    console.log("Registration attempt:", formData);
+
+    setLoading(true);
+
+    const userData = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      phone: formData.phone,
+      user_type: formData.userType
+    };
+
+    const { error } = await signUp(formData.email, formData.password, userData);
+
+    if (error) {
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Registration Successful!",
+        description: "Please check your email to verify your account."
+      });
+    }
+
+    setLoading(false);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    const { error } = await signInWithGoogle();
+
+    if (error) {
+      toast({
+        title: "Google Sign In Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -188,10 +245,35 @@ const Register = () => {
                   </Label>
                 </div>
 
-                <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-                  Create Account
+                <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={loading}>
+                  {loading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
+
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGoogleSignIn}
+                  variant="outline"
+                  className="w-full mt-4"
+                  disabled={loading}
+                >
+                  <img
+                    src="/lovable-uploads/8ed7331e-9e69-40c7-956c-21e5c5e7050a.png"
+                    alt="Google"
+                    className="w-5 h-5 mr-2"
+                  />
+                  Sign up with Google
+                </Button>
+              </div>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
