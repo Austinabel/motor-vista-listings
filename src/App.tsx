@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +24,8 @@ import Privacy from "./pages/Privacy";
 import CarValuation from "./pages/CarValuation";
 import Insurance from "./pages/Insurance";
 import Financing from "./pages/Financing";
+import AdminLogin from "./pages/AdminLogin";
+import AdminRegister from "./pages/AdminRegister";
 
 const queryClient = new QueryClient();
 
@@ -32,11 +33,12 @@ const AppContent = () => {
   const location = useLocation();
   const isHomepage = location.pathname === "/";
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const isAdminAuthPage = location.pathname === "/admin/login" || location.pathname === "/admin/register";
 
   return (
     <>
-      {!isAuthPage && <Navigation />}
-      <div className={isHomepage || isAuthPage ? "" : "pt-24"}>
+      {!isAuthPage && !isAdminAuthPage && <Navigation />}
+      <div className={isHomepage || isAuthPage || isAdminAuthPage ? "" : "pt-24"}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cars" element={<CarListings />} />
@@ -57,6 +59,8 @@ const AppContent = () => {
           <Route path="/car-valuation" element={<CarValuation />} />
           <Route path="/insurance" element={<Insurance />} />
           <Route path="/financing" element={<Financing />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
