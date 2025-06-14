@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -167,8 +166,12 @@ const dealers = [
   },
 ];
 
-const states = [
-  "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo", "Enugu", "Kwara"
+const nigerianStates = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT", "Gombe", 
+  "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", 
+  "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", 
+  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
 ];
 
 const DEALERS_PER_PAGE = 8;
@@ -226,7 +229,7 @@ const Dealers = () => {
                       onChange={(e) => setSelectedState(e.target.value)}
                     >
                       <option value="">All States</option>
-                      {states.map(state => (
+                      {nigerianStates.map(state => (
                         <option key={state} value={state}>{state}</option>
                       ))}
                     </select>

@@ -237,6 +237,14 @@ const categories = [
   { id: "nissan", name: "Nissan", logo: "🚗" },
 ];
 
+const nigerianStates = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT", "Gombe", 
+  "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", 
+  "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", 
+  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+];
+
 const CARS_PER_PAGE = 8;
 
 const CarListings = () => {
@@ -364,8 +372,15 @@ const CarListings = () => {
                       <Input placeholder="Any" />
                     </div>
                     <div>
-                      <Label htmlFor="location">Location</Label>
-                      <Input placeholder="Location" />
+                      <Label htmlFor="location">Location/State</Label>
+                      <select 
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="">All States</option>
+                        {nigerianStates.map(state => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <Label htmlFor="condition">Condition</Label>
