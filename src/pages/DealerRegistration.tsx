@@ -67,7 +67,7 @@ const DealerRegistration = () => {
     const paymentData = {
       public_key: "FLWPUBK_TEST-your-public-key-here", // Replace with your actual public key
       tx_ref: `dealer_reg_${Date.now()}`,
-      amount: 150000,
+      amount: 35000,
       currency: "NGN",
       payment_options: "card,mobilemoney,ussd,banktransfer",
       customer: {
@@ -189,7 +189,7 @@ const DealerRegistration = () => {
             <CardContent className="p-8">
               <div className="mb-8 p-6 bg-red-50 rounded-lg border border-red-200">
                 <h3 className="text-xl font-bold text-red-700 mb-2">Dealer Subscription</h3>
-                <p className="text-3xl font-bold text-red-600">₦150,000 <span className="text-lg font-normal text-gray-600">per year</span></p>
+                <p className="text-3xl font-bold text-red-600">₦35,000 <span className="text-lg font-normal text-gray-600">per year</span></p>
                 <ul className="mt-4 space-y-2 text-sm">
                   <li>✓ Verified dealer badge</li>
                   <li>✓ Unlimited car listings</li>
@@ -418,7 +418,7 @@ const DealerRegistration = () => {
                   </div>
                   
                   <div className="text-center mb-4">
-                    <p className="text-lg font-semibold">Total: ₦150,000/year</p>
+                    <p className="text-lg font-semibold">Total: ₦35,000/year</p>
                     <p className="text-sm text-gray-600">Secure payment processed via Flutterwave</p>
                   </div>
                   
@@ -427,7 +427,7 @@ const DealerRegistration = () => {
                     className="w-full bg-red-600 hover:bg-red-700 py-3"
                     disabled={isSubmitting || isProcessingPayment}
                   >
-                    {isProcessingPayment ? "Processing Payment..." : isSubmitting ? "Submitting..." : "Pay ₦150,000 & Submit Application"}
+                    {isProcessingPayment ? "Processing Payment..." : isSubmitting ? "Submitting..." : "Pay ₦35,000 & Submit Application"}
                   </Button>
                 </div>
               </form>

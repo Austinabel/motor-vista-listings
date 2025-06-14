@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -164,10 +163,10 @@ const Admin = () => {
                           <div className="flex items-center space-x-2">
                             {getStatusIcon(dealer.status)}
                             {dealer.id_card_number && (
-                              <IdCard className="w-4 h-4 text-blue-600" title="ID Verified" />
+                              <IdCard className="w-4 h-4 text-blue-600" />
                             )}
                             {dealer.payment_status === 'completed' && (
-                              <CreditCard className="w-4 h-4 text-green-600" title="Payment Completed" />
+                              <CreditCard className="w-4 h-4 text-green-600" />
                             )}
                           </div>
                         </div>
