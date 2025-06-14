@@ -41,11 +41,12 @@ const AppContent = () => {
   const isHomepage = location.pathname === "/";
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/forgot-password";
   const isAdminAuthPage = location.pathname === "/admin/login" || location.pathname === "/admin/register";
+  const isAdminPage = location.pathname === "/admin" || location.pathname.startsWith("/admin");
 
   return (
     <>
-      {!isAuthPage && !isAdminAuthPage && <Navigation />}
-      <div className={isHomepage || isAuthPage || isAdminAuthPage ? "" : "pt-24"}>
+      {!isAuthPage && !isAdminPage && <Navigation />}
+      <div className={isHomepage || isAuthPage || isAdminPage ? "" : "pt-24"}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cars" element={<CarListings />} />
