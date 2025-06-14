@@ -15,7 +15,7 @@ const Dealers = () => {
   const [filteredDealers, setFilteredDealers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedState, setSelectedState] = useState("");
+  const [selectedState, setSelectedState] = useState("all");
 
   const states = [
     "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo"
@@ -61,7 +61,7 @@ const Dealers = () => {
       );
     }
 
-    if (selectedState) {
+    if (selectedState && selectedState !== "all") {
       filtered = filtered.filter(dealer => dealer.state === selectedState);
     }
 
@@ -104,7 +104,7 @@ const Dealers = () => {
                     <SelectValue placeholder="All States" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All States</SelectItem>
+                    <SelectItem value="all">All States</SelectItem>
                     {states.map(state => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
@@ -115,7 +115,7 @@ const Dealers = () => {
                 variant="outline" 
                 onClick={() => {
                   setSearchTerm("");
-                  setSelectedState("");
+                  setSelectedState("all");
                 }}
               >
                 Clear Filters
