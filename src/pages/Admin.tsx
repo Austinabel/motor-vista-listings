@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +16,7 @@ import {
   CheckCircle, XCircle, Upload, Plus, Search, LogOut
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -69,8 +71,25 @@ const Admin = () => {
     fetchPlatformData();
   }, []);
 
-  const fetchPlatformData = () => {
-    // Fetch cars from CarListings data
+  const fetchPlatformData = async () => {
+    try {
+      // Fetch real dealers from database
+      const { data: dealersData, error: dealersError } = await supabase
+        .from('dealers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (dealersError) {
+        console.error('Error fetching dealers:', dealersError);
+        toast.error('Failed to fetch dealers data');
+      } else {
+        setPlatformDealers(dealersData || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchPlatformData:', error);
+    }
+
+    // Mock data for other sections (to be replaced with real data later)
     const cars = [
       { id: 1, make: "Toyota", model: "Camry", year: "2020", price: "₦8,500,000", condition: "Foreign Used", location: "Lagos", dealer: "Premium Auto Lagos", status: "active", views: 1250, createdAt: "2024-01-15" },
       { id: 2, make: "Honda", model: "Accord", year: "2019", price: "₦7,200,000", condition: "Foreign Used", location: "Abuja", dealer: "Royal Motors Abuja", status: "active", views: 890, createdAt: "2024-01-20" },
@@ -79,7 +98,6 @@ const Admin = () => {
       { id: 5, make: "Lexus", model: "RX350", year: "2019", price: "₦12,800,000", condition: "Foreign Used", location: "Abuja", dealer: "Crown Motors", status: "active", views: 1034, createdAt: "2024-02-05" },
     ];
 
-    // Fetch users data
     const users = [
       { id: 1, name: "John Doe", email: "john@example.com", type: "buyer", status: "active", joinDate: "2024-01-15", lastActive: "2024-06-10", totalPurchases: 2, favoriteListings: 15 },
       { id: 2, name: "Jane Smith", email: "jane@example.com", type: "seller", status: "active", joinDate: "2024-02-10", lastActive: "2024-06-12", totalSales: 5, activeListing: 3 },
@@ -88,16 +106,6 @@ const Admin = () => {
       { id: 5, name: "David Brown", email: "david@example.com", type: "buyer", status: "active", joinDate: "2024-02-22", lastActive: "2024-06-11", totalPurchases: 1, favoriteListings: 22 },
     ];
 
-    // Fetch dealers from existing data
-    const dealers = [
-      { id: 1, name: "Premium Auto Lagos", location: "Victoria Island, Lagos", state: "Lagos", cars: 45, status: "verified", rating: 4.8, established: "2015", totalSales: 234, activeListings: 32 },
-      { id: 2, name: "Royal Motors Abuja", location: "Wuse 2, Abuja", state: "FCT", cars: 32, status: "verified", rating: 4.9, established: "2018", totalSales: 156, activeListings: 28 },
-      { id: 3, name: "Elite Car Center", location: "GRA, Port Harcourt", state: "Rivers", cars: 28, status: "pending", rating: 4.7, established: "2016", totalSales: 189, activeListings: 24 },
-      { id: 4, name: "Luxury Auto Hub", location: "Ikeja, Lagos", state: "Lagos", cars: 38, status: "verified", rating: 4.6, established: "2017", totalSales: 198, activeListings: 30 },
-      { id: 5, name: "Crown Motors", location: "Kaduna", state: "Kaduna", cars: 31, status: "verified", rating: 4.8, established: "2016", totalSales: 167, activeListings: 26 },
-    ];
-
-    // Fetch ads and featured listings
     const ads = [
       { id: 1, title: "2020 Toyota Camry - Premium Condition", dealer: "Premium Auto Lagos", price: "₦8,500,000", status: "active", views: 1250, clicks: 89, startDate: "2024-06-01", endDate: "2024-06-30", type: "featured" },
       { id: 2, title: "2019 Honda Accord - Excellent Deal", dealer: "Royal Motors Abuja", price: "₦7,200,000", status: "active", views: 890, clicks: 67, startDate: "2024-06-05", endDate: "2024-07-05", type: "sponsored" },
@@ -108,8 +116,30 @@ const Admin = () => {
 
     setPlatformCars(cars);
     setPlatformUsers(users);
-    setPlatformDealers(dealers);
     setPlatformAds(ads);
+  };
+
+  const handleDealerStatusUpdate = async (dealerId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('dealers')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', dealerId);
+
+      if (error) {
+        console.error('Error updating dealer status:', error);
+        toast.error('Failed to update dealer status');
+      } else {
+        toast.success(`Dealer ${newStatus} successfully`);
+        fetchPlatformData(); // Refresh the data
+      }
+    } catch (error) {
+      console.error('Error in handleDealerStatusUpdate:', error);
+      toast.error('An unexpected error occurred');
+    }
   };
 
   const handleSignOut = async () => {
@@ -364,40 +394,60 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Location</TableHead>
+                    <TableHead>Business Name</TableHead>
+                    <TableHead>Contact Person</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
                     <TableHead>State</TableHead>
-                    <TableHead>Cars</TableHead>
-                    <TableHead>Rating</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Total Sales</TableHead>
+                    <TableHead>Applied Date</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {platformDealers.map((dealer: any) => (
                     <TableRow key={dealer.id}>
-                      <TableCell className="font-medium">{dealer.name}</TableCell>
-                      <TableCell>{dealer.location}</TableCell>
+                      <TableCell className="font-medium">{dealer.business_name}</TableCell>
+                      <TableCell>{dealer.contact_name}</TableCell>
+                      <TableCell>{dealer.email}</TableCell>
+                      <TableCell>{dealer.phone}</TableCell>
                       <TableCell>{dealer.state}</TableCell>
-                      <TableCell>{dealer.cars}</TableCell>
-                      <TableCell>{dealer.rating} ⭐</TableCell>
                       <TableCell>
                         <Badge 
-                          variant={dealer.status === "verified" ? "default" : "secondary"}
+                          variant={
+                            dealer.status === "verified" ? "default" : 
+                            dealer.status === "pending" ? "secondary" : "destructive"
+                          }
                         >
                           {dealer.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{dealer.totalSales}</TableCell>
+                      <TableCell>{new Date(dealer.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
+                          {dealer.status === "pending" && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleDealerStatusUpdate(dealer.id, "verified")}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleDealerStatusUpdate(dealer.id, "rejected")}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
                           <Button size="sm" variant="destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>

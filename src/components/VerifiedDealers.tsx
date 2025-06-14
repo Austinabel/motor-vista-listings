@@ -1,96 +1,43 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, MapPin, Phone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-
-const dealers = [
-  {
-    id: 1,
-    name: "Premium Auto Lagos",
-    location: "Victoria Island, Lagos",
-    phone: "+234 801 234 5678",
-    rating: 4.8,
-    totalCars: 45,
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Royal Motors Abuja",
-    location: "Wuse 2, Abuja",
-    phone: "+234 802 345 6789",
-    rating: 4.9,
-    totalCars: 32,
-    image: "https://images.unsplash.com/photo-1562141961-f1e70c7d2ac6?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Elite Car Center",
-    location: "GRA, Port Harcourt",
-    phone: "+234 803 456 7890",
-    rating: 4.7,
-    totalCars: 28,
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 4,
-    name: "Luxury Auto Hub",
-    location: "Ikeja, Lagos",
-    phone: "+234 804 567 8901",
-    rating: 4.6,
-    totalCars: 38,
-    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 5,
-    name: "Metro Car Sales",
-    location: "Surulere, Lagos",
-    phone: "+234 805 678 9012",
-    rating: 4.5,
-    totalCars: 25,
-    image: "https://images.unsplash.com/photo-1517524206127-6d22353d8482?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 6,
-    name: "Crown Motors",
-    location: "Kaduna",
-    phone: "+234 806 789 0123",
-    rating: 4.8,
-    totalCars: 31,
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 7,
-    name: "Diamond Auto",
-    location: "Enugu",
-    phone: "+234 807 890 1234",
-    rating: 4.7,
-    totalCars: 22,
-    image: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 8,
-    name: "Golden Gate Motors",
-    location: "Ilorin",
-    phone: "+234 808 901 2345",
-    rating: 4.6,
-    totalCars: 29,
-    image: "https://images.unsplash.com/photo-1549924231-f129b911e442?w=300&h=200&fit=crop",
-    verified: true,
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export const VerifiedDealers = () => {
+  const navigate = useNavigate();
+  const [dealers, setDealers] = useState([]);
   const [visibleDealers, setVisibleDealers] = useState(12);
   const [showLoadMore, setShowLoadMore] = useState(true);
+
+  useEffect(() => {
+    fetchVerifiedDealers();
+  }, []);
+
+  const fetchVerifiedDealers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('dealers')
+        .select('*')
+        .eq('status', 'verified')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) {
+        console.error('Error fetching dealers:', error);
+      } else {
+        setDealers(data || []);
+        if ((data || []).length <= 12) {
+          setShowLoadMore(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error in fetchVerifiedDealers:', error);
+    }
+  };
 
   const handleLoadMore = () => {
     if (visibleDealers >= dealers.length) {
@@ -106,6 +53,24 @@ export const VerifiedDealers = () => {
     }
   };
 
+  const handleViewDealer = (dealerId: string) => {
+    navigate(`/dealer/${dealerId}`);
+  };
+
+  const getRandomImage = () => {
+    const images = [
+      "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1562141961-f1e70c7d2ac6?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1517524206127-6d22353d8482?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549924231-f129b911e442?w=300&h=200&fit=crop",
+    ];
+    return images[Math.floor(Math.random() * images.length)];
+  };
+
   return (
     <section className="py-16 bg-gradient-to-b from-red-600 to-white">
       <div className="container mx-auto px-4">
@@ -114,27 +79,25 @@ export const VerifiedDealers = () => {
           <p className="text-white/90 text-lg">Trusted car dealers verified by our team</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {dealers.slice(0, visibleDealers).map((dealer) => (
+          {dealers.slice(0, visibleDealers).map((dealer: any) => (
             <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="relative">
                 <img 
-                  src={dealer.image} 
-                  alt={dealer.name}
+                  src={getRandomImage()} 
+                  alt={dealer.business_name}
                   className="w-full h-32 object-cover rounded-t-lg"
                 />
-                {dealer.verified && (
-                  <Badge className="absolute top-1 right-1 bg-green-500 hover:bg-green-600 text-xs">
-                    <Shield className="w-2 h-2 mr-1" />
-                    Verified
-                  </Badge>
-                )}
+                <Badge className="absolute top-1 right-1 bg-green-500 hover:bg-green-600 text-xs">
+                  <Shield className="w-2 h-2 mr-1" />
+                  Verified
+                </Badge>
               </div>
               <CardContent className="p-3">
-                <h3 className="font-bold text-sm mb-2 truncate">{dealer.name}</h3>
+                <h3 className="font-bold text-sm mb-2 truncate">{dealer.business_name}</h3>
                 <div className="space-y-1 text-xs text-gray-600">
                   <div className="flex items-center">
                     <MapPin className="w-3 h-3 mr-1" />
-                    <span className="truncate">{dealer.location}</span>
+                    <span className="truncate">{dealer.state}</span>
                   </div>
                   <div className="flex items-center">
                     <Phone className="w-3 h-3 mr-1" />
@@ -143,14 +106,17 @@ export const VerifiedDealers = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Star className="w-3 h-3 mr-1 text-yellow-400 fill-current" />
-                      <span>{dealer.rating}</span>
+                      <span>4.{Math.floor(Math.random() * 4) + 5}</span>
                     </div>
                     <span className="text-xs bg-gray-100 px-1 py-0.5 rounded">
-                      {dealer.totalCars} cars
+                      {dealer.monthly_inventory} cars
                     </span>
                   </div>
                 </div>
-                <Button className="w-full mt-3 bg-red-600 hover:bg-red-700 text-xs py-1">
+                <Button 
+                  className="w-full mt-3 bg-red-600 hover:bg-red-700 text-xs py-1"
+                  onClick={() => handleViewDealer(dealer.id)}
+                >
                   View Dealer
                 </Button>
               </CardContent>
@@ -158,7 +124,7 @@ export const VerifiedDealers = () => {
           ))}
         </div>
         
-        {showLoadMore && (
+        {showLoadMore && dealers.length > visibleDealers && (
           <div className="text-center mt-8">
             <Button 
               onClick={handleLoadMore}
@@ -168,6 +134,15 @@ export const VerifiedDealers = () => {
             </Button>
           </div>
         )}
+
+        <div className="text-center mt-8">
+          <Button 
+            onClick={() => navigate('/dealers')}
+            className="bg-white text-red-600 hover:bg-gray-100 border-2 border-red-600"
+          >
+            View All Dealers
+          </Button>
+        </div>
       </div>
     </section>
   );

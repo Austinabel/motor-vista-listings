@@ -1,331 +1,217 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Shield, MapPin, Phone, Star, Mail, Globe, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { MapPin, Star, Filter, Shield } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Footer } from "@/components/Footer";
-
-const dealers = [
-  {
-    id: 1,
-    name: "Premium Auto Lagos",
-    location: "Victoria Island, Lagos",
-    state: "Lagos",
-    phone: "+234 801 234 5678",
-    email: "info@premiumauto.ng",
-    rating: 4.8,
-    totalCars: 45,
-    established: "2015",
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Royal Motors Abuja",
-    location: "Wuse 2, Abuja",
-    state: "FCT",
-    phone: "+234 802 345 6789",
-    email: "info@royalmotors.ng",
-    rating: 4.9,
-    totalCars: 32,
-    established: "2018",
-    image: "https://images.unsplash.com/photo-1562141961-f1e70c7d2ac6?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Elite Car Center",
-    location: "GRA, Port Harcourt",
-    state: "Rivers",
-    phone: "+234 803 456 7890",
-    email: "info@elitecar.ng",
-    rating: 4.7,
-    totalCars: 28,
-    established: "2016",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 4,
-    name: "Luxury Auto Hub",
-    location: "Ikeja, Lagos",
-    state: "Lagos",
-    phone: "+234 804 567 8901",
-    email: "info@luxuryauto.ng",
-    rating: 4.6,
-    totalCars: 38,
-    established: "2017",
-    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 5,
-    name: "Metro Car Sales",
-    location: "Surulere, Lagos",
-    state: "Lagos",
-    phone: "+234 805 678 9012",
-    email: "info@metro.ng",
-    rating: 4.5,
-    totalCars: 25,
-    established: "2019",
-    image: "https://images.unsplash.com/photo-1517524206127-6d22353d8482?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 6,
-    name: "Crown Motors",
-    location: "Kaduna",
-    state: "Kaduna",
-    phone: "+234 806 789 0123",
-    email: "info@crown.ng",
-    rating: 4.8,
-    totalCars: 31,
-    established: "2016",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 7,
-    name: "Diamond Auto",
-    location: "Enugu",
-    state: "Enugu",
-    phone: "+234 807 890 1234",
-    email: "info@diamond.ng",
-    rating: 4.7,
-    totalCars: 22,
-    established: "2018",
-    image: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 8,
-    name: "Golden Gate Motors",
-    location: "Ilorin",
-    state: "Kwara",
-    phone: "+234 808 901 2345",
-    email: "info@golden.ng",
-    rating: 4.6,
-    totalCars: 29,
-    established: "2017",
-    image: "https://images.unsplash.com/photo-1549924231-f129b911e442?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 9,
-    name: "Apex Auto Sales",
-    location: "Onitsha, Anambra",
-    state: "Anambra",
-    phone: "+234 809 012 3456",
-    email: "info@apex.ng",
-    rating: 4.4,
-    totalCars: 33,
-    established: "2020",
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 10,
-    name: "Star Motors",
-    location: "Benin City, Edo",
-    state: "Edo",
-    phone: "+234 810 123 4567",
-    email: "info@star.ng",
-    rating: 4.5,
-    totalCars: 27,
-    established: "2019",
-    image: "https://images.unsplash.com/photo-1562141961-f1e70c7d2ac6?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 11,
-    name: "Unity Car Mart",
-    location: "Warri, Delta",
-    state: "Delta",
-    phone: "+234 811 234 5678",
-    email: "info@unity.ng",
-    rating: 4.3,
-    totalCars: 24,
-    established: "2021",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop",
-    verified: true,
-  },
-  {
-    id: 12,
-    name: "Excellence Motors",
-    location: "Owerri, Imo",
-    state: "Imo",
-    phone: "+234 812 345 6789",
-    email: "info@excellence.ng",
-    rating: 4.6,
-    totalCars: 30,
-    established: "2018",
-    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=300&h=200&fit=crop",
-    verified: true,
-  },
-];
-
-const nigerianStates = [
-  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
-  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT", "Gombe", 
-  "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", 
-  "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", 
-  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
-];
-
-const DEALERS_PER_PAGE = 8;
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Dealers = () => {
-  const [showFilters, setShowFilters] = useState(false);
+  const [dealers, setDealers] = useState([]);
+  const [filteredDealers, setFilteredDealers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedState, setSelectedState] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [displayedDealers, setDisplayedDealers] = useState(DEALERS_PER_PAGE);
 
-  const filteredDealers = selectedState 
-    ? dealers.filter(dealer => dealer.state === selectedState)
-    : dealers;
+  const states = [
+    "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo"
+  ];
 
-  const totalPages = Math.ceil(filteredDealers.length / DEALERS_PER_PAGE);
-  const paginatedDealers = filteredDealers.slice(0, displayedDealers);
-  const hasMore = displayedDealers < filteredDealers.length;
+  useEffect(() => {
+    fetchVerifiedDealers();
+  }, []);
 
-  const handleLoadMore = () => {
-    setDisplayedDealers(prev => Math.min(prev + DEALERS_PER_PAGE, filteredDealers.length));
+  useEffect(() => {
+    filterDealers();
+  }, [dealers, searchTerm, selectedState]);
+
+  const fetchVerifiedDealers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('dealers')
+        .select('*')
+        .eq('status', 'verified')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching dealers:', error);
+        toast.error('Failed to load dealers');
+      } else {
+        setDealers(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchVerifiedDealers:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    setDisplayedDealers(page * DEALERS_PER_PAGE);
+  const filterDealers = () => {
+    let filtered = dealers;
+
+    if (searchTerm) {
+      filtered = filtered.filter(dealer => 
+        dealer.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dealer.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedState) {
+      filtered = filtered.filter(dealer => dealer.state === selectedState);
+    }
+
+    setFilteredDealers(filtered);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div>Loading dealers...</div>
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Car Dealers</h1>
-              <p className="text-gray-600">{filteredDealers.length} verified dealers found</p>
-            </div>
-            <div className="flex gap-4">
-              <Button onClick={() => setShowFilters(!showFilters)}>
-                <Filter className="mr-2 h-4 w-4" />
-                Filters
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Verified Car Dealers</h1>
+            <p className="text-xl text-gray-600">
+              Find trusted car dealers across Nigeria
+            </p>
+          </div>
+
+          {/* Search and Filter */}
+          <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search dealers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="md:w-48">
+                <Select value={selectedState} onValueChange={setSelectedState}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All States" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All States</SelectItem>
+                    {states.map(state => (
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedState("");
+                }}
+              >
+                Clear Filters
               </Button>
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-              <Card className="p-6">
-                <h3 className="font-bold text-lg mb-4">Filters</h3>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="location">Location/State</Label>
-                    <select 
-                      className="w-full p-2 border rounded-md"
-                      value={selectedState}
-                      onChange={(e) => setSelectedState(e.target.value)}
-                    >
-                      <option value="">All States</option>
-                      {nigerianStates.map(state => (
-                        <option key={state} value={state}>{state}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <Label htmlFor="rating">Minimum Rating</Label>
-                    <Input placeholder="4.0" />
-                  </div>
-                  <div>
-                    <Label htmlFor="established">Established Year</Label>
-                    <Input placeholder="2015" />
-                  </div>
-                  <div>
-                    <Label htmlFor="inventory">Min Cars in Stock</Label>
-                    <Input placeholder="20" />
-                  </div>
-                  <Button className="w-full bg-red-600 hover:bg-red-700">Apply Filters</Button>
-                  <Button variant="outline" className="w-full">Reset Filters</Button>
-                </div>
-              </Card>
+          {/* Dealers Grid */}
+          {filteredDealers.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-xl text-gray-600 mb-4">No dealers found matching your criteria</p>
+              <Button onClick={() => window.location.reload()}>Refresh</Button>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredDealers.map((dealer: any) => (
+                <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-900">{dealer.business_name}</h3>
+                      <Badge className="bg-green-500 hover:bg-green-600">
+                        <Shield className="w-3 h-3 mr-1" />
+                        Verified
+                      </Badge>
+                    </div>
 
-            <div className="lg:w-3/4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {paginatedDealers.map((dealer) => (
-                  <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-200">
-                    <div className="relative">
-                      <img 
-                        src={dealer.image} 
-                        alt={dealer.name}
-                        className="w-full h-32 object-cover rounded-t-lg"
-                      />
-                      {dealer.verified && (
-                        <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs flex items-center">
-                          <Shield className="w-3 h-3 mr-1" />
-                          Verified
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center text-gray-600">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        <span className="text-sm">{dealer.state}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <Phone className="w-4 h-4 mr-2" />
+                        <span className="text-sm">{dealer.phone}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <Mail className="w-4 h-4 mr-2" />
+                        <span className="text-sm">{dealer.email}</span>
+                      </div>
+                      {dealer.website && (
+                        <div className="flex items-center text-gray-600">
+                          <Globe className="w-4 h-4 mr-2" />
+                          <a 
+                            href={dealer.website} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-red-600 hover:underline"
+                          >
+                            Visit Website
+                          </a>
                         </div>
                       )}
+                      <div className="flex items-center text-gray-600">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span className="text-sm">Est. {dealer.year_established}</span>
+                      </div>
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-bold text-sm mb-2 line-clamp-2">{dealer.name}</h3>
-                      <div className="space-y-1 text-xs text-gray-600">
-                        <div className="flex items-center">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          <span className="truncate">{dealer.location}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Star className="w-3 h-3 mr-1 text-yellow-400 fill-current" />
-                            <span>{dealer.rating}</span>
-                          </div>
-                          <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                            {dealer.totalCars} cars
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-1 mt-3">
-                        <Link to={`/dealer/${dealer.id}`} className="flex-1">
-                          <Button className="w-full bg-red-600 hover:bg-red-700 text-xs py-1">
-                            View Profile
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
 
-              {/* Pagination and Load More */}
-              <div className="mt-8 flex flex-col items-center gap-4">
-                {hasMore && (
-                  <Button 
-                    onClick={handleLoadMore}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Load More Dealers
-                  </Button>
-                )}
-                
-                {totalPages > 1 && (
-                  <div className="flex gap-2">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className={currentPage === page ? "bg-red-600 hover:bg-red-700" : ""}
-                      >
-                        {page}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                      {dealer.description}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm">
+                        <span className="bg-gray-100 px-2 py-1 rounded">
+                          ~{dealer.monthly_inventory} cars/month
+                        </span>
+                      </div>
+                      <Button className="bg-red-600 hover:bg-red-700">
+                        View Inventory
                       </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <p className="text-xs text-gray-500">
+                        Contact: {dealer.contact_name}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
+          )}
+
+          {/* Call to Action */}
+          <div className="mt-12 text-center p-8 bg-red-50 rounded-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Want to become a verified dealer?</h2>
+            <p className="text-gray-600 mb-6">
+              Join our platform and reach thousands of potential customers across Nigeria
+            </p>
+            <Button 
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => window.location.href = '/dealer-registration'}
+            >
+              Register as Dealer
+            </Button>
           </div>
         </div>
       </div>
