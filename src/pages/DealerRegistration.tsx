@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { IdCard, Upload } from "lucide-react";
 
 const states = [
   "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo"
@@ -17,6 +17,8 @@ const states = [
 const DealerRegistration = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [idCardFile, setIdCardFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     businessName: "",
     contactName: "",
@@ -30,33 +32,97 @@ const DealerRegistration = () => {
     description: "",
     website: "",
     monthlyInventory: "",
+    idCardNumber: "",
   });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleIdCardUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please upload a valid ID card (JPG, PNG, or PDF)");
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+      
+      setIdCardFile(file);
+      toast.success("ID card uploaded successfully");
+    }
+  };
 
+  const initiateFlutterwavePayment = () => {
+    setIsProcessingPayment(true);
+    
+    // Flutterwave payment configuration
+    const paymentData = {
+      public_key: "FLWPUBK_TEST-your-public-key-here", // Replace with your actual public key
+      tx_ref: `dealer_reg_${Date.now()}`,
+      amount: 150000,
+      currency: "NGN",
+      payment_options: "card,mobilemoney,ussd,banktransfer",
+      customer: {
+        email: formData.email,
+        phone_number: formData.phone,
+        name: formData.contactName,
+      },
+      customizations: {
+        title: "Dealer Registration Fee",
+        description: "Annual dealer registration and verification fee",
+        logo: "",
+      },
+      callback: (response: any) => {
+        console.log("Payment response:", response);
+        if (response.status === "successful") {
+          handleRegistrationSubmission(response.transaction_id);
+        } else {
+          toast.error("Payment failed. Please try again.");
+          setIsProcessingPayment(false);
+        }
+      },
+      onclose: () => {
+        toast.info("Payment window closed");
+        setIsProcessingPayment(false);
+      },
+    };
+
+    // Initialize Flutterwave payment
+    // @ts-ignore
+    window.FlutterwaveCheckout(paymentData);
+  };
+
+  const handleRegistrationSubmission = async (transactionId?: string) => {
     try {
+      const registrationData = {
+        business_name: formData.businessName,
+        contact_name: formData.contactName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        state: formData.state,
+        year_established: formData.yearEstablished,
+        cac_number: formData.cacNumber,
+        tax_id: formData.taxId || null,
+        description: formData.description,
+        website: formData.website || null,
+        monthly_inventory: formData.monthlyInventory,
+        id_card_number: formData.idCardNumber,
+        payment_reference: transactionId || null,
+        payment_status: transactionId ? 'completed' : 'pending',
+      };
+
       const { error } = await supabase
         .from('dealers')
-        .insert({
-          business_name: formData.businessName,
-          contact_name: formData.contactName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          state: formData.state,
-          year_established: formData.yearEstablished,
-          cac_number: formData.cacNumber,
-          tax_id: formData.taxId || null,
-          description: formData.description,
-          website: formData.website || null,
-          monthly_inventory: formData.monthlyInventory,
-        });
+        .insert(registrationData);
 
       if (error) {
         console.error('Registration error:', error);
@@ -74,11 +140,43 @@ const DealerRegistration = () => {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
+      setIsProcessingPayment(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.idCardNumber) {
+      toast.error("Please enter your ID card number");
+      return;
+    }
+    
+    if (!idCardFile) {
+      toast.error("Please upload your ID card");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    // Check if Flutterwave is loaded
+    // @ts-ignore
+    if (typeof window.FlutterwaveCheckout === 'undefined') {
+      toast.error("Payment system not loaded. Please refresh the page.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Initiate payment
+    initiateFlutterwavePayment();
   };
 
   return (
     <>
+      {/* Flutterwave Script */}
+      <script src="https://checkout.flutterwave.com/v3.js"></script>
+      
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-4xl mx-auto">
@@ -103,6 +201,50 @@ const DealerRegistration = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* ID Card Verification Section */}
+                <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center">
+                    <IdCard className="w-5 h-5 mr-2" />
+                    ID Card Verification
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="idCardNumber">ID Card Number *</Label>
+                      <Input 
+                        id="idCardNumber" 
+                        placeholder="Enter your National ID, Driver's License, or Passport number" 
+                        required 
+                        value={formData.idCardNumber}
+                        onChange={(e) => handleInputChange('idCardNumber', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="idCardUpload">Upload ID Card *</Label>
+                      <div className="relative">
+                        <Input 
+                          id="idCardUpload" 
+                          type="file" 
+                          accept=".pdf,.jpg,.jpeg,.png" 
+                          required
+                          onChange={handleIdCardUpload}
+                          className="cursor-pointer"
+                        />
+                        <Upload className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Upload clear image/scan of your National ID, Driver's License, or International Passport (PDF, JPG, PNG - Max 5MB)
+                      </p>
+                      {idCardFile && (
+                        <p className="text-sm text-green-600 mt-1">
+                          ✓ {idCardFile.name} uploaded successfully
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Existing form fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="businessName">Business Name *</Label>
@@ -260,17 +402,32 @@ const DealerRegistration = () => {
                   </Label>
                 </div>
 
+                {/* Payment Section */}
                 <div className="border-t pt-6">
+                  <div className="p-6 bg-green-50 rounded-lg border border-green-200 mb-6">
+                    <h3 className="text-lg font-bold text-green-700 mb-2">Secure Payment via Flutterwave</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Your payment is processed securely through Flutterwave. We accept all major payment methods.
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm">
+                      <span>✓ Card Payments</span>
+                      <span>✓ Bank Transfer</span>
+                      <span>✓ Mobile Money</span>
+                      <span>✓ USSD</span>
+                    </div>
+                  </div>
+                  
                   <div className="text-center mb-4">
                     <p className="text-lg font-semibold">Total: ₦150,000/year</p>
-                    <p className="text-sm text-gray-600">Payment will be processed after verification</p>
+                    <p className="text-sm text-gray-600">Secure payment processed via Flutterwave</p>
                   </div>
+                  
                   <Button 
                     type="submit" 
                     className="w-full bg-red-600 hover:bg-red-700 py-3"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isProcessingPayment}
                   >
-                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                    {isProcessingPayment ? "Processing Payment..." : isSubmitting ? "Submitting..." : "Pay ₦150,000 & Submit Application"}
                   </Button>
                 </div>
               </form>
