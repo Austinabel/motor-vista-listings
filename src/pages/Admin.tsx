@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +35,23 @@ const Admin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("cars");
 
+  // Move all useState hooks to the top before any conditional logic
+  const [newCarData, setNewCarData] = useState({
+    make: "",
+    model: "",
+    year: "",
+    mileage: "",
+    price: "",
+    condition: "",
+    fuelType: "",
+    transmission: "",
+    color: "",
+    location: "",
+    description: "",
+    features: [] as string[],
+    images: [] as File[],
+  });
+
   useEffect(() => {
     if (!loading && !user) {
       navigate("/admin/login");
@@ -64,22 +80,6 @@ const Admin = () => {
   if (!user) {
     return null; // Will redirect in useEffect
   }
-
-  const [newCarData, setNewCarData] = useState({
-    make: "",
-    model: "",
-    year: "",
-    mileage: "",
-    price: "",
-    condition: "",
-    fuelType: "",
-    transmission: "",
-    color: "",
-    location: "",
-    description: "",
-    features: [] as string[],
-    images: [] as File[],
-  });
 
   const carFeatures = [
     "Air Conditioning", "Power Steering", "Central Locking", "Electric Windows",
