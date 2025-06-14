@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const allCars = [
   {
@@ -207,11 +208,19 @@ export const FeaturedListings = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-3xl font-bold text-white">Featured Listings</h2>
-          <Button variant="outline" className="border-white text-white hover:bg-white hover:text-red-600">View All</Button>
+          <Link to="/cars">
+            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-red-600">
+              View All
+            </Button>
+          </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {displayedCars.map((car) => (
-            <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+          {displayedCars.map((car, index) => (
+            <Card 
+              key={car.id} 
+              className="overflow-hidden hover:shadow-lg transition-all duration-500 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <div className="relative">
                 <img src={car.image} alt={car.title} className="w-full h-32 object-cover" />
                 <Button size="sm" variant="secondary" className="absolute top-1 right-1 p-1">
@@ -228,25 +237,37 @@ export const FeaturedListings = () => {
                 </div>
               </CardContent>
               <CardFooter className="p-3 pt-0">
-                <Button className="w-full text-xs py-1">
-                  <Eye className="mr-1 h-3 w-3" />
-                  View Details
-                </Button>
+                <Link to={`/cars/${car.id}`} className="w-full">
+                  <Button className="w-full text-xs py-1">
+                    <Eye className="mr-1 h-3 w-3" />
+                    View Details
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}
         </div>
         
-        {/* Load More / View Listings Button */}
+        {/* Load More Button */}
         <div className="flex justify-center mt-12">
-          <Button 
-            onClick={handleLoadMore}
-            variant="outline" 
-            className="border-white text-white hover:bg-white hover:text-red-600 px-8 py-3"
-            disabled={!canLoadMore && !isViewListings}
-          >
-            {isViewListings ? 'View All Listings' : 'Load More'}
-          </Button>
+          {canLoadMore ? (
+            <Button 
+              onClick={handleLoadMore}
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-red-600 px-8 py-3"
+            >
+              Load More
+            </Button>
+          ) : (
+            <Link to="/cars">
+              <Button 
+                variant="outline" 
+                className="border-white text-white hover:bg-white hover:text-red-600 px-8 py-3"
+              >
+                View All Listings
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </section>

@@ -3,20 +3,21 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 
 const brands = [
-  { name: "Toyota", logo: "🚗" },
-  { name: "Honda", logo: "🚙" },
-  { name: "Mercedes", logo: "🚐" },
-  { name: "BMW", logo: "🚕" },
-  { name: "Audi", logo: "🚘" },
-  { name: "Lexus", logo: "🚗" },
-  { name: "Nissan", logo: "🚙" },
-  { name: "Hyundai", logo: "🚐" },
-  { name: "Ford", logo: "🚗" },
-  { name: "Volkswagen", logo: "🚙" },
-  { name: "Peugeot", logo: "🚐" },
-  { name: "Kia", logo: "🚕" },
+  { name: "Toyota", logo: "🚗", category: "toyota" },
+  { name: "Honda", logo: "🚙", category: "honda" },
+  { name: "Mercedes", logo: "🚐", category: "mercedes-benz" },
+  { name: "BMW", logo: "🚕", category: "bmw" },
+  { name: "Audi", logo: "🚘", category: "audi" },
+  { name: "Lexus", logo: "🚗", category: "lexus" },
+  { name: "Nissan", logo: "🚙", category: "nissan" },
+  { name: "Hyundai", logo: "🚐", category: "hyundai" },
+  { name: "Ford", logo: "🚗", category: "ford" },
+  { name: "Volkswagen", logo: "🚙", category: "volkswagen" },
+  { name: "Peugeot", logo: "🚐", category: "peugeot" },
+  { name: "Kia", logo: "🚕", category: "kia" },
 ];
 
 export const BrandCarousel = () => {
@@ -56,10 +57,12 @@ export const BrandCarousel = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {brands.map((brand) => (
-              <Card key={brand.name} className="p-6 text-center hover:shadow-lg transition-shadow cursor-pointer flex-shrink-0 min-w-[140px]">
-                <div className="text-4xl mb-2">{brand.logo}</div>
-                <h3 className="font-semibold">{brand.name}</h3>
-              </Card>
+              <Link key={brand.name} to={`/cars?category=${brand.category}`}>
+                <Card className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer flex-shrink-0 min-w-[140px]">
+                  <div className="text-4xl mb-2">{brand.logo}</div>
+                  <h3 className="font-semibold">{brand.name}</h3>
+                </Card>
+              </Link>
             ))}
           </div>
           

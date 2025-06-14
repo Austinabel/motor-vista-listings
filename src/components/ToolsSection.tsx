@@ -2,6 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calculator, Shield, CreditCard } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const tools = [
   {
@@ -9,18 +10,21 @@ const tools = [
     title: "Car Valuation",
     description: "Get instant market value for your vehicle",
     color: "bg-blue-600",
+    link: "/car-valuation",
   },
   {
     icon: Shield,
     title: "Insurance",
     description: "Compare and get the best insurance deals",
     color: "bg-green-600",
+    link: "/insurance",
   },
   {
     icon: CreditCard,
     title: "Finance",
     description: "Easy car financing options available",
     color: "bg-purple-600",
+    link: "/financing",
   },
 ];
 
@@ -38,7 +42,9 @@ export const ToolsSection = () => {
                 </div>
                 <h3 className="font-bold text-xl mb-2">{tool.title}</h3>
                 <p className="text-gray-600 mb-6">{tool.description}</p>
-                <Button variant="outline">Learn More</Button>
+                <Link to={tool.link}>
+                  <Button variant="outline">Learn More</Button>
+                </Link>
               </CardContent>
             </Card>
           ))}

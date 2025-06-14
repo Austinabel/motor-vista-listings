@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Car, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 import Squares from "./Squares";
 
 export const Hero = () => {
@@ -28,14 +29,18 @@ export const Hero = () => {
               Find your perfect car from verified dealers across Nigeria
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-white text-red-600 hover:bg-gray-100">
-                <Search className="mr-2 h-5 w-5" />
-                Browse Cars
-              </Button>
-              <Button size="lg" className="bg-yellow-500 text-white hover:bg-yellow-600 border-yellow-500">
-                <Car className="mr-2 h-5 w-5" />
-                Sell Your Car
-              </Button>
+              <Link to="/cars">
+                <Button size="lg" className="bg-white text-red-600 hover:bg-gray-100">
+                  <Search className="mr-2 h-5 w-5" />
+                  Browse Cars
+                </Button>
+              </Link>
+              <Link to="/sell">
+                <Button size="lg" className="bg-yellow-500 text-white hover:bg-yellow-600 border-yellow-500">
+                  <Car className="mr-2 h-5 w-5" />
+                  Sell Your Car
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="lg:w-1/2">

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +22,9 @@ import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import CarValuation from "./pages/CarValuation";
+import Insurance from "./pages/Insurance";
+import Financing from "./pages/Financing";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +54,9 @@ const AppContent = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/car-valuation" element={<CarValuation />} />
+          <Route path="/insurance" element={<Insurance />} />
+          <Route path="/financing" element={<Financing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

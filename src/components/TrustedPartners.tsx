@@ -16,7 +16,11 @@ export const TrustedPartners = () => {
         <h2 className="text-2xl font-bold text-center mb-12">Trusted by Leading Partners</h2>
         <div className="flex flex-wrap justify-center items-center gap-8">
           {partners.map((partner, index) => (
-            <Card key={index} className="p-6 flex items-center justify-center min-w-[120px]">
+            <Card 
+              key={index} 
+              className="p-6 flex items-center justify-center min-w-[120px] hover:shadow-lg transition-all duration-300 hover:scale-110 animate-fade-in"
+              style={{ animationDelay: `${index * 0.2}s` }}
+            >
               <div className="text-3xl">{partner.logo}</div>
             </Card>
           ))}
