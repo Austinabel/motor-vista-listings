@@ -53,14 +53,11 @@ CREATE POLICY "Users can update their own listings"
   FOR UPDATE 
   USING (auth.uid() = user_id);
 
+-- Fixed admin policy - use auth.jwt() to access user metadata
 CREATE POLICY "Admins can update any listing" 
   ON public.car_listings 
   FOR UPDATE 
-  USING (EXISTS (
-    SELECT 1 FROM auth.users 
-    WHERE id = auth.uid() 
-    AND raw_user_meta_data->>'user_type' = 'admin'
-  ));
+  USING ((auth.jwt() ->> 'user_metadata')::jsonb ->> 'user_type' = 'admin');
 
 -- RLS policies for car listing images
 CREATE POLICY "Users can view images for accessible listings" 

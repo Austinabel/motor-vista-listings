@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,6 +87,8 @@ const Admin = () => {
 
   const updateListingStatus = async (listingId: string, newStatus: string) => {
     try {
+      console.log('Updating listing status:', { listingId, newStatus });
+      
       const { error } = await supabase
         .from('car_listings')
         .update({ 
@@ -98,7 +99,7 @@ const Admin = () => {
 
       if (error) {
         console.error('Error updating listing status:', error);
-        toast.error('Failed to update listing status');
+        toast.error(`Failed to update listing status: ${error.message}`);
       } else {
         toast.success(`Listing ${newStatus} successfully`);
         fetchCarListings();
@@ -272,23 +273,23 @@ const Admin = () => {
                         <h4 className="font-semibold text-lg border-b pb-2">Basic Information</h4>
                         <div className="space-y-2">
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Make & Model:</span>
+                            <Label className="text-sm font-medium text-gray-600">Make & Model:</Label>
                             <p className="text-sm">{selectedListing.make} {selectedListing.model}</p>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Year:</span>
+                            <Label className="text-sm font-medium text-gray-600">Year:</Label>
                             <p className="text-sm">{selectedListing.year}</p>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Price:</span>
+                            <Label className="text-sm font-medium text-gray-600">Price:</Label>
                             <p className="text-sm font-semibold">₦{selectedListing.price.toLocaleString()}</p>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Condition:</span>
+                            <Label className="text-sm font-medium text-gray-600">Condition:</Label>
                             <p className="text-sm">{selectedListing.condition}</p>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Location:</span>
+                            <Label className="text-sm font-medium text-gray-600">Location:</Label>
                             <p className="text-sm">{selectedListing.location}</p>
                           </div>
                         </div>
@@ -300,25 +301,25 @@ const Admin = () => {
                         <div className="space-y-2">
                           {selectedListing.mileage && (
                             <div>
-                              <span className="text-sm font-medium text-gray-600">Mileage:</span>
+                              <Label className="text-sm font-medium text-gray-600">Mileage:</Label>
                               <p className="text-sm">{selectedListing.mileage} km</p>
                             </div>
                           )}
                           {selectedListing.fuel_type && (
                             <div>
-                              <span className="text-sm font-medium text-gray-600">Fuel Type:</span>
+                              <Label className="text-sm font-medium text-gray-600">Fuel Type:</Label>
                               <p className="text-sm">{selectedListing.fuel_type}</p>
                             </div>
                           )}
                           {selectedListing.transmission && (
                             <div>
-                              <span className="text-sm font-medium text-gray-600">Transmission:</span>
+                              <Label className="text-sm font-medium text-gray-600">Transmission:</Label>
                               <p className="text-sm">{selectedListing.transmission}</p>
                             </div>
                           )}
                           {selectedListing.color && (
                             <div>
-                              <span className="text-sm font-medium text-gray-600">Color:</span>
+                              <Label className="text-sm font-medium text-gray-600">Color:</Label>
                               <p className="text-sm">{selectedListing.color}</p>
                             </div>
                           )}
@@ -330,23 +331,23 @@ const Admin = () => {
                         <h4 className="font-semibold text-lg border-b pb-2">Listing Information</h4>
                         <div className="space-y-2">
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Plan:</span>
+                            <Label className="text-sm font-medium text-gray-600">Plan:</Label>
                             <div>{getPlanBadge(selectedListing.listing_plan)}</div>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Listing Fee:</span>
+                            <Label className="text-sm font-medium text-gray-600">Listing Fee:</Label>
                             <p className="text-sm">₦{selectedListing.listing_price.toLocaleString()}</p>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Duration:</span>
+                            <Label className="text-sm font-medium text-gray-600">Duration:</Label>
                             <p className="text-sm">{selectedListing.listing_duration} days</p>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Expires:</span>
+                            <Label className="text-sm font-medium text-gray-600">Expires:</Label>
                             <p className="text-sm">{new Date(selectedListing.expires_at).toLocaleDateString()}</p>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Status:</span>
+                            <Label className="text-sm font-medium text-gray-600">Status:</Label>
                             <div>{getStatusBadge(selectedListing.status)}</div>
                           </div>
                         </div>

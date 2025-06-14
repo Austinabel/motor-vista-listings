@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Check, Upload, Car, Star, Crown } from "lucide-react";
+import { Check, Upload, Car, Star, Crown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,7 @@ const SellYourCar = () => {
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [loading, setLoading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -30,7 +31,6 @@ const SellYourCar = () => {
     location: "",
     description: "",
     features: [] as string[],
-    images: [] as File[],
   });
 
   const pricingPlans = [
@@ -105,6 +105,47 @@ const SellYourCar = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const maxImages = selectedPlan === "free" ? 5 : selectedPlan === "standard" ? 15 : 50;
+    
+    if (files.length > maxImages) {
+      toast.error(`Maximum ${maxImages} images allowed for ${selectedPlan} plan`);
+      return;
+    }
+    
+    setSelectedImages(files);
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async (listingId: string) => {
+    if (selectedImages.length === 0) return;
+
+    const uploadPromises = selectedImages.map(async (file, index) => {
+      // For now, we'll just store a placeholder URL since we don't have storage bucket set up
+      // In a real implementation, you'd upload to Supabase Storage first
+      const imageUrl = `placeholder-image-${index + 1}.jpg`;
+      
+      const { error } = await supabase
+        .from('car_listing_images')
+        .insert({
+          listing_id: listingId,
+          image_url: imageUrl,
+          is_primary: index === 0
+        });
+
+      if (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+      }
+    });
+
+    await Promise.all(uploadPromises);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -160,6 +201,11 @@ const SellYourCar = () => {
         console.error('Listing error:', listingError);
         toast.error("Failed to create listing. Please try again.");
         return;
+      }
+
+      // Upload images
+      if (selectedImages.length > 0) {
+        await uploadImages(listing.id);
       }
 
       if (selectedPlan === "free") {
@@ -401,14 +447,45 @@ const SellYourCar = () => {
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                       <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                       <p className="text-gray-600 mb-2">Drag and drop images here, or click to browse</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 mb-4">
                         {selectedPlan === "free" ? "Up to 5 images" : 
                          selectedPlan === "standard" ? "Up to 15 images" : "Unlimited images"}
                       </p>
-                      <Button type="button" variant="outline" className="mt-2">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <Button type="button" variant="outline" onClick={() => document.getElementById('image-upload')?.click()}>
                         Choose Files
                       </Button>
                     </div>
+                    
+                    {/* Display selected images */}
+                    {selectedImages.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-sm text-gray-600 mb-2">{selectedImages.length} image(s) selected:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedImages.map((file, index) => (
+                            <div key={index} className="relative">
+                              <Badge variant="secondary" className="pr-6">
+                                {file.name}
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="absolute right-1 top-1/2 transform -translate-y-1/2"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Submit Button */}
