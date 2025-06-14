@@ -6,19 +6,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Shield } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle admin login logic here
-    console.log("Admin login attempt:", { email, password });
-    // For now, redirect to admin dashboard on any login attempt
-    navigate("/admin");
+    setLoading(true);
+
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Admin login successful!");
+        navigate("/admin");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -86,13 +102,17 @@ const AdminLogin = () => {
                     Remember me
                   </Label>
                 </div>
-                <Link to="/admin/forgot-password" className="text-sm text-red-400 hover:underline">
+                <Link to="/forgot-password" className="text-sm text-red-400 hover:underline">
                   Forgot password?
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-                Sign In to Admin Panel
+              <Button 
+                type="submit" 
+                className="w-full bg-red-600 hover:bg-red-700"
+                disabled={loading}
+              >
+                {loading ? "Signing In..." : "Sign In to Admin Panel"}
               </Button>
             </form>
 

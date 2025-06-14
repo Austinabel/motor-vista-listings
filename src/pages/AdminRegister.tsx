@@ -6,11 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff, Shield } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const AdminRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+  
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -30,14 +36,38 @@ const AdminRegister = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
-    // Handle admin registration logic here
-    console.log("Admin registration request:", formData);
+
+    setLoading(true);
+
+    try {
+      const { error } = await signUp(formData.email, formData.password, {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
+        user_type: 'admin',
+        department: formData.department,
+        access_level: formData.accessLevel,
+        access_reason: formData.reason
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Admin registration request submitted! Please check your email for verification.");
+        navigate("/admin/login");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -216,8 +246,12 @@ const AdminRegister = () => {
                 </Label>
               </div>
 
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-                Submit Access Request
+              <Button 
+                type="submit" 
+                className="w-full bg-red-600 hover:bg-red-700"
+                disabled={loading}
+              >
+                {loading ? "Submitting Request..." : "Submit Access Request"}
               </Button>
             </form>
 

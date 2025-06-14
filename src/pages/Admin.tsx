@@ -1,5 +1,6 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +13,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   Car, Users, Building2, Star, Edit, Trash2, Eye, 
-  CheckCircle, XCircle, Upload, Plus, Search
+  CheckCircle, XCircle, Upload, Plus, Search, LogOut
 } from "lucide-react";
+import { toast } from "sonner";
 
 const Admin = () => {
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/admin/login");
+    }
+  }, [user, loading, navigate]);
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast.error("Error signing out");
+    } else {
+      toast.success("Signed out successfully");
+      navigate("/admin/login");
+    }
+  };
+
+  // Show loading or redirect if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect in useEffect
+  }
+
   const [newCarData, setNewCarData] = useState({
     make: "",
     model: "",
@@ -86,9 +120,19 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage cars, users, dealers, and featured listings</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold mb-4">Admin Dashboard</h1>
+            <p className="text-gray-600">Manage cars, users, dealers, and featured listings</p>
+          </div>
+          <Button 
+            onClick={handleSignOut}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
         </div>
 
         <Tabs defaultValue="cars" className="space-y-6">
