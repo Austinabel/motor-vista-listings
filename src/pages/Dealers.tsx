@@ -61,19 +61,140 @@ const dealers = [
     image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=300&h=200&fit=crop",
     verified: true,
   },
+  {
+    id: 5,
+    name: "Metro Car Sales",
+    location: "Surulere, Lagos",
+    state: "Lagos",
+    phone: "+234 805 678 9012",
+    email: "info@metro.ng",
+    rating: 4.5,
+    totalCars: 25,
+    established: "2019",
+    image: "https://images.unsplash.com/photo-1517524206127-6d22353d8482?w=300&h=200&fit=crop",
+    verified: true,
+  },
+  {
+    id: 6,
+    name: "Crown Motors",
+    location: "Kaduna",
+    state: "Kaduna",
+    phone: "+234 806 789 0123",
+    email: "info@crown.ng",
+    rating: 4.8,
+    totalCars: 31,
+    established: "2016",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop",
+    verified: true,
+  },
+  {
+    id: 7,
+    name: "Diamond Auto",
+    location: "Enugu",
+    state: "Enugu",
+    phone: "+234 807 890 1234",
+    email: "info@diamond.ng",
+    rating: 4.7,
+    totalCars: 22,
+    established: "2018",
+    image: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=300&h=200&fit=crop",
+    verified: true,
+  },
+  {
+    id: 8,
+    name: "Golden Gate Motors",
+    location: "Ilorin",
+    state: "Kwara",
+    phone: "+234 808 901 2345",
+    email: "info@golden.ng",
+    rating: 4.6,
+    totalCars: 29,
+    established: "2017",
+    image: "https://images.unsplash.com/photo-1549924231-f129b911e442?w=300&h=200&fit=crop",
+    verified: true,
+  },
+  {
+    id: 9,
+    name: "Apex Auto Sales",
+    location: "Onitsha, Anambra",
+    state: "Anambra",
+    phone: "+234 809 012 3456",
+    email: "info@apex.ng",
+    rating: 4.4,
+    totalCars: 33,
+    established: "2020",
+    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
+    verified: true,
+  },
+  {
+    id: 10,
+    name: "Star Motors",
+    location: "Benin City, Edo",
+    state: "Edo",
+    phone: "+234 810 123 4567",
+    email: "info@star.ng",
+    rating: 4.5,
+    totalCars: 27,
+    established: "2019",
+    image: "https://images.unsplash.com/photo-1562141961-f1e70c7d2ac6?w=300&h=200&fit=crop",
+    verified: true,
+  },
+  {
+    id: 11,
+    name: "Unity Car Mart",
+    location: "Warri, Delta",
+    state: "Delta",
+    phone: "+234 811 234 5678",
+    email: "info@unity.ng",
+    rating: 4.3,
+    totalCars: 24,
+    established: "2021",
+    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop",
+    verified: true,
+  },
+  {
+    id: 12,
+    name: "Excellence Motors",
+    location: "Owerri, Imo",
+    state: "Imo",
+    phone: "+234 812 345 6789",
+    email: "info@excellence.ng",
+    rating: 4.6,
+    totalCars: 30,
+    established: "2018",
+    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=300&h=200&fit=crop",
+    verified: true,
+  },
 ];
 
 const states = [
-  "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo"
+  "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo", "Enugu", "Kwara"
 ];
+
+const DEALERS_PER_PAGE = 8;
 
 const Dealers = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedState, setSelectedState] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [displayedDealers, setDisplayedDealers] = useState(DEALERS_PER_PAGE);
 
   const filteredDealers = selectedState 
     ? dealers.filter(dealer => dealer.state === selectedState)
     : dealers;
+
+  const totalPages = Math.ceil(filteredDealers.length / DEALERS_PER_PAGE);
+  const paginatedDealers = filteredDealers.slice(0, displayedDealers);
+  const hasMore = displayedDealers < filteredDealers.length;
+
+  const handleLoadMore = () => {
+    setDisplayedDealers(prev => Math.min(prev + DEALERS_PER_PAGE, filteredDealers.length));
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setDisplayedDealers(page * DEALERS_PER_PAGE);
+  };
 
   return (
     <>
@@ -89,11 +210,6 @@ const Dealers = () => {
                 <Filter className="mr-2 h-4 w-4" />
                 Filters
               </Button>
-              <Link to="/dealer-registration">
-                <Button className="bg-red-600 hover:bg-red-700">
-                  Become a Dealer
-                </Button>
-              </Link>
             </div>
           </div>
 
@@ -135,7 +251,7 @@ const Dealers = () => {
 
             <div className="lg:w-3/4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {filteredDealers.map((dealer) => (
+                {paginatedDealers.map((dealer) => (
                   <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-200">
                     <div className="relative">
                       <img 
@@ -177,6 +293,34 @@ const Dealers = () => {
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+
+              {/* Pagination and Load More */}
+              <div className="mt-8 flex flex-col items-center gap-4">
+                {hasMore && (
+                  <Button 
+                    onClick={handleLoadMore}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Load More Dealers
+                  </Button>
+                )}
+                
+                {totalPages > 1 && (
+                  <div className="flex gap-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className={currentPage === page ? "bg-red-600 hover:bg-red-700" : ""}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ const cars = [
     transmission: "Automatic",
     year: 2020,
     type: "brand-new",
+    category: "toyota",
     image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
   },
   {
@@ -31,6 +33,7 @@ const cars = [
     transmission: "Automatic",
     year: 2019,
     type: "foreign-used",
+    category: "honda",
     image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
   },
   {
@@ -43,6 +46,7 @@ const cars = [
     transmission: "Automatic",
     year: 2021,
     type: "brand-new",
+    category: "mercedes-benz",
     image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
   },
   {
@@ -55,6 +59,7 @@ const cars = [
     transmission: "Automatic",
     year: 2018,
     type: "local-used",
+    category: "bmw",
     image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
   },
   {
@@ -67,6 +72,7 @@ const cars = [
     transmission: "Automatic",
     year: 2022,
     type: "foreign-used",
+    category: "toyota",
     image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
   },
   {
@@ -79,25 +85,192 @@ const cars = [
     transmission: "Manual",
     year: 2017,
     type: "local-used",
+    category: "hyundai",
     image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
+  },
+  {
+    id: 7,
+    title: "Tesla Model 3",
+    price: "₦35,000,000",
+    location: "Lagos, Nigeria",
+    mileage: "12,000 km",
+    fuel: "Electric",
+    transmission: "Automatic",
+    year: 2023,
+    type: "brand-new",
+    category: "electric-cars",
+    image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=250&fit=crop",
+  },
+  {
+    id: 8,
+    title: "Ford Explorer 2020",
+    price: "₦22,000,000",
+    location: "Abuja, Nigeria",
+    mileage: "35,000 km",
+    fuel: "Petrol",
+    transmission: "Automatic",
+    year: 2020,
+    type: "foreign-used",
+    category: "ford",
+    image: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=400&h=250&fit=crop",
+  },
+  {
+    id: 9,
+    title: "Lexus RX 350",
+    price: "₦32,500,000",
+    location: "Port Harcourt, Nigeria",
+    mileage: "28,000 km",
+    fuel: "Petrol",
+    transmission: "Automatic",
+    year: 2021,
+    type: "brand-new",
+    category: "lexus",
+    image: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=400&h=250&fit=crop",
+  },
+  {
+    id: 10,
+    title: "Acura MDX 2019",
+    price: "₦25,000,000",
+    location: "Lagos, Nigeria",
+    mileage: "42,000 km",
+    fuel: "Petrol",
+    transmission: "Automatic",
+    year: 2019,
+    type: "foreign-used",
+    category: "acura",
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=250&fit=crop",
+  },
+  {
+    id: 11,
+    title: "Innoson IVM G40",
+    price: "₦8,500,000",
+    location: "Nnewi, Nigeria",
+    mileage: "15,000 km",
+    fuel: "Petrol",
+    transmission: "Manual",
+    year: 2022,
+    type: "brand-new",
+    category: "innoson",
+    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
+  },
+  {
+    id: 12,
+    title: "Nissan Altima 2020",
+    price: "₦14,000,000",
+    location: "Kaduna, Nigeria",
+    mileage: "38,000 km",
+    fuel: "Petrol",
+    transmission: "Automatic",
+    year: 2020,
+    type: "foreign-used",
+    category: "nissan",
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=250&fit=crop",
+  },
+  {
+    id: 13,
+    title: "Bajaj Tricycle RE",
+    price: "₦1,800,000",
+    location: "Kano, Nigeria",
+    mileage: "5,000 km",
+    fuel: "Petrol",
+    transmission: "Manual",
+    year: 2023,
+    type: "brand-new",
+    category: "tricycles",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
+  },
+  {
+    id: 14,
+    title: "Honda CBR 600",
+    price: "₦3,200,000",
+    location: "Lagos, Nigeria",
+    mileage: "8,000 km",
+    fuel: "Petrol",
+    transmission: "Manual",
+    year: 2022,
+    type: "foreign-used",
+    category: "motorbikes",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
+  },
+  {
+    id: 15,
+    title: "MAN Truck TGS",
+    price: "₦45,000,000",
+    location: "Lagos, Nigeria",
+    mileage: "120,000 km",
+    fuel: "Diesel",
+    transmission: "Manual",
+    year: 2019,
+    type: "foreign-used",
+    category: "trucks",
+    image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&h=250&fit=crop",
+  },
+  {
+    id: 16,
+    title: "Toyota Hiace Bus",
+    price: "₦18,500,000",
+    location: "Abuja, Nigeria",
+    mileage: "65,000 km",
+    fuel: "Petrol",
+    transmission: "Manual",
+    year: 2020,
+    type: "foreign-used",
+    category: "buses-shuttles",
+    image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&h=250&fit=crop",
   },
 ];
 
-const popularBrands = [
-  "Toyota", "Honda", "Mercedes", "BMW", "Hyundai", "Nissan", "Lexus", "Volkswagen"
+const categories = [
+  { id: "electric-cars", name: "Electric Cars", logo: "⚡" },
+  { id: "tricycles", name: "Tricycles", logo: "🛺" },
+  { id: "trucks", name: "Trucks", logo: "🚛" },
+  { id: "motorbikes", name: "Motorbikes", logo: "🏍️" },
+  { id: "buses-shuttles", name: "Buses & Shuttles", logo: "🚌" },
+  { id: "toyota", name: "Toyota", logo: "🚗" },
+  { id: "ford", name: "Ford", logo: "🚙" },
+  { id: "honda", name: "Honda", logo: "🚗" },
+  { id: "lexus", name: "Lexus", logo: "🚗" },
+  { id: "mercedes-benz", name: "Mercedes Benz", logo: "🚗" },
+  { id: "bmw", name: "BMW", logo: "🚗" },
+  { id: "acura", name: "Acura", logo: "🚗" },
+  { id: "innoson", name: "Innoson", logo: "🚗" },
+  { id: "nissan", name: "Nissan", logo: "🚗" },
 ];
+
+const CARS_PER_PAGE = 8;
 
 const CarListings = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTab, setSelectedTab] = useState("all");
-  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [displayedCars, setDisplayedCars] = useState(CARS_PER_PAGE);
 
   const filterCarsByType = (type: string) => {
     if (type === "all") return cars;
     return cars.filter(car => car.type === type);
   };
 
-  const filteredCars = filterCarsByType(selectedTab);
+  const filterCarsByCategory = (cars: any[], category: string) => {
+    if (!category) return cars;
+    return cars.filter(car => car.category === category);
+  };
+
+  let filteredCars = filterCarsByType(selectedTab);
+  filteredCars = filterCarsByCategory(filteredCars, selectedCategory);
+
+  const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
+  const paginatedCars = filteredCars.slice(0, displayedCars);
+  const hasMore = displayedCars < filteredCars.length;
+
+  const handleLoadMore = () => {
+    setDisplayedCars(prev => Math.min(prev + CARS_PER_PAGE, filteredCars.length));
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setDisplayedCars(page * CARS_PER_PAGE);
+  };
 
   return (
     <>
@@ -123,17 +296,26 @@ const CarListings = () => {
             </TabsList>
 
             <div className="mb-8 mt-6">
-              <h3 className="text-lg font-semibold mb-4">Popular Brands</h3>
+              <h3 className="text-lg font-semibold mb-4">Categories</h3>
               <div className="flex flex-wrap gap-3">
-                {popularBrands.map((brand) => (
+                <Button
+                  variant={selectedCategory === "" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setSelectedCategory("")}
+                >
+                  All Categories
+                </Button>
+                {categories.map((category) => (
                   <Button
-                    key={brand}
-                    variant={selectedBrand === brand ? "default" : "outline"}
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "outline"}
                     size="sm"
-                    className="rounded-full"
-                    onClick={() => setSelectedBrand(selectedBrand === brand ? "" : brand)}
+                    className="rounded-full flex items-center gap-2"
+                    onClick={() => setSelectedCategory(selectedCategory === category.id ? "" : category.id)}
                   >
-                    {brand}
+                    <span className="text-xs">{category.logo}</span>
+                    {category.name}
                   </Button>
                 ))}
               </div>
@@ -195,10 +377,9 @@ const CarListings = () => {
                 </Card>
               </div>
 
-              {/* Car Grid - Updated for smaller columns */}
               <div className="lg:w-3/4">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                  {filteredCars.map((car) => (
+                  {paginatedCars.map((car) => (
                     <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
                       <div className="relative">
                         <img src={car.image} alt={car.title} className="w-full h-40 object-cover" />
@@ -231,6 +412,34 @@ const CarListings = () => {
                       </CardFooter>
                     </Card>
                   ))}
+                </div>
+
+                {/* Pagination and Load More */}
+                <div className="mt-8 flex flex-col items-center gap-4">
+                  {hasMore && (
+                    <Button 
+                      onClick={handleLoadMore}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Load More Cars
+                    </Button>
+                  )}
+                  
+                  {totalPages > 1 && (
+                    <div className="flex gap-2">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className={currentPage === page ? "bg-red-600 hover:bg-red-700" : ""}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
