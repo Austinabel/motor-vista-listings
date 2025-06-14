@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { IdCard, Upload } from "lucide-react";
+import { IdCard, Upload, Copy, CreditCard } from "lucide-react";
 
 const states = [
   "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo"
@@ -25,8 +26,8 @@ const idCardTypes = [
 const DealerRegistration = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [idCardFile, setIdCardFile] = useState<File | null>(null);
+  const [paymentReference, setPaymentReference] = useState("");
   const [formData, setFormData] = useState({
     businessName: "",
     contactName: "",
@@ -69,47 +70,12 @@ const DealerRegistration = () => {
     }
   };
 
-  const initiateFlutterwavePayment = () => {
-    setIsProcessingPayment(true);
-    
-    // Flutterwave payment configuration
-    const paymentData = {
-      public_key: "FLWPUBK_TEST-your-public-key-here", // Replace with your actual public key
-      tx_ref: `dealer_reg_${Date.now()}`,
-      amount: 35000,
-      currency: "NGN",
-      payment_options: "card,mobilemoney,ussd,banktransfer",
-      customer: {
-        email: formData.email,
-        phone_number: formData.phone,
-        name: formData.contactName,
-      },
-      customizations: {
-        title: "Dealer Registration Fee",
-        description: "Annual dealer registration and verification fee",
-        logo: "",
-      },
-      callback: (response: any) => {
-        console.log("Payment response:", response);
-        if (response.status === "successful") {
-          handleRegistrationSubmission(response.transaction_id);
-        } else {
-          toast.error("Payment failed. Please try again.");
-          setIsProcessingPayment(false);
-        }
-      },
-      onclose: () => {
-        toast.info("Payment window closed");
-        setIsProcessingPayment(false);
-      },
-    };
-
-    // Initialize Flutterwave payment
-    // @ts-ignore
-    window.FlutterwaveCheckout(paymentData);
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard`);
   };
 
-  const handleRegistrationSubmission = async (transactionId?: string) => {
+  const handleRegistrationSubmission = async () => {
     try {
       const registrationData = {
         business_name: formData.businessName,
@@ -125,8 +91,8 @@ const DealerRegistration = () => {
         website: formData.website || null,
         monthly_inventory: formData.monthlyInventory,
         id_card_number: formData.idCardNumber,
-        payment_reference: transactionId || null,
-        payment_status: transactionId ? 'completed' : 'pending',
+        payment_reference: paymentReference || null,
+        payment_status: 'pending',
       };
 
       const { error } = await supabase
@@ -141,7 +107,7 @@ const DealerRegistration = () => {
           toast.error("Registration failed. Please try again.");
         }
       } else {
-        toast.success("Registration submitted successfully! We'll review your application and contact you within 2-3 business days.");
+        toast.success("Registration submitted successfully! We'll review your payment and application within 2-3 business days.");
         navigate("/");
       }
     } catch (error) {
@@ -149,7 +115,6 @@ const DealerRegistration = () => {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
-      setIsProcessingPayment(false);
     }
   };
 
@@ -172,25 +137,17 @@ const DealerRegistration = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    
-    // Check if Flutterwave is loaded
-    // @ts-ignore
-    if (typeof window.FlutterwaveCheckout === 'undefined') {
-      toast.error("Payment system not loaded. Please refresh the page.");
-      setIsSubmitting(false);
+    if (!paymentReference.trim()) {
+      toast.error("Please enter your payment reference/transaction ID");
       return;
     }
 
-    // Initiate payment
-    initiateFlutterwavePayment();
+    setIsSubmitting(true);
+    await handleRegistrationSubmission();
   };
 
   return (
     <>
-      {/* Flutterwave Script */}
-      <script src="https://checkout.flutterwave.com/v3.js"></script>
-      
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-4xl mx-auto">
@@ -214,7 +171,93 @@ const DealerRegistration = () => {
                 </ul>
               </div>
 
+              {/* Payment Instructions */}
+              <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center">
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Payment Instructions
+                </h3>
+                <p className="text-sm text-gray-700 mb-4">
+                  Please transfer ₦35,000 to the account below and enter the transaction reference in the form:
+                </p>
+                <div className="bg-white p-4 rounded-lg border space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Bank Name:</span>
+                    <div className="flex items-center space-x-2">
+                      <span>Opay</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => copyToClipboard("Opay", "Bank name")}
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Account Number:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono">7066056267</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => copyToClipboard("7066056267", "Account number")}
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Account Name:</span>
+                    <div className="flex items-center space-x-2">
+                      <span>Motorcars</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => copyToClipboard("Motorcars", "Account name")}
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Amount:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-bold text-red-600">₦35,000</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => copyToClipboard("35000", "Amount")}
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 mt-3">
+                  After making the payment, please enter the transaction reference/ID in the form below.
+                </p>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Payment Reference Section */}
+                <div className="p-6 bg-green-50 rounded-lg border border-green-200">
+                  <h3 className="text-lg font-bold text-green-700 mb-4">Payment Confirmation</h3>
+                  <div>
+                    <Label htmlFor="paymentReference">Payment Reference/Transaction ID *</Label>
+                    <Input 
+                      id="paymentReference" 
+                      placeholder="Enter your payment reference or transaction ID" 
+                      required 
+                      value={paymentReference}
+                      onChange={(e) => setPaymentReference(e.target.value)}
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Enter the reference number you received after making the payment
+                    </p>
+                  </div>
+                </div>
+
                 {/* ID Card Verification Section */}
                 <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
                   <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center">
@@ -432,32 +475,18 @@ const DealerRegistration = () => {
                   </Label>
                 </div>
 
-                {/* Payment Section */}
                 <div className="border-t pt-6">
-                  <div className="p-6 bg-green-50 rounded-lg border border-green-200 mb-6">
-                    <h3 className="text-lg font-bold text-green-700 mb-2">Secure Payment via Flutterwave</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Your payment is processed securely through Flutterwave. We accept all major payment methods.
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm">
-                      <span>✓ Card Payments</span>
-                      <span>✓ Bank Transfer</span>
-                      <span>✓ Mobile Money</span>
-                      <span>✓ USSD</span>
-                    </div>
-                  </div>
-                  
                   <div className="text-center mb-4">
                     <p className="text-lg font-semibold">Total: ₦35,000/year</p>
-                    <p className="text-sm text-gray-600">Secure payment processed via Flutterwave</p>
+                    <p className="text-sm text-gray-600">Please complete payment before submitting</p>
                   </div>
                   
                   <Button 
                     type="submit" 
                     className="w-full bg-red-600 hover:bg-red-700 py-3"
-                    disabled={isSubmitting || isProcessingPayment}
+                    disabled={isSubmitting}
                   >
-                    {isProcessingPayment ? "Processing Payment..." : isSubmitting ? "Submitting..." : "Pay ₦35,000 & Submit Application"}
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
                   </Button>
                 </div>
               </form>
