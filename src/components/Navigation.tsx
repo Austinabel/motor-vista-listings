@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, User, ChevronDown } from "lucide-react";
@@ -61,47 +60,55 @@ export const Navigation = () => {
                   <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
-                {/* Dropdown Menu */}
-                <div className={`absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 transform ${
+                {/* Dropdown Menu with Columns */}
+                <div className={`absolute top-full left-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 transform ${
                   isDropdownOpen 
                     ? 'opacity-100 translate-y-0 visible' 
                     : 'opacity-0 -translate-y-2 invisible'
                 }`}>
                   <div className="py-2">
-                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Vehicle Types</div>
-                    {carCategories.map((category, index) => (
-                      <Link 
-                        key={index}
-                        to={category.link} 
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
-                      >
-                        {category.logo && (
-                          <span className="w-6 h-6 mr-3 flex items-center justify-center bg-gray-100 rounded-full text-xs">
-                            {category.logo}
-                          </span>
-                        )}
-                        {category.name}
-                      </Link>
-                    ))}
-                    
-                    <div className="border-t border-gray-100 px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Popular Brands</div>
-                    {carBrands.map((brand, index) => (
-                      <Link 
-                        key={index}
-                        to={brand.link} 
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
-                      >
-                        <span className="w-6 h-6 mr-3 flex items-center justify-center bg-gray-100 rounded-full text-xs">
-                          {brand.logo}
-                        </span>
-                        {brand.name}
-                      </Link>
-                    ))}
+                    <div className="flex">
+                      {/* Left Column - Vehicle Types */}
+                      <div className="flex-1 border-r border-gray-100">
+                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Vehicle Types</div>
+                        {carCategories.map((category, index) => (
+                          <Link 
+                            key={index}
+                            to={category.link} 
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                          >
+                            {category.logo && (
+                              <span className="w-6 h-6 mr-3 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                                {category.logo}
+                              </span>
+                            )}
+                            {category.name}
+                          </Link>
+                        ))}
+                      </div>
+                      
+                      {/* Right Column - Popular Brands */}
+                      <div className="flex-1">
+                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Popular Brands</div>
+                        {carBrands.map((brand, index) => (
+                          <Link 
+                            key={index}
+                            to={brand.link} 
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                          >
+                            <span className="w-6 h-6 mr-3 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                              {brand.logo}
+                            </span>
+                            {brand.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                     
                     <div className="border-t border-gray-100">
                       <Link 
                         to="/cars" 
-                        className="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium"
+                        className="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors font-medium text-center"
                       >
                         View All Listings
                       </Link>
