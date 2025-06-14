@@ -19,7 +19,11 @@ export type Database = {
           description: string
           email: string
           id: string
+          id_card_number: string | null
+          id_card_type: string | null
           monthly_inventory: string
+          payment_reference: string | null
+          payment_status: string | null
           phone: string
           state: string
           status: string
@@ -37,7 +41,11 @@ export type Database = {
           description: string
           email: string
           id?: string
+          id_card_number?: string | null
+          id_card_type?: string | null
           monthly_inventory: string
+          payment_reference?: string | null
+          payment_status?: string | null
           phone: string
           state: string
           status?: string
@@ -55,7 +63,11 @@ export type Database = {
           description?: string
           email?: string
           id?: string
+          id_card_number?: string | null
+          id_card_type?: string | null
           monthly_inventory?: string
+          payment_reference?: string | null
+          payment_status?: string | null
           phone?: string
           state?: string
           status?: string

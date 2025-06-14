@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,38 +74,68 @@ const DealerRegistration = () => {
     toast.success(`${label} copied to clipboard`);
   };
 
+  const getDetailedErrorMessage = (error: any) => {
+    if (error.code === '23505') {
+      // Unique constraint violation
+      const constraint = error.details || error.message || '';
+      
+      if (constraint.includes('dealers_email_unique')) {
+        return "This email address is already registered. Please use a different email address.";
+      } else if (constraint.includes('dealers_phone_unique')) {
+        return "This phone number is already registered. Please use a different phone number.";
+      } else if (constraint.includes('dealers_cac_number_unique')) {
+        return "This CAC registration number is already in our system. Please verify your CAC number or contact support.";
+      } else {
+        return "Some of the information you provided is already registered in our system. Please check your email, phone number, and CAC number.";
+      }
+    }
+    
+    // Other common error codes
+    switch (error.code) {
+      case '23502':
+        return "Please fill in all required fields.";
+      case '23514':
+        return "Please check that all values are in the correct format.";
+      default:
+        return "Registration failed. Please check your information and try again.";
+    }
+  };
+
   const handleRegistrationSubmission = async () => {
     try {
       const registrationData = {
         business_name: formData.businessName,
         contact_name: formData.contactName,
-        email: formData.email,
-        phone: formData.phone,
+        email: formData.email.toLowerCase().trim(),
+        phone: formData.phone.trim(),
         address: formData.address,
         state: formData.state,
         year_established: formData.yearEstablished,
-        cac_number: formData.cacNumber,
-        tax_id: formData.taxId || null,
+        cac_number: formData.cacNumber.toUpperCase().trim(),
+        tax_id: formData.taxId?.trim() || null,
         description: formData.description,
-        website: formData.website || null,
+        website: formData.website?.trim() || null,
         monthly_inventory: formData.monthlyInventory,
-        id_card_number: formData.idCardNumber,
-        payment_reference: paymentReference || null,
+        id_card_type: formData.idCardType,
+        id_card_number: formData.idCardNumber.trim(),
+        payment_reference: paymentReference.trim(),
         payment_status: 'pending',
+        status: 'pending'
       };
 
-      const { error } = await supabase
+      console.log('Submitting registration data:', registrationData);
+
+      const { data, error } = await supabase
         .from('dealers')
-        .insert(registrationData);
+        .insert(registrationData)
+        .select();
 
       if (error) {
         console.error('Registration error:', error);
-        if (error.code === '23505') {
-          toast.error("Email already registered. Please use a different email address.");
-        } else {
-          toast.error("Registration failed. Please try again.");
-        }
+        const errorMessage = getDetailedErrorMessage(error);
+        toast.error(errorMessage);
       } else {
+        console.log('Registration successful:', data);
         toast.success("Registration submitted successfully! We'll review your payment and application within 2-3 business days.");
         navigate("/");
       }
@@ -118,27 +147,67 @@ const DealerRegistration = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate required fields
-    if (!formData.idCardType) {
-      toast.error("Please select your ID card type");
-      return;
+  const validateForm = () => {
+    // Basic validation
+    const requiredFields = [
+      { field: 'businessName', label: 'Business Name' },
+      { field: 'contactName', label: 'Contact Name' },
+      { field: 'email', label: 'Email' },
+      { field: 'phone', label: 'Phone' },
+      { field: 'address', label: 'Address' },
+      { field: 'state', label: 'State' },
+      { field: 'yearEstablished', label: 'Year Established' },
+      { field: 'cacNumber', label: 'CAC Number' },
+      { field: 'description', label: 'Business Description' },
+      { field: 'monthlyInventory', label: 'Monthly Inventory' },
+      { field: 'idCardType', label: 'ID Card Type' },
+      { field: 'idCardNumber', label: 'ID Card Number' }
+    ];
+
+    for (const { field, label } of requiredFields) {
+      if (!formData[field as keyof typeof formData]?.toString().trim()) {
+        toast.error(`${label} is required`);
+        return false;
+      }
     }
-    
-    if (!formData.idCardNumber) {
-      toast.error("Please enter your ID card number");
-      return;
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return false;
     }
-    
+
+    // Phone validation (basic)
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      toast.error("Please enter a valid phone number");
+      return false;
+    }
+
+    // CAC number validation (basic)
+    if (formData.cacNumber.length < 6) {
+      toast.error("CAC number seems too short. Please verify your CAC registration number.");
+      return false;
+    }
+
     if (!idCardFile) {
       toast.error("Please upload your ID card");
-      return;
+      return false;
     }
 
     if (!paymentReference.trim()) {
       toast.error("Please enter your payment reference/transaction ID");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
       return;
     }
 
@@ -158,6 +227,7 @@ const DealerRegistration = () => {
               </p>
             </CardHeader>
             <CardContent className="p-8">
+              
               <div className="mb-8 p-6 bg-red-50 rounded-lg border border-red-200">
                 <h3 className="text-xl font-bold text-red-700 mb-2">Dealer Subscription</h3>
                 <p className="text-3xl font-bold text-red-600">₦35,000 <span className="text-lg font-normal text-gray-600">per year</span></p>
@@ -171,7 +241,7 @@ const DealerRegistration = () => {
                 </ul>
               </div>
 
-              {/* Payment Instructions */}
+              
               <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
                 <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center">
                   <CreditCard className="w-5 h-5 mr-2" />
@@ -240,7 +310,7 @@ const DealerRegistration = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Payment Reference Section */}
+                
                 <div className="p-6 bg-green-50 rounded-lg border border-green-200">
                   <h3 className="text-lg font-bold text-green-700 mb-4">Payment Confirmation</h3>
                   <div>
@@ -258,7 +328,6 @@ const DealerRegistration = () => {
                   </div>
                 </div>
 
-                {/* ID Card Verification Section */}
                 <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
                   <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center">
                     <IdCard className="w-5 h-5 mr-2" />
