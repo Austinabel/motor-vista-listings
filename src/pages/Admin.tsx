@@ -2,20 +2,22 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel } from "lucide-react";
 
 const Admin = () => {
   const [dealers, setDealers] = useState([]);
+  const [carListings, setCarListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDealer, setSelectedDealer] = useState(null);
+  const [selectedListing, setSelectedListing] = useState(null);
 
   useEffect(() => {
     fetchDealers();
+    fetchCarListings();
   }, []);
 
   const fetchDealers = async () => {
@@ -39,6 +41,25 @@ const Admin = () => {
     }
   };
 
+  const fetchCarListings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('car_listings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching car listings:', error);
+        toast.error('Failed to load car listings');
+      } else {
+        setCarListings(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchCarListings:', error);
+      toast.error('An unexpected error occurred');
+    }
+  };
+
   const updateDealerStatus = async (dealerId: string, newStatus: string) => {
     try {
       const { error } = await supabase
@@ -54,7 +75,7 @@ const Admin = () => {
         toast.error('Failed to update dealer status');
       } else {
         toast.success(`Dealer ${newStatus} successfully`);
-        fetchDealers(); // Refresh the list
+        fetchDealers();
         setSelectedDealer(null);
       }
     } catch (error) {
@@ -63,9 +84,34 @@ const Admin = () => {
     }
   };
 
+  const updateListingStatus = async (listingId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('car_listings')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', listingId);
+
+      if (error) {
+        console.error('Error updating listing status:', error);
+        toast.error('Failed to update listing status');
+      } else {
+        toast.success(`Listing ${newStatus} successfully`);
+        fetchCarListings();
+        setSelectedListing(null);
+      }
+    } catch (error) {
+      console.error('Error in updateListingStatus:', error);
+      toast.error('An unexpected error occurred');
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'verified':
+      case 'approved':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'rejected':
         return <XCircle className="w-4 h-4 text-red-600" />;
@@ -77,6 +123,7 @@ const Admin = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'verified':
+      case 'approved':
         return <Badge className="bg-green-500 hover:bg-green-600">Verified</Badge>;
       case 'rejected':
         return <Badge className="bg-red-500 hover:bg-red-600">Rejected</Badge>;
@@ -96,6 +143,17 @@ const Admin = () => {
     }
   };
 
+  const getPlanBadge = (plan: string) => {
+    switch (plan) {
+      case 'featured':
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>;
+      case 'standard':
+        return <Badge className="bg-blue-500 hover:bg-blue-600">Standard</Badge>;
+      default:
+        return <Badge className="bg-gray-500 hover:bg-gray-600">Free</Badge>;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -111,19 +169,258 @@ const Admin = () => {
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">
-              Total Dealers: {dealers.length}
+              Total Dealers: {dealers.length} | Car Listings: {carListings.length}
             </div>
-            <Button onClick={() => window.location.reload()} variant="outline">
+            <Button onClick={() => { fetchDealers(); fetchCarListings(); }} variant="outline">
               Refresh
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="dealers" className="space-y-6">
+        <Tabs defaultValue="listings" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="dealers">Dealer Management</TabsTrigger>
+            <TabsTrigger value="listings">Car Listings</TabsTrigger>
+            <TabsTrigger value="dealers">Dealers</TabsTrigger>
             <TabsTrigger value="stats">Statistics</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="listings">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Car Listings Table */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Car Listings Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Car Details</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Plan</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {carListings.map((listing: any) => (
+                        <TableRow 
+                          key={listing.id}
+                          className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                        >
+                          <TableCell>
+                            <div>
+                              <div className="font-semibold">
+                                {listing.year} {listing.make} {listing.model}
+                              </div>
+                              <div className="text-sm text-gray-500 flex items-center">
+                                <MapPin className="w-3 h-3 mr-1" />
+                                {listing.location}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                            <div className="text-sm text-gray-500">{listing.condition}</div>
+                          </TableCell>
+                          <TableCell>
+                            {getPlanBadge(listing.listing_plan)}
+                            <div className="text-xs text-gray-500 mt-1">
+                              ₦{listing.listing_price.toLocaleString()}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(listing.status)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {new Date(listing.created_at).toLocaleDateString()}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedListing(listing)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
+              {/* Selected Listing Details */}
+              {selectedListing && (
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>
+                      {selectedListing.year} {selectedListing.make} {selectedListing.model} - Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Basic Details */}
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-lg border-b pb-2">Basic Information</h4>
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Make & Model:</span>
+                            <p className="text-sm">{selectedListing.make} {selectedListing.model}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Year:</span>
+                            <p className="text-sm">{selectedListing.year}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Price:</span>
+                            <p className="text-sm font-semibold">₦{selectedListing.price.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Condition:</span>
+                            <p className="text-sm">{selectedListing.condition}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Location:</span>
+                            <p className="text-sm">{selectedListing.location}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Technical Details */}
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-lg border-b pb-2">Technical Details</h4>
+                        <div className="space-y-2">
+                          {selectedListing.mileage && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">Mileage:</span>
+                              <p className="text-sm">{selectedListing.mileage} km</p>
+                            </div>
+                          )}
+                          {selectedListing.fuel_type && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">Fuel Type:</span>
+                              <p className="text-sm">{selectedListing.fuel_type}</p>
+                            </div>
+                          )}
+                          {selectedListing.transmission && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">Transmission:</span>
+                              <p className="text-sm">{selectedListing.transmission}</p>
+                            </div>
+                          )}
+                          {selectedListing.color && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">Color:</span>
+                              <p className="text-sm">{selectedListing.color}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Listing Details */}
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-lg border-b pb-2">Listing Information</h4>
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Plan:</span>
+                            <div>{getPlanBadge(selectedListing.listing_plan)}</div>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Listing Fee:</span>
+                            <p className="text-sm">₦{selectedListing.listing_price.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Duration:</span>
+                            <p className="text-sm">{selectedListing.listing_duration} days</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Expires:</span>
+                            <p className="text-sm">{new Date(selectedListing.expires_at).toLocaleDateString()}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Status:</span>
+                            <div>{getStatusBadge(selectedListing.status)}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    {selectedListing.features && selectedListing.features.length > 0 && (
+                      <div className="mt-6">
+                        <h4 className="font-semibold text-lg border-b pb-2 mb-3">Features</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedListing.features.map((feature: string, index: number) => (
+                            <Badge key={index} variant="outline">{feature}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    {selectedListing.description && (
+                      <div className="mt-6">
+                        <h4 className="font-semibold text-lg border-b pb-2 mb-3">Description</h4>
+                        <p className="text-sm text-gray-700">{selectedListing.description}</p>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-4 pt-6 border-t mt-6">
+                      {selectedListing.status === 'pending' && (
+                        <>
+                          <Button
+                            onClick={() => updateListingStatus(selectedListing.id, 'approved')}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Approve Listing
+                          </Button>
+                          <Button
+                            onClick={() => updateListingStatus(selectedListing.id, 'rejected')}
+                            variant="destructive"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Reject Listing
+                          </Button>
+                        </>
+                      )}
+                      {selectedListing.status === 'approved' && (
+                        <Button
+                          onClick={() => updateListingStatus(selectedListing.id, 'rejected')}
+                          variant="destructive"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Revoke Approval
+                        </Button>
+                      )}
+                      {selectedListing.status === 'rejected' && (
+                        <Button
+                          onClick={() => updateListingStatus(selectedListing.id, 'approved')}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Approve Listing
+                        </Button>
+                      )}
+                      <Button
+                        onClick={() => setSelectedListing(null)}
+                        variant="outline"
+                      >
+                        Close Details
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
 
           <TabsContent value="dealers">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -305,13 +602,13 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="stats">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
                     <Clock className="w-8 h-8 text-yellow-600" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Pending Applications</p>
+                      <p className="text-sm font-medium text-gray-600">Pending Dealers</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {dealers.filter(d => d.status === 'pending').length}
                       </p>
@@ -337,11 +634,25 @@ const Admin = () => {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <XCircle className="w-8 h-8 text-red-600" />
+                    <Car className="w-8 h-8 text-blue-600" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Rejected Applications</p>
+                      <p className="text-sm font-medium text-gray-600">Pending Listings</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {dealers.filter(d => d.status === 'rejected').length}
+                        {carListings.filter(l => l.status === 'pending').length}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Approved Listings</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {carListings.filter(l => l.status === 'approved').length}
                       </p>
                     </div>
                   </div>

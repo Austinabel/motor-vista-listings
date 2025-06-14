@@ -9,6 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      car_listing_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          is_primary: boolean | null
+          listing_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          is_primary?: boolean | null
+          listing_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_primary?: boolean | null
+          listing_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_listing_images_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "car_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      car_listings: {
+        Row: {
+          color: string | null
+          condition: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          features: string[] | null
+          fuel_type: string | null
+          id: string
+          listing_duration: number
+          listing_plan: string
+          listing_price: number
+          location: string
+          make: string
+          mileage: string | null
+          model: string
+          price: number
+          status: string
+          transmission: string | null
+          updated_at: string
+          user_id: string | null
+          year: string
+        }
+        Insert: {
+          color?: string | null
+          condition: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          features?: string[] | null
+          fuel_type?: string | null
+          id?: string
+          listing_duration?: number
+          listing_plan?: string
+          listing_price?: number
+          location: string
+          make: string
+          mileage?: string | null
+          model: string
+          price: number
+          status?: string
+          transmission?: string | null
+          updated_at?: string
+          user_id?: string | null
+          year: string
+        }
+        Update: {
+          color?: string | null
+          condition?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          features?: string[] | null
+          fuel_type?: string | null
+          id?: string
+          listing_duration?: number
+          listing_plan?: string
+          listing_price?: number
+          location?: string
+          make?: string
+          mileage?: string | null
+          model?: string
+          price?: number
+          status?: string
+          transmission?: string | null
+          updated_at?: string
+          user_id?: string | null
+          year?: string
+        }
+        Relationships: []
+      }
       dealers: {
         Row: {
           address: string
