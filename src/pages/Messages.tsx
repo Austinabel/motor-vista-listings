@@ -199,9 +199,34 @@ const Messages = () => {
 
         {/* Chat Dialog */}
         <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-          <DialogContent className="max-w-lg sm:max-w-2xl border-0 rounded-2xl shadow-2xl px-0 py-0 bg-white overflow-hidden">
+          <DialogContent 
+            className="
+              w-full 
+              max-w-[95vw] 
+              sm:max-w-2xl 
+              border-0 
+              rounded-none sm:rounded-2xl 
+              shadow-2xl 
+              px-0 py-0 
+              bg-white 
+              overflow-hidden 
+              sm:my-8
+              h-[95vh] 
+              max-h-[95vh] 
+              flex flex-col
+              animate-fade-in
+            "
+            style={{
+              padding: 0,
+              borderRadius: '0.75rem',
+              margin: 0,
+              top: '2.5vh', // better alignment if needed
+              left: '50%',
+              transform: 'translate(-50%, 0)'
+            }}
+          >
             {/* Header Callout */}
-            <div className="bg-gradient-to-r from-red-600/80 to-red-400/80 px-6 pt-6 pb-2 rounded-t-2xl shadow-inner">
+            <div className="bg-gradient-to-r from-red-600/80 to-red-400/80 px-4 sm:px-6 pt-6 pb-2 rounded-t-none sm:rounded-t-2xl shadow-inner">
               <DialogHeader className="p-0">
                 <DialogTitle className="text-white font-bold text-xl tracking-tight flex items-center gap-2">
                   <MessageSquare className="h-6 w-6" />
@@ -215,21 +240,18 @@ const Messages = () => {
             {/* Divider between header and chat */}
             <Separator orientation="horizontal" className="bg-gray-200" />
             {/* Main chat callout area */}
-            <div className="bg-gray-50 px-2 sm:px-4 py-6 min-h-[310px] rounded-b-2xl shadow-inner flex flex-col">
+            <div className="bg-gray-50 px-1 sm:px-4 py-4 sm:py-6 min-h-0 flex-1 rounded-b-none sm:rounded-b-2xl shadow-inner flex flex-col overflow-y-auto">
               {selectedConversation && (
                 <>
-                  {/* ChatInterface is already styled, but frame it in a card/callout for focus */}
-                  <div className="bg-white border border-gray-100 rounded-xl shadow p-0 overflow-hidden flex flex-col flex-1">
-                    {/* Messages area */}
-                    <div className="flex-1 flex flex-col">
-                      {/* Since ChatInterface has its own card, avoid nested headers. Insert a divider after messages */}
+                  <div className="bg-white border border-gray-100 rounded-none sm:rounded-xl shadow p-0 overflow-hidden flex flex-col flex-1 min-h-0">
+                    {/* Messages area with overflow so it's always scrollable */}
+                    <div className="flex-1 flex flex-col min-h-0 max-h-[60vh] sm:max-h-[55vh] overflow-y-auto">
                       <ChatInterface
                         conversationId={selectedConversation.id}
                         carTitle={getCarTitle(selectedConversation)}
                         otherUserName={getOtherUserName(selectedConversation)}
                       />
                     </div>
-                    {/* Divider after message input if you wish */}
                   </div>
                 </>
               )}
