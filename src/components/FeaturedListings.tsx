@@ -1,29 +1,24 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Eye, User, Building } from "lucide-react";
+import { Eye, User, Building } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 
 export const FeaturedListings = () => {
   const { user } = useAuth();
   const [carListings, setCarListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [visibleRows, setVisibleRows] = useState(3);
-  const [favorites, setFavorites] = useState(new Set());
   const carsPerRow = 6;
   const totalCarsPerPage = visibleRows * carsPerRow;
   const maxRows = 6;
 
   useEffect(() => {
     fetchCarListings();
-    if (user) {
-      fetchUserFavorites();
-    }
   }, [user]);
 
   const fetchCarListings = async () => {
@@ -94,73 +89,6 @@ export const FeaturedListings = () => {
     }
   };
 
-  const fetchUserFavorites = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('listing_id')
-        .eq('user_id', user.id);
-
-      if (!error && data) {
-        setFavorites(new Set(data.map(fav => fav.listing_id)));
-      }
-    } catch (error) {
-      console.error('Error fetching user favorites:', error);
-    }
-  };
-
-  const handleToggleFavorite = async (listingId) => {
-    if (!user) {
-      toast.error('Please sign in to add to favorites');
-      return;
-    }
-
-    const isFavorite = favorites.has(listingId);
-
-    try {
-      if (isFavorite) {
-        // Remove from favorites
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('listing_id', listingId);
-
-        if (error) {
-          console.error('Error removing favorite:', error);
-          toast.error('Failed to remove from favorites');
-          return;
-        }
-
-        setFavorites(prev => {
-          const newFavorites = new Set(prev);
-          newFavorites.delete(listingId);
-          return newFavorites;
-        });
-        toast.success('Removed from favorites');
-      } else {
-        // Add to favorites
-        const { error } = await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, listing_id: listingId });
-
-        if (error) {
-          console.error('Error adding favorite:', error);
-          toast.error('Failed to add to favorites');
-          return;
-        }
-
-        setFavorites(prev => new Set([...prev, listingId]));
-        toast.success('Added to favorites');
-      }
-    } catch (error) {
-      console.error('Error handling favorites:', error);
-      toast.error('An error occurred');
-    }
-  };
-
   const getListedBy = (listing) => {
     if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
       return {
@@ -221,7 +149,6 @@ export const FeaturedListings = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {displayedCars.map((car, index) => {
             const listedBy = getListedBy(car);
-            const isFavorite = favorites.has(car.id);
             return (
               <Card 
                 key={car.id} 
@@ -230,18 +157,7 @@ export const FeaturedListings = () => {
               >
                 <div className="relative">
                   <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
-                  <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    className={`absolute top-1 right-1 p-1 ${
-                      isFavorite 
-                        ? 'bg-red-600 hover:bg-red-700 text-white' 
-                        : 'bg-white hover:bg-gray-100 text-gray-600'
-                    }`}
-                    onClick={() => handleToggleFavorite(car.id)}
-                  >
-                    <Heart className={`h-3 w-3 ${isFavorite ? 'fill-current' : ''}`} />
-                  </Button>
+                  <FavoriteButton listingId={car.id} className="absolute top-1 right-1 p-1" size="sm" />
                 </div>
                 <CardContent className="p-3">
                   <h3 className="font-bold text-sm mb-2 truncate">{car.year} {car.make} {car.model}</h3>

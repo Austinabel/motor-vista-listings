@@ -1,13 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Eye, Filter, User, Building } from "lucide-react";
+import { Eye, Filter, User, Building } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -430,9 +430,7 @@ const CarListings = () => {
                         <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
                           <div className="relative">
                             <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-40 object-cover" />
-                            <Button size="sm" variant="secondary" className="absolute top-2 right-2">
-                              <Heart className="h-4 w-4" />
-                            </Button>
+                            <FavoriteButton listingId={car.id} className="absolute top-2 right-2" />
                             <div className="absolute top-2 left-2">
                               <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
                                 {getConditionLabel(car.condition)}
