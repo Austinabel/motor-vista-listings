@@ -13,6 +13,8 @@ const CarDetail = () => {
   const { id } = useParams();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -22,13 +24,12 @@ const CarDetail = () => {
 
   const fetchCarDetails = async () => {
     try {
-      // First fetch the car listing with images
+      console.log('Fetching car details for ID:', id);
+      
+      // Fetch the car listing
       const { data: carData, error: carError } = await supabase
         .from('car_listings')
-        .select(`
-          *,
-          car_listing_images(image_url, is_primary)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
@@ -36,6 +37,19 @@ const CarDetail = () => {
         console.error('Error fetching car details:', carError);
         toast.error('Failed to load car details');
         return;
+      }
+
+      console.log('Car data:', carData);
+
+      // Fetch images separately
+      const { data: images, error: imagesError } = await supabase
+        .from('car_listing_images')
+        .select('*')
+        .eq('listing_id', id)
+        .order('is_primary', { ascending: false });
+
+      if (imagesError) {
+        console.error('Error fetching images:', imagesError);
       }
 
       // Fetch user profile if user_id exists
@@ -69,10 +83,12 @@ const CarDetail = () => {
       // Combine all the data
       const enrichedListing = {
         ...carData,
+        car_listing_images: images || [],
         profiles: profileData,
         dealers: dealerData ? [dealerData] : []
       };
 
+      console.log('Enriched listing:', enrichedListing);
       setListing(enrichedListing);
     } catch (error) {
       console.error('Error in fetchCarDetails:', error);
@@ -94,15 +110,133 @@ const CarDetail = () => {
         email: listing.dealers[0].email
       };
     } else if (listing.profiles) {
+      const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
       return {
         type: 'user',
-        name: `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim() || 'Private User'
+        name: fullName || 'Private Seller'
       };
     }
     return {
       type: 'unknown',
-      name: 'Unknown'
+      name: 'Unknown Seller'
     };
+  };
+
+  const handleAddToFavorites = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Please sign in to add to favorites');
+        return;
+      }
+
+      if (isFavorite) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('listing_id', id);
+
+        if (error) {
+          console.error('Error removing favorite:', error);
+          toast.error('Failed to remove from favorites');
+          return;
+        }
+
+        setIsFavorite(false);
+        toast.success('Removed from favorites');
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('favorites')
+          .insert({ user_id: user.id, listing_id: id });
+
+        if (error) {
+          console.error('Error adding favorite:', error);
+          toast.error('Failed to add to favorites');
+          return;
+        }
+
+        setIsFavorite(true);
+        toast.success('Added to favorites');
+      }
+    } catch (error) {
+      console.error('Error handling favorites:', error);
+      toast.error('An error occurred');
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = `${listing?.year} ${listing?.make} ${listing?.model}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: `Check out this ${title} for ₦${listing?.price?.toLocaleString()}`,
+          url: url,
+        });
+        toast.success('Shared successfully');
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error);
+          fallbackShare(url, title);
+        }
+      }
+    } else {
+      fallbackShare(url, title);
+    }
+  };
+
+  const fallbackShare = (url, title) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        toast.success('Link copied to clipboard');
+      }).catch(() => {
+        toast.error('Failed to copy link');
+      });
+    } else {
+      toast.error('Sharing not supported on this device');
+    }
+  };
+
+  const handleCallSeller = () => {
+    const listedBy = getListedBy();
+    if (listedBy.phone) {
+      window.open(`tel:${listedBy.phone}`, '_self');
+    } else {
+      toast.error('Phone number not available');
+    }
+  };
+
+  const handleSendMessage = () => {
+    const listedBy = getListedBy();
+    const subject = `Inquiry about ${listing?.year} ${listing?.make} ${listing?.model}`;
+    const body = `Hi, I'm interested in your ${listing?.year} ${listing?.make} ${listing?.model} listed for ₦${listing?.price?.toLocaleString()}. Please let me know if it's still available.`;
+    
+    if (listedBy.email) {
+      window.open(`mailto:${listedBy.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
+    } else {
+      toast.error('Email not available');
+    }
+  };
+
+  const handleScheduleTestDrive = () => {
+    const listedBy = getListedBy();
+    const subject = `Test Drive Request for ${listing?.year} ${listing?.make} ${listing?.model}`;
+    const body = `Hi, I would like to schedule a test drive for your ${listing?.year} ${listing?.make} ${listing?.model}. Please let me know your availability.`;
+    
+    if (listedBy.email) {
+      window.open(`mailto:${listedBy.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
+    } else if (listedBy.phone) {
+      const message = `Hi, I would like to schedule a test drive for your ${listing?.year} ${listing?.make} ${listing?.model}. Please let me know your availability.`;
+      window.open(`https://wa.me/${listedBy.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+    } else {
+      toast.error('Contact information not available');
+    }
   };
 
   if (loading) {
@@ -123,7 +257,8 @@ const CarDetail = () => {
 
   const listedBy = getListedBy();
   const images = listing.car_listing_images || [];
-  const primaryImage = images.find(img => img.is_primary)?.image_url || images[0]?.image_url || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop";
+  const currentImage = images[currentImageIndex] || {};
+  const displayImage = currentImage.image_url || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -134,18 +269,21 @@ const CarDetail = () => {
             {/* Image Gallery */}
             <div className="mb-8">
               <img 
-                src={primaryImage} 
+                src={displayImage} 
                 alt={`${listing.year} ${listing.make} ${listing.model}`} 
                 className="w-full h-96 object-cover rounded-lg mb-4"
               />
               {images.length > 1 && (
-                <div className="grid grid-cols-3 gap-2">
-                  {images.slice(0, 3).map((image, index) => (
+                <div className="grid grid-cols-4 gap-2">
+                  {images.slice(0, 4).map((image, index) => (
                     <img 
                       key={index}
                       src={image.image_url} 
                       alt={`${listing.year} ${listing.make} ${listing.model} ${index + 1}`}
-                      className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-80"
+                      className={`w-full h-24 object-cover rounded cursor-pointer hover:opacity-80 ${
+                        index === currentImageIndex ? 'ring-2 ring-red-600' : ''
+                      }`}
+                      onClick={() => setCurrentImageIndex(index)}
                     />
                   ))}
                 </div>
@@ -158,13 +296,18 @@ const CarDetail = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h1 className="text-3xl font-bold mb-2">{listing.year} {listing.make} {listing.model}</h1>
-                    <p className="text-3xl font-bold text-red-600">₦{listing.price.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-red-600">₦{parseFloat(listing.price).toLocaleString()}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Heart className="h-4 w-4" />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleAddToFavorites}
+                      className={isFavorite ? 'text-red-600 border-red-600' : ''}
+                    >
+                      <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleShare}>
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -272,17 +415,28 @@ const CarDetail = () => {
                     </div>
                   </div>
                   
-                  <Button className="w-full bg-red-600 hover:bg-red-700">
+                  <Button 
+                    className="w-full bg-red-600 hover:bg-red-700"
+                    onClick={handleCallSeller}
+                  >
                     <Phone className="mr-2 h-4 w-4" />
                     Call Seller
                   </Button>
                   
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleSendMessage}
+                  >
                     <Mail className="mr-2 h-4 w-4" />
                     Send Message
                   </Button>
                   
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleScheduleTestDrive}
+                  >
                     Schedule Test Drive
                   </Button>
                 </div>
