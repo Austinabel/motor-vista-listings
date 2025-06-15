@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,7 +41,6 @@ export const useMessaging = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
   // Set up real-time subscription for messages
   useEffect(() => {
@@ -49,7 +49,7 @@ export const useMessaging = () => {
     console.log('Setting up real-time subscription for user:', user.id);
     
     const channel = supabase
-      .channel('messages-realtime')
+      .channel('messages-channel')
       .on(
         'postgres_changes',
         {
@@ -61,38 +61,17 @@ export const useMessaging = () => {
           console.log('New message received via real-time:', payload);
           const newMessage = payload.new as Message;
           
-          // Only add message if it belongs to the current conversation
-          if (currentConversationId && newMessage.conversation_id === currentConversationId) {
-            setMessages(prevMessages => {
-              // Check if message already exists to avoid duplicates
-              const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
-              if (!messageExists) {
-                console.log('Adding new message to current conversation');
-                return [...prevMessages, newMessage];
-              }
-              return prevMessages;
-            });
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages'
-        },
-        (payload) => {
-          console.log('Message updated via real-time:', payload);
-          const updatedMessage = payload.new as Message;
-          
-          if (currentConversationId && updatedMessage.conversation_id === currentConversationId) {
-            setMessages(prevMessages => 
-              prevMessages.map(msg => 
-                msg.id === updatedMessage.id ? updatedMessage : msg
-              )
-            );
-          }
+          setMessages(prevMessages => {
+            // Check if message already exists to avoid duplicates
+            const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
+            if (!messageExists) {
+              console.log('Adding new message to state');
+              return [...prevMessages, newMessage].sort((a, b) => 
+                new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+              );
+            }
+            return prevMessages;
+          });
         }
       )
       .subscribe((status) => {
@@ -103,7 +82,7 @@ export const useMessaging = () => {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [user, currentConversationId]);
+  }, [user]);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -188,7 +167,6 @@ export const useMessaging = () => {
   const fetchMessages = useCallback(async (conversationId: string) => {
     try {
       console.log('Fetching messages for conversation:', conversationId);
-      setCurrentConversationId(conversationId);
 
       const { data, error } = await supabase
         .from('messages')
@@ -281,8 +259,8 @@ export const useMessaging = () => {
     try {
       console.log('Sending message to conversation:', conversationId);
       
-      // Optimistically add the message to the UI immediately
-      const tempMessage: Message = {
+      // Create optimistic message
+      const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
         conversation_id: conversationId,
         sender_id: user.id,
@@ -291,8 +269,8 @@ export const useMessaging = () => {
         created_at: new Date().toISOString()
       };
 
-      // Add message immediately to UI
-      setMessages(prevMessages => [...prevMessages, tempMessage]);
+      // Add optimistic message immediately
+      setMessages(prevMessages => [...prevMessages, optimisticMessage]);
       
       const { data, error } = await supabase
         .from('messages')
@@ -306,9 +284,9 @@ export const useMessaging = () => {
 
       if (error) {
         console.error('Error sending message:', error);
-        // Remove the temporary message on error
+        // Remove optimistic message on error
         setMessages(prevMessages => 
-          prevMessages.filter(msg => msg.id !== tempMessage.id)
+          prevMessages.filter(msg => msg.id !== optimisticMessage.id)
         );
         toast.error('Failed to send message');
         return false;
@@ -316,10 +294,10 @@ export const useMessaging = () => {
 
       console.log('Message sent successfully:', data);
       
-      // Replace temporary message with real message
+      // Replace optimistic message with real message
       setMessages(prevMessages => 
         prevMessages.map(msg => 
-          msg.id === tempMessage.id ? data : msg
+          msg.id === optimisticMessage.id ? data : msg
         )
       );
       

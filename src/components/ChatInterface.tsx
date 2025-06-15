@@ -32,7 +32,9 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    scrollToBottom();
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   // Focus input when component mounts
@@ -41,10 +43,6 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
       inputRef.current.focus();
     }
   }, []);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || sending) return;
@@ -77,6 +75,9 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
     }
   };
 
+  // Filter messages for current conversation
+  const conversationMessages = messages.filter(msg => msg.conversation_id === conversationId);
+
   return (
     <Card className="h-[600px] flex flex-col">
       <CardHeader className="pb-3 flex-shrink-0">
@@ -90,13 +91,13 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
       <CardContent className="flex-1 flex flex-col p-4 pt-0 min-h-0">
         {/* Messages Container */}
         <div className="flex-1 overflow-y-auto mb-4 space-y-3 min-h-0">
-          {messages.length === 0 ? (
+          {conversationMessages.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>No messages yet. Start the conversation!</p>
             </div>
           ) : (
-            messages.map((message: Message) => (
+            conversationMessages.map((message: Message) => (
               <div
                 key={message.id}
                 className={`flex ${
