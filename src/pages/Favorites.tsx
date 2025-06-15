@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Heart, Eye, User, Building, LogIn } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -24,27 +23,89 @@ const Favorites = () => {
 
   const fetchFavorites = async () => {
     try {
-      const { data, error } = await supabase
+      // First get the favorites
+      const { data: favoritesData, error: favoritesError } = await supabase
         .from('favorites')
-        .select(`
-          id,
-          listing_id,
-          car_listings (
-            *,
-            car_listing_images (image_url, is_primary),
-            profiles (first_name, last_name, user_type),
-            dealers (business_name, contact_name)
-          )
-        `)
+        .select('id, listing_id, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching favorites:', error);
+      if (favoritesError) {
+        console.error('Error fetching favorites:', favoritesError);
         toast.error('Failed to load favorites');
-      } else {
-        setFavorites(data || []);
+        return;
       }
+
+      if (!favoritesData || favoritesData.length === 0) {
+        setFavorites([]);
+        return;
+      }
+
+      // Get the listing IDs
+      const listingIds = favoritesData.map(fav => fav.listing_id);
+
+      // Fetch car listings
+      const { data: carListings, error: listingsError } = await supabase
+        .from('car_listings')
+        .select(`
+          *,
+          car_listing_images (image_url, is_primary)
+        `)
+        .in('id', listingIds);
+
+      if (listingsError) {
+        console.error('Error fetching car listings:', listingsError);
+        toast.error('Failed to load listings');
+        return;
+      }
+
+      // Get unique user IDs from car listings
+      const userIds = [...new Set(carListings?.map(listing => listing.user_id).filter(Boolean))];
+      
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, user_type')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      // Fetch dealers for dealer users
+      const dealerUserIds = profiles?.filter(p => p.user_type === 'dealer').map(p => p.id) || [];
+      let dealers = [];
+      
+      if (dealerUserIds.length > 0) {
+        const { data: dealersData, error: dealersError } = await supabase
+          .from('dealers')
+          .select('id, business_name, contact_name')
+          .in('id', dealerUserIds);
+
+        if (!dealersError) {
+          dealers = dealersData || [];
+        }
+      }
+
+      // Combine the data
+      const enrichedFavorites = favoritesData.map(favorite => {
+        const listing = carListings?.find(l => l.id === favorite.listing_id);
+        if (!listing) return null;
+
+        const profile = profiles?.find(p => p.id === listing.user_id);
+        const dealer = dealers?.find(d => d.id === listing.user_id);
+        
+        return {
+          ...favorite,
+          car_listings: {
+            ...listing,
+            profiles: profile,
+            dealers: dealer ? [dealer] : []
+          }
+        };
+      }).filter(Boolean);
+
+      setFavorites(enrichedFavorites);
     } catch (error) {
       console.error('Error in fetchFavorites:', error);
       toast.error('An unexpected error occurred');
