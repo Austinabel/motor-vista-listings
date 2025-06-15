@@ -239,21 +239,17 @@ const Messages = () => {
             </div>
             {/* Divider between header and chat */}
             <Separator orientation="horizontal" className="bg-gray-200" />
-            {/* Main chat callout area */}
+            {/* Main chat callout area, scrollable but keeps header and input always visible */}
             <div className="bg-gray-50 px-1 sm:px-4 py-4 sm:py-6 min-h-0 flex-1 rounded-b-none sm:rounded-b-2xl shadow-inner flex flex-col overflow-y-auto">
               {selectedConversation && (
-                <>
-                  <div className="bg-white border border-gray-100 rounded-none sm:rounded-xl shadow p-0 overflow-hidden flex flex-col flex-1 min-h-0">
-                    {/* Messages area with overflow so it's always scrollable */}
-                    <div className="flex-1 flex flex-col min-h-0 max-h-[60vh] sm:max-h-[55vh] overflow-y-auto">
-                      <ChatInterface
-                        conversationId={selectedConversation.id}
-                        carTitle={getCarTitle(selectedConversation)}
-                        otherUserName={getOtherUserName(selectedConversation)}
-                      />
-                    </div>
-                  </div>
-                </>
+                <div className="bg-white border border-gray-100 rounded-none sm:rounded-xl shadow p-0 overflow-hidden flex flex-col flex-1 min-h-0">
+                  {/* ChatInterface is JUST the messages and input, no internal title/subtitle */}
+                  <ChatInterface
+                    conversationId={selectedConversation.id}
+                    carTitle={getCarTitle(selectedConversation)}
+                    otherUserName={getOtherUserName(selectedConversation)}
+                  />
+                </div>
               )}
             </div>
           </DialogContent>
