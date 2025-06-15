@@ -1,16 +1,17 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Share2, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, User, Building } from "lucide-react";
+import { Heart, Share2, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, User, Building, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CarDetail = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -19,9 +20,11 @@ const CarDetail = () => {
   useEffect(() => {
     if (id) {
       fetchCarDetails();
-      checkIfFavorite();
+      if (user) {
+        checkIfFavorite();
+      }
     }
-  }, [id]);
+  }, [id, user]);
 
   const fetchCarDetails = async () => {
     try {
@@ -55,7 +58,7 @@ const CarDetail = () => {
 
       console.log('Images:', images);
 
-      // Fetch user profile if user_id exists
+      // Fetch user profile if user_id exists (always fetch for public display)
       let profileData = null;
       if (carData.user_id) {
         const { data: profile, error: profileError } = await supabase
@@ -69,7 +72,7 @@ const CarDetail = () => {
         }
       }
 
-      // Fetch dealer info if user is a dealer
+      // Fetch dealer info if user is a dealer (always fetch for public display)
       let dealerData = null;
       if (profileData?.user_type === 'dealer' && carData.user_id) {
         const { data: dealer, error: dealerError } = await supabase
@@ -103,8 +106,6 @@ const CarDetail = () => {
 
   const checkIfFavorite = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) return;
 
       const { data, error } = await supabase
@@ -151,14 +152,12 @@ const CarDetail = () => {
   };
 
   const handleAddToFavorites = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error('Please sign in to add to favorites');
-        return;
-      }
+    if (!user) {
+      toast.error('Please sign in to add to favorites');
+      return;
+    }
 
+    try {
       if (isFavorite) {
         // Remove from favorites
         const { error } = await supabase
@@ -232,6 +231,11 @@ const CarDetail = () => {
   };
 
   const handleCallSeller = () => {
+    if (!user) {
+      toast.error('Please sign in to contact the seller');
+      return;
+    }
+
     const listedBy = getListedBy();
     if (listedBy.phone) {
       window.open(`tel:${listedBy.phone}`, '_self');
@@ -241,6 +245,11 @@ const CarDetail = () => {
   };
 
   const handleSendMessage = () => {
+    if (!user) {
+      toast.error('Please sign in to contact the seller');
+      return;
+    }
+
     const listedBy = getListedBy();
     const subject = `Inquiry about ${listing?.year} ${listing?.make} ${listing?.model}`;
     const body = `Hi, I'm interested in your ${listing?.year} ${listing?.make} ${listing?.model} listed for ₦${listing?.price?.toLocaleString()}. Please let me know if it's still available.`;
@@ -257,6 +266,11 @@ const CarDetail = () => {
   };
 
   const handleScheduleTestDrive = () => {
+    if (!user) {
+      toast.error('Please sign in to schedule a test drive');
+      return;
+    }
+
     const listedBy = getListedBy();
     const subject = `Test Drive Request for ${listing?.year} ${listing?.make} ${listing?.model}`;
     const body = `Hi, I would like to schedule a test drive for your ${listing?.year} ${listing?.make} ${listing?.model}. Please let me know your availability.`;
@@ -336,6 +350,7 @@ const CarDetail = () => {
                       size="sm"
                       onClick={handleAddToFavorites}
                       className={isFavorite ? 'text-red-600 border-red-600' : ''}
+                      disabled={!user}
                     >
                       <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
                     </Button>
@@ -344,6 +359,15 @@ const CarDetail = () => {
                     </Button>
                   </div>
                 </div>
+
+                {!user && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-blue-700 text-sm flex items-center gap-2">
+                      <LogIn className="h-4 w-4" />
+                      Sign in to contact the seller and add to favorites
+                    </p>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="flex items-center gap-2">
@@ -426,7 +450,7 @@ const CarDetail = () => {
           <div>
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4">Contact Seller</h3>
+                <h3 className="font-bold text-lg mb-4">Seller Information</h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     {listedBy.type === 'dealer' ? (
@@ -447,33 +471,51 @@ const CarDetail = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    className="w-full bg-red-600 hover:bg-red-700"
-                    onClick={handleCallSeller}
-                    disabled={!listedBy.phone}
-                  >
-                    <Phone className="mr-2 h-4 w-4" />
-                    {listedBy.phone ? 'Call Seller' : 'No Phone Available'}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={handleSendMessage}
-                    disabled={!listedBy.email && !listedBy.phone}
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Message
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={handleScheduleTestDrive}
-                    disabled={!listedBy.email && !listedBy.phone}
-                  >
-                    Schedule Test Drive
-                  </Button>
+                  {user ? (
+                    <>
+                      <Button 
+                        className="w-full bg-red-600 hover:bg-red-700"
+                        onClick={handleCallSeller}
+                        disabled={!listedBy.phone}
+                      >
+                        <Phone className="mr-2 h-4 w-4" />
+                        {listedBy.phone ? 'Call Seller' : 'No Phone Available'}
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleSendMessage}
+                        disabled={!listedBy.email && !listedBy.phone}
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Send Message
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleScheduleTestDrive}
+                        disabled={!listedBy.email && !listedBy.phone}
+                      >
+                        Schedule Test Drive
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => toast.error('Please sign in to contact the seller')}
+                      >
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Sign in to Contact
+                      </Button>
+                      <p className="text-xs text-gray-600 text-center">
+                        Contact details available after sign in
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
