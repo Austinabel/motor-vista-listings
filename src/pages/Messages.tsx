@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { MessageSquare, Car, Clock } from "lucide-react";
+import { MessageSquare, Car, Clock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,9 +9,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import ChatInterface from "@/components/ChatInterface";
 import { formatDistanceToNow } from "date-fns";
 
+function stringAvatar(name?: string) {
+  // Generate initials from name or fallback
+  if (!name) return "U";
+  const arr = name.trim().split(" ");
+  if (arr.length === 1) return arr[0][0].toUpperCase();
+  return `${arr[0][0]}${arr[1][0]}`.toUpperCase();
+}
+
 const Messages = () => {
   const { user } = useAuth();
-  const { conversations, loading, fetchConversations } = useMessaging();
+  const { conversations, loading, fetchConversations, messages } = useMessaging();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -28,15 +36,11 @@ const Messages = () => {
 
   const getOtherUserName = (conversation: Conversation) => {
     if (!user) return 'Unknown User';
-    
-    // If current user is buyer, show seller info
     if (conversation.buyer_id === user.id) {
       return conversation.seller_profile?.first_name && conversation.seller_profile?.last_name
         ? `${conversation.seller_profile.first_name} ${conversation.seller_profile.last_name}`
         : 'Seller';
     }
-    
-    // If current user is seller, show buyer info  
     return conversation.buyer_profile?.first_name && conversation.buyer_profile?.last_name
       ? `${conversation.buyer_profile.first_name} ${conversation.buyer_profile.last_name}`
       : 'Buyer';
@@ -47,6 +51,17 @@ const Messages = () => {
       return `${conversation.car_listings.year} ${conversation.car_listings.make} ${conversation.car_listings.model}`;
     }
     return 'Car Details Not Available';
+  };
+
+  // Count of unread messages for each conversation (for future badge use)
+  const getUnreadCount = (convId: string) => {
+    if (!messages) return 0;
+    return messages.filter(
+      (msg) =>
+        msg.conversation_id === convId &&
+        msg.sender_id !== user?.id &&
+        !msg.is_read
+    ).length;
   };
 
   if (!user) {
@@ -85,94 +100,127 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <MessageSquare className="h-6 w-6 text-red-600" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12">
+      <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8">
+        <Card className="shadow-xl border-0">
+          <CardHeader className="bg-white/80 rounded-t-lg backdrop-blur-md">
+            <CardTitle className="flex items-center space-x-3 text-2xl font-bold">
+              <MessageSquare className="h-7 w-7 text-red-600" />
               <span>Messages</span>
             </CardTitle>
             <CardDescription>
               View and manage your conversations with sellers and buyers.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-2 sm:p-6 pt-0">
             {loading ? (
-              <div className="text-center py-12">
-                <div>Loading conversations...</div>
+              <div className="text-center py-16">
+                <div className="w-10 h-10 mx-auto rounded-full animate-spin border-4 border-t-red-600 border-gray-200"></div>
+                <div className="mt-4 text-gray-500 font-medium">Loading conversations...</div>
               </div>
             ) : conversations.length === 0 ? (
-              <div className="text-center py-12">
-                <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
-                <p className="text-gray-500 mb-6">
+              <div className="flex flex-col items-center py-16">
+                <MessageSquare className="h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No conversations yet</h3>
+                <p className="text-gray-500 mb-6 max-w-xs text-center">
                   When you contact sellers or buyers about a car listing, your conversations will appear here.
                 </p>
                 <a
                   href="/cars"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors duration-150 text-sm font-medium"
                 >
                   Browse Cars
                 </a>
               </div>
             ) : (
-              <div className="space-y-4">
-                {conversations.map((conversation) => (
-                  <Card key={conversation.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleOpenChat(conversation)}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="bg-red-100 p-2 rounded-full">
-                            <Car className="h-5 w-5 text-red-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {getCarTitle(conversation)}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              Conversation with {getOtherUserName(conversation)}
-                            </p>
-                            {conversation.car_listings?.price && (
-                              <p className="text-sm font-medium text-red-600">
-                                ₦{conversation.car_listings.price.toLocaleString()}
-                              </p>
-                            )}
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {conversations.map((conversation) => {
+                  const unreadCount = getUnreadCount(conversation.id);
+                  const isSelected = selectedConversation?.id === conversation.id;
+                  return (
+                    <div
+                      key={conversation.id}
+                      onClick={() => handleOpenChat(conversation)}
+                      tabIndex={0}
+                      className={`transition-shadow duration-200
+                        group bg-white/90 
+                        rounded-xl border border-gray-200 shadow-md hover:shadow-lg cursor-pointer 
+                        focus:ring-2 focus:ring-red-400 outline-none
+                        hover:border-red-400
+                        ${isSelected ? 'ring-2 ring-red-500 border-red-500' : ''}`
+                      }
+                    >
+                      <div className="p-4 flex items-center space-x-4">
+                        {/* Avatar/Fallback */}
+                        <div className="flex-shrink-0">
+                          <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center text-2xl font-bold text-red-600 border border-gray-300">
+                            <span>
+                              {stringAvatar(getOtherUserName(conversation))}
+                            </span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="flex items-center text-sm text-gray-500 mb-1">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
+                        {/* Conversation Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-semibold text-gray-900 truncate block">{getCarTitle(conversation)}</span>
+                            {unreadCount > 0 && (
+                              <span className="ml-1 inline-flex items-center justify-center min-w-5 h-5 px-2 rounded-full bg-red-500 text-white text-xs font-semibold animate-pulse shadow">
+                                {unreadCount}
+                              </span>
+                            )}
                           </div>
-                          <Button variant="outline" size="sm">
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Open Chat
+                          <span className="block text-sm text-gray-500 truncate">
+                            With {getOtherUserName(conversation)}
+                          </span>
+                          {conversation.car_listings?.price && (
+                            <span className="block text-xs font-medium text-red-600 mt-0.5">
+                              ₦{conversation.car_listings.price.toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                        {/* Time & Open Chat Button */}
+                        <div className="flex flex-col items-end min-w-[70px] flex-shrink-0">
+                          <span className="text-xs text-gray-400 flex items-center mb-2">
+                            <Clock className="h-4 w-4 mr-0.5" />
+                            {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
+                          </span>
+                          <Button variant="secondary" size="sm" className="opacity-80 hover:opacity-100 flex items-center gap-1">
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="hidden sm:inline">Open</span>
                           </Button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
         </Card>
 
+        {/* Chat Dialog */}
         <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>
+          <DialogContent className="max-w-lg sm:max-w-2xl border-0 rounded-2xl shadow-2xl px-0 py-0 bg-white">
+            <DialogHeader className="rounded-t-2xl p-6 pb-2 bg-gradient-to-r from-red-600/80 to-red-400/80">
+              <DialogTitle className="text-white font-bold text-xl tracking-tight flex items-center gap-2">
+                <MessageSquare className="h-6 w-6" />
                 {selectedConversation && `Chat about ${getCarTitle(selectedConversation)}`}
               </DialogTitle>
+              <div className="text-sm text-red-50">
+                {selectedConversation && (
+                  <>With {getOtherUserName(selectedConversation)}</>
+                )}
+              </div>
             </DialogHeader>
-            {selectedConversation && (
-              <ChatInterface
-                conversationId={selectedConversation.id}
-                carTitle={getCarTitle(selectedConversation)}
-                otherUserName={getOtherUserName(selectedConversation)}
-              />
-            )}
+            <div className="p-2 sm:p-4">
+              {selectedConversation && (
+                <ChatInterface
+                  conversationId={selectedConversation.id}
+                  carTitle={getCarTitle(selectedConversation)}
+                  otherUserName={getOtherUserName(selectedConversation)}
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>
