@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, User, ChevronDown, LogOut, Edit, Heart, MessageSquare, Zap } from "lucide-react";
@@ -12,6 +11,7 @@ export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isMobileBuyCarOpen, setIsMobileBuyCarOpen] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
@@ -111,7 +111,7 @@ export const Navigation = () => {
                   <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
-                {/* Dropdown Menu with Columns */}
+                {/* Desktop Dropdown Menu with Columns */}
                 <div className={`absolute top-full left-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 transform ${
                   isDropdownOpen 
                     ? 'opacity-100 translate-y-0 visible' 
@@ -283,38 +283,77 @@ export const Navigation = () => {
             <div className="md:hidden pb-4 border-t border-gray-200">
               <div className="flex flex-col space-y-3 pt-4">
                 <div className="space-y-2">
-                  <Link 
-                    to="/cars" 
-                    className="block text-gray-700 hover:text-red-600 font-medium py-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Buy Car
-                  </Link>
-                  <div className="ml-4 space-y-2 max-h-48 overflow-y-auto">
-                    {[...carCategories, ...carBrands].slice(0, 8).map((item, index) => (
-                      <Link 
-                        key={index} 
-                        to={item.link} 
-                        className="flex items-center text-sm text-gray-600 hover:text-red-600 py-1"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        {item.logo && (
-                          <span className="w-4 h-4 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
-                            {item.logo}
-                          </span>
-                        )}
-                        {item.name}
-                      </Link>
-                    ))}
-                    <Link 
-                      to="/cars" 
-                      className="text-sm text-red-600 font-medium py-1 block"
-                      onClick={() => setIsMenuOpen(false)}
+                  {/* Mobile Buy Car Dropdown */}
+                  <div>
+                    <button 
+                      onClick={() => setIsMobileBuyCarOpen(!isMobileBuyCarOpen)}
+                      className="flex items-center justify-between w-full text-gray-700 hover:text-red-600 font-medium py-2"
                     >
-                      View All →
-                    </Link>
+                      Buy Car
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMobileBuyCarOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isMobileBuyCarOpen && (
+                      <div className="ml-4 space-y-2 max-h-64 overflow-y-auto bg-gray-50 rounded-lg p-3 mt-2">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Vehicle Types</p>
+                          {carCategories.map((category, index) => (
+                            <Link 
+                              key={index} 
+                              to={category.link} 
+                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-1"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileBuyCarOpen(false);
+                              }}
+                            >
+                              {category.logo && (
+                                <span className="w-4 h-4 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                                  {category.logo}
+                                </span>
+                              )}
+                              {category.name}
+                            </Link>
+                          ))}
+                        </div>
+                        
+                        <div className="border-t border-gray-200 pt-2 mt-3">
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Popular Brands</p>
+                          {carBrands.slice(0, 6).map((brand, index) => (
+                            <Link 
+                              key={index} 
+                              to={brand.link} 
+                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-1"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileBuyCarOpen(false);
+                              }}
+                            >
+                              <span className="w-4 h-4 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                                {brand.logo}
+                              </span>
+                              {brand.name}
+                            </Link>
+                          ))}
+                        </div>
+                        
+                        <div className="border-t border-gray-200 pt-2 mt-3">
+                          <Link 
+                            to="/cars" 
+                            className="text-sm text-red-600 font-medium py-1 block text-center"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              setIsMobileBuyCarOpen(false);
+                            }}
+                          >
+                            View All Listings →
+                          </Link>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+                
                 <Link 
                   to="/sell" 
                   className="text-gray-700 hover:text-red-600 font-medium py-2"
