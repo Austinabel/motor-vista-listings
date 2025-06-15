@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, ChevronDown, LogOut, Edit, Heart, MessageSquare, Zap } from "lucide-react";
+import { Car, Menu, X, User, ChevronDown, LogOut, Edit, Heart, MessageSquare, Zap, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +16,7 @@ export const Navigation = () => {
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
+  const isDealer = user?.user_metadata?.user_type === 'dealer';
 
   // Fetch user profile to get the name
   const { data: profile } = useQuery({
@@ -214,9 +214,23 @@ export const Navigation = () => {
                   
                   {isUserDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                      {isDealer && (
+                        <>
+                          <Link
+                            to="/dealer/dashboard"
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <LayoutDashboard className="h-4 w-4 mr-2" />
+                            Dashboard
+                          </Link>
+                          <div className="border-t border-gray-100 my-1" />
+                        </>
+                      )}
                       <Link
                         to="/profile/edit"
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsUserDropdownOpen(false)}
                       >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Profile
@@ -224,6 +238,7 @@ export const Navigation = () => {
                       <Link
                         to="/profile/favorites"
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsUserDropdownOpen(false)}
                       >
                         <Heart className="h-4 w-4 mr-2" />
                         Favorites
@@ -231,6 +246,7 @@ export const Navigation = () => {
                       <Link
                         to="/profile/messages"
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsUserDropdownOpen(false)}
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Messages
@@ -238,13 +254,17 @@ export const Navigation = () => {
                       <Link
                         to="/profile/boost-sales"
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsUserDropdownOpen(false)}
                       >
                         <Zap className="h-4 w-4 mr-2" />
                         Boost Sales
                       </Link>
                       <div className="border-t border-gray-100 mt-1 pt-1">
                         <button
-                          onClick={handleSignOut}
+                          onClick={() => {
+                            handleSignOut();
+                            setIsUserDropdownOpen(false);
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
                         >
                           <LogOut className="h-4 w-4 mr-2" />
@@ -398,6 +418,19 @@ export const Navigation = () => {
                         
                         {isMobileUserDropdownOpen && (
                           <div className="ml-6 space-y-2 bg-gray-50 rounded-lg p-3 mt-2">
+                            {isDealer && (
+                               <Link
+                                to="/dealer/dashboard"
+                                className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
+                                onClick={() => {
+                                  setIsMenuOpen(false);
+                                  setIsMobileUserDropdownOpen(false);
+                                }}
+                              >
+                                <LayoutDashboard className="h-4 w-4 mr-2" />
+                                Dashboard
+                              </Link>
+                            )}
                             <Link 
                               to="/profile/edit" 
                               className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
