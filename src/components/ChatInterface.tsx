@@ -22,13 +22,15 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch messages when conversation changes
   useEffect(() => {
     if (conversationId) {
-      console.log('ChatInterface: Setting up for conversation:', conversationId);
+      console.log('ChatInterface: Fetching messages for conversation:', conversationId);
       fetchMessages(conversationId);
     }
-  }, [conversationId]);
+  }, [conversationId, fetchMessages]);
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -75,6 +77,9 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
     }
   };
 
+  // Filter messages for current conversation to ensure we only show relevant messages
+  const conversationMessages = messages.filter(msg => msg.conversation_id === conversationId);
+
   return (
     <Card className="h-[600px] flex flex-col">
       <CardHeader className="pb-3 flex-shrink-0">
@@ -88,13 +93,13 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
       <CardContent className="flex-1 flex flex-col p-4 pt-0 min-h-0">
         {/* Messages Container */}
         <div className="flex-1 overflow-y-auto mb-4 space-y-3 min-h-0">
-          {messages.length === 0 ? (
+          {conversationMessages.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>No messages yet. Start the conversation!</p>
             </div>
           ) : (
-            messages.map((message: Message) => (
+            conversationMessages.map((message: Message) => (
               <div
                 key={message.id}
                 className={`flex ${

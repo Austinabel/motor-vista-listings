@@ -41,47 +41,40 @@ export const useMessaging = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
-  // Real-time subscription for messages - improved implementation
+  // Set up real-time subscription for messages - this will work across all conversations
   useEffect(() => {
-    if (!currentConversationId) {
-      // Clear messages when no conversation is selected
-      setMessages([]);
-      return;
-    }
+    if (!user) return;
 
-    console.log('Setting up real-time subscription for conversation:', currentConversationId);
-    
-    // Create a unique channel name for this conversation
-    const channelName = `messages-${currentConversationId}`;
+    console.log('Setting up real-time subscription for user:', user.id);
     
     const channel = supabase
-      .channel(channelName)
+      .channel('messages-realtime')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${currentConversationId}`
+          table: 'messages'
         },
         (payload) => {
           console.log('New message received via real-time:', payload);
           const newMessage = payload.new as Message;
           
+          // Add message to current conversation if it matches
           setMessages(prevMessages => {
-            // Check if message already exists to avoid duplicates
-            const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
-            if (messageExists) {
-              console.log('Message already exists, skipping duplicate');
-              return prevMessages;
+            // Check if this message belongs to the currently viewed conversation
+            if (prevMessages.length > 0 && prevMessages[0].conversation_id === newMessage.conversation_id) {
+              // Check if message already exists to avoid duplicates
+              const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
+              if (!messageExists) {
+                console.log('Adding new message to current conversation');
+                return [...prevMessages, newMessage].sort((a, b) => 
+                  new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                );
+              }
             }
-            
-            console.log('Adding new message to state');
-            return [...prevMessages, newMessage].sort((a, b) => 
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-            );
+            return prevMessages;
           });
         }
       )
@@ -90,8 +83,7 @@ export const useMessaging = () => {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${currentConversationId}`
+          table: 'messages'
         },
         (payload) => {
           console.log('Message updated via real-time:', payload);
@@ -109,10 +101,10 @@ export const useMessaging = () => {
       });
 
     return () => {
-      console.log('Cleaning up real-time subscription for:', channelName);
+      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [currentConversationId]);
+  }, [user]);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -197,9 +189,6 @@ export const useMessaging = () => {
   const fetchMessages = async (conversationId: string) => {
     try {
       console.log('Fetching messages for conversation:', conversationId);
-      
-      // Set the current conversation ID first to start real-time subscription
-      setCurrentConversationId(conversationId);
 
       const { data, error } = await supabase
         .from('messages')
