@@ -163,6 +163,7 @@ export type Database = {
           status: string
           tax_id: string | null
           updated_at: string
+          user_id: string | null
           website: string | null
           year_established: string
         }
@@ -185,6 +186,7 @@ export type Database = {
           status?: string
           tax_id?: string | null
           updated_at?: string
+          user_id?: string | null
           website?: string | null
           year_established: string
         }
@@ -207,6 +209,7 @@ export type Database = {
           status?: string
           tax_id?: string | null
           updated_at?: string
+          user_id?: string | null
           website?: string | null
           year_established?: string
         }
