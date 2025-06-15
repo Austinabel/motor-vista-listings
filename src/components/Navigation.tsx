@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, User, ChevronDown, LogOut, Edit, Heart, MessageSquare, Zap } from "lucide-react";
@@ -86,13 +87,13 @@ export const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-6xl">
-      <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-2xl border border-gray-200/50">
-        <div className="px-6">
-          <div className="flex justify-between items-center py-4">
+    <nav className="fixed top-2 left-2 right-2 md:top-4 md:left-1/2 md:transform md:-translate-x-1/2 z-50 md:w-[95%] md:max-w-6xl">
+      <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl md:rounded-2xl border border-gray-200/50">
+        <div className="px-3 md:px-6">
+          <div className="flex justify-between items-center py-3 md:py-4">
             <Link to="/" className="flex items-center space-x-2">
-              <Car className="h-8 w-8 text-red-600" />
-              <span className="text-2xl font-bold text-gray-900">motorcars.ng</span>
+              <Car className="h-6 w-6 md:h-8 md:w-8 text-red-600" />
+              <span className="text-lg md:text-2xl font-bold text-gray-900">motorcars.ng</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -270,82 +271,137 @@ export const Navigation = () => {
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden"
+              className="md:hidden p-2"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="md:hidden py-4 border-t">
-              <div className="flex flex-col space-y-4">
+            <div className="md:hidden pb-4 border-t border-gray-200">
+              <div className="flex flex-col space-y-3 pt-4">
                 <div className="space-y-2">
-                  <button className="text-gray-700 hover:text-red-600 font-medium text-left w-full">
+                  <Link 
+                    to="/cars" 
+                    className="block text-gray-700 hover:text-red-600 font-medium py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     Buy Car
-                  </button>
-                  <div className="ml-4 space-y-2">
-                    {[...carCategories, ...carBrands].map((item, index) => (
-                      <Link key={index} to={item.link} className="flex items-center text-sm text-gray-600 hover:text-red-600">
+                  </Link>
+                  <div className="ml-4 space-y-2 max-h-48 overflow-y-auto">
+                    {[...carCategories, ...carBrands].slice(0, 8).map((item, index) => (
+                      <Link 
+                        key={index} 
+                        to={item.link} 
+                        className="flex items-center text-sm text-gray-600 hover:text-red-600 py-1"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         {item.logo && (
-                          <span className="w-5 h-5 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
+                          <span className="w-4 h-4 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
                             {item.logo}
                           </span>
                         )}
                         {item.name}
                       </Link>
                     ))}
+                    <Link 
+                      to="/cars" 
+                      className="text-sm text-red-600 font-medium py-1 block"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      View All →
+                    </Link>
                   </div>
                 </div>
-                <Link to="/sell" className="text-gray-700 hover:text-red-600 font-medium">
+                <Link 
+                  to="/sell" 
+                  className="text-gray-700 hover:text-red-600 font-medium py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   Sell Your Car
                 </Link>
-                <Link to="/buy-from-abroad" className="text-gray-700 hover:text-red-600 font-medium">
+                <Link 
+                  to="/buy-from-abroad" 
+                  className="text-gray-700 hover:text-red-600 font-medium py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   Buy From Abroad
                 </Link>
-                <Link to="/dealers" className="text-gray-700 hover:text-red-600 font-medium">
+                <Link 
+                  to="/dealers" 
+                  className="text-gray-700 hover:text-red-600 font-medium py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   Dealers
                 </Link>
-                <div className="flex flex-col space-y-2 pt-4 border-t">
-                  {user ? (
+                
+                <div className="flex flex-col space-y-3 pt-3 border-t border-gray-200">
+                  {loading ? (
+                    <div className="w-full h-8 bg-gray-200 rounded animate-pulse"></div>
+                  ) : user ? (
                     <>
-                      <span className="text-sm text-gray-600 truncate">{getUserDisplayName()}</span>
-                      <Link to="/profile/edit" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="text-sm text-gray-600 truncate py-1">{getUserDisplayName()}</span>
+                      <Link 
+                        to="/profile/edit" 
+                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Profile
                       </Link>
-                      <Link to="/profile/favorites" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                      <Link 
+                        to="/profile/favorites" 
+                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         <Heart className="h-4 w-4 mr-2" />
                         Favorites
                       </Link>
-                      <Link to="/profile/messages" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                      <Link 
+                        to="/profile/messages" 
+                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Messages
                       </Link>
-                      <Link to="/profile/boost-sales" className="text-sm text-gray-600 hover:text-red-600 flex items-center">
+                      <Link 
+                        to="/profile/boost-sales" 
+                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         <Zap className="h-4 w-4 mr-2" />
                         Boost Sales
                       </Link>
-                      <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          handleSignOut();
+                          setIsMenuOpen(false);
+                        }} 
+                        className="w-full justify-start mt-2"
+                      >
                         <LogOut className="h-4 w-4 mr-2" />
                         Sign Out
                       </Button>
                     </>
                   ) : (
-                    <>
-                      <Link to="/login">
-                        <Button variant="outline" size="sm" className="w-full">
+                    <div className="flex flex-col space-y-2">
+                      <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" size="sm" className="w-full justify-start">
                           <User className="h-4 w-4 mr-2" />
                           Login
                         </Button>
                       </Link>
-                      <Link to="/register">
+                      <Link to="/register" onClick={() => setIsMenuOpen(false)}>
                         <Button size="sm" className="bg-red-600 hover:bg-red-700 w-full">
                           Register
                         </Button>
                       </Link>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>

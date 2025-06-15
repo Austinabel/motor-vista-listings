@@ -1,3 +1,4 @@
+
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { SearchFilters } from "@/components/SearchFilters";
@@ -14,19 +15,21 @@ import { VerifiedDealers } from "@/components/VerifiedDealers";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Navigation />
       <Hero />
-      <SearchFilters />
-      <BrandCarousel />
-      <FeaturedListings />
-      <VerifiedDealers />
-      <TrustedPartners />
-      <HelpIcons />
-      <Testimonials />
-      <ToolsSection />
-      <DownloadApp />
-      <FAQ />
+      <div className="px-2 md:px-0">
+        <SearchFilters />
+        <BrandCarousel />
+        <FeaturedListings />
+        <VerifiedDealers />
+        <TrustedPartners />
+        <HelpIcons />
+        <Testimonials />
+        <ToolsSection />
+        <DownloadApp />
+        <FAQ />
+      </div>
       <Footer />
     </div>
   );
