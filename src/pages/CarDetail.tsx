@@ -19,6 +19,7 @@ const CarDetail = () => {
   useEffect(() => {
     if (id) {
       fetchCarDetails();
+      checkIfFavorite();
     }
   }, [id]);
 
@@ -52,12 +53,14 @@ const CarDetail = () => {
         console.error('Error fetching images:', imagesError);
       }
 
+      console.log('Images:', images);
+
       // Fetch user profile if user_id exists
       let profileData = null;
       if (carData.user_id) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, user_type')
+          .select('first_name, last_name, user_type, phone')
           .eq('id', carData.user_id)
           .single();
 
@@ -98,8 +101,29 @@ const CarDetail = () => {
     }
   };
 
+  const checkIfFavorite = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('listing_id', id)
+        .single();
+
+      if (!error && data) {
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+    }
+  };
+
   const getListedBy = () => {
-    if (!listing) return { type: 'unknown', name: 'Unknown' };
+    if (!listing) return { type: 'unknown', name: 'Unknown Seller', phone: null, email: null };
     
     if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
       return {
@@ -113,12 +137,16 @@ const CarDetail = () => {
       const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
       return {
         type: 'user',
-        name: fullName || 'Private Seller'
+        name: fullName || 'Private Seller',
+        phone: listing.profiles.phone,
+        email: null // Private sellers don't expose email directly
       };
     }
     return {
       type: 'unknown',
-      name: 'Unknown Seller'
+      name: 'Unknown Seller',
+      phone: null,
+      email: null
     };
   };
 
@@ -219,8 +247,12 @@ const CarDetail = () => {
     
     if (listedBy.email) {
       window.open(`mailto:${listedBy.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
+    } else if (listedBy.phone) {
+      // Fallback to WhatsApp if no email
+      const message = `Hi, I'm interested in your ${listing?.year} ${listing?.make} ${listing?.model} listed for ₦${listing?.price?.toLocaleString()}. Please let me know if it's still available.`;
+      window.open(`https://wa.me/${listedBy.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
     } else {
-      toast.error('Email not available');
+      toast.error('Contact information not available');
     }
   };
 
@@ -418,15 +450,17 @@ const CarDetail = () => {
                   <Button 
                     className="w-full bg-red-600 hover:bg-red-700"
                     onClick={handleCallSeller}
+                    disabled={!listedBy.phone}
                   >
                     <Phone className="mr-2 h-4 w-4" />
-                    Call Seller
+                    {listedBy.phone ? 'Call Seller' : 'No Phone Available'}
                   </Button>
                   
                   <Button 
                     variant="outline" 
                     className="w-full"
                     onClick={handleSendMessage}
+                    disabled={!listedBy.email && !listedBy.phone}
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Send Message
@@ -436,6 +470,7 @@ const CarDetail = () => {
                     variant="outline" 
                     className="w-full"
                     onClick={handleScheduleTestDrive}
+                    disabled={!listedBy.email && !listedBy.phone}
                   >
                     Schedule Test Drive
                   </Button>
