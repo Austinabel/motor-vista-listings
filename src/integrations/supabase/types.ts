@@ -58,6 +58,7 @@ export type Database = {
           make: string
           mileage: string | null
           model: string
+          payment_reference: string | null
           price: number
           status: string
           transmission: string | null
@@ -81,6 +82,7 @@ export type Database = {
           make: string
           mileage?: string | null
           model: string
+          payment_reference?: string | null
           price: number
           status?: string
           transmission?: string | null
@@ -104,6 +106,7 @@ export type Database = {
           make?: string
           mileage?: string | null
           model?: string
+          payment_reference?: string | null
           price?: number
           status?: string
           transmission?: string | null

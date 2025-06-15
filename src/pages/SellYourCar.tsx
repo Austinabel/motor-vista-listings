@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,12 +13,15 @@ import { Check, Upload, Car, Star, Crown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { ManualPaymentDetails } from "@/components/ManualPaymentDetails";
 
 const SellYourCar = () => {
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [loading, setLoading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
+  const [newListing, setNewListing] = useState<any>(null);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -163,6 +167,7 @@ const SellYourCar = () => {
       // Validate required fields
       if (!formData.make || !formData.model || !formData.year || !formData.price || !formData.condition || !formData.location) {
         toast.error("Please fill in all required fields");
+        setLoading(false);
         return;
       }
 
@@ -170,6 +175,8 @@ const SellYourCar = () => {
       const durationInDays = selectedPlan === "free" ? 30 : selectedPlan === "standard" ? 60 : 90;
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + durationInDays);
+
+      const listingStatus = selectedPlan === 'free' ? 'pending_review' : 'pending_payment';
 
       // Insert car listing
       const { data: listing, error: listingError } = await supabase
@@ -192,7 +199,7 @@ const SellYourCar = () => {
           listing_price: selectedPlanDetails?.listingPrice || 0,
           listing_duration: durationInDays,
           expires_at: expiresAt.toISOString(),
-          status: 'pending'
+          status: listingStatus
         })
         .select()
         .single();
@@ -200,6 +207,7 @@ const SellYourCar = () => {
       if (listingError) {
         console.error('Listing error:', listingError);
         toast.error("Failed to create listing. Please try again.");
+        setLoading(false);
         return;
       }
 
@@ -212,9 +220,9 @@ const SellYourCar = () => {
         toast.success("Your car listing has been submitted for review!");
         navigate("/");
       } else {
-        toast.success(`Your ${selectedPlanDetails?.name} listing has been created and is pending payment processing.`);
-        // Here you would typically redirect to payment processing
-        navigate("/");
+        setNewListing(listing);
+        setStep('payment');
+        toast.info(`Your ${selectedPlanDetails?.name} listing has been created.`);
       }
 
     } catch (error) {
@@ -224,6 +232,39 @@ const SellYourCar = () => {
       setLoading(false);
     }
   };
+
+  if (step === 'payment' && newListing) {
+    const planDetails = pricingPlans.find(p => p.id === newListing.listing_plan);
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center px-4">
+        <ManualPaymentDetails
+          listingId={newListing.id}
+          planName={planDetails?.name || 'Listing'}
+          price={planDetails?.listingPrice || 0}
+          onPaymentSubmitted={() => setStep('success')}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'success') {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center px-4">
+        <Card className="w-full max-w-md text-center animate-fade-in">
+          <CardHeader>
+            <CardTitle>Success!</CardTitle>
+            <CardDescription>Your payment information has been submitted.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Your listing is now under review and will be activated once payment is confirmed. Thank you!</p>
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => navigate('/')}>Back to Home</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
