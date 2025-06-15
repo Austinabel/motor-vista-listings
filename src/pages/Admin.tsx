@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building } from "lucide-react";
 
 const Admin = () => {
   const [dealers, setDealers] = useState([]);
@@ -46,7 +46,11 @@ const Admin = () => {
     try {
       const { data, error } = await supabase
         .from('car_listings')
-        .select('*')
+        .select(`
+          *,
+          profiles!car_listings_user_id_fkey(first_name, last_name, user_type),
+          dealers!left(business_name, contact_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -109,6 +113,25 @@ const Admin = () => {
       console.error('Error in updateListingStatus:', error);
       toast.error('An unexpected error occurred');
     }
+  };
+
+  const getListedBy = (listing: any) => {
+    if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
+      return {
+        type: 'dealer',
+        name: listing.dealers[0].business_name,
+        contact: listing.dealers[0].contact_name
+      };
+    } else if (listing.profiles) {
+      return {
+        type: 'user',
+        name: `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim() || 'Private User'
+      };
+    }
+    return {
+      type: 'unknown',
+      name: 'Unknown'
+    };
   };
 
   const getStatusIcon = (status: string) => {
@@ -200,6 +223,7 @@ const Admin = () => {
                       <TableRow>
                         <TableHead>Car Details</TableHead>
                         <TableHead>Price</TableHead>
+                        <TableHead>Listed By</TableHead>
                         <TableHead>Plan</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Date</TableHead>
@@ -207,52 +231,71 @@ const Admin = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {carListings.map((listing: any) => (
-                        <TableRow 
-                          key={listing.id}
-                          className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
-                        >
-                          <TableCell>
-                            <div>
-                              <div className="font-semibold">
-                                {listing.year} {listing.make} {listing.model}
+                      {carListings.map((listing: any) => {
+                        const listedBy = getListedBy(listing);
+                        return (
+                          <TableRow 
+                            key={listing.id}
+                            className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                          >
+                            <TableCell>
+                              <div>
+                                <div className="font-semibold">
+                                  {listing.year} {listing.make} {listing.model}
+                                </div>
+                                <div className="text-sm text-gray-500 flex items-center">
+                                  <MapPin className="w-3 h-3 mr-1" />
+                                  {listing.location}
+                                </div>
                               </div>
-                              <div className="text-sm text-gray-500 flex items-center">
-                                <MapPin className="w-3 h-3 mr-1" />
-                                {listing.location}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                              <div className="text-sm text-gray-500">{listing.condition}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {listedBy.type === 'dealer' ? (
+                                  <Building className="w-3 h-3 text-blue-600" />
+                                ) : (
+                                  <User className="w-3 h-3 text-gray-600" />
+                                )}
+                                <div>
+                                  <div className="text-sm font-medium">{listedBy.name}</div>
+                                  {listedBy.contact && (
+                                    <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                  )}
+                                  <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                            <div className="text-sm text-gray-500">{listing.condition}</div>
-                          </TableCell>
-                          <TableCell>
-                            {getPlanBadge(listing.listing_plan)}
-                            <div className="text-xs text-gray-500 mt-1">
-                              ₦{listing.listing_price.toLocaleString()}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {getStatusBadge(listing.status)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {new Date(listing.created_at).toLocaleDateString()}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setSelectedListing(listing)}
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell>
+                              {getPlanBadge(listing.listing_plan)}
+                              <div className="text-xs text-gray-500 mt-1">
+                                ₦{listing.listing_price.toLocaleString()}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {getStatusBadge(listing.status)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {new Date(listing.created_at).toLocaleDateString()}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedListing(listing)}
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -291,6 +334,20 @@ const Admin = () => {
                           <div>
                             <Label className="text-sm font-medium text-gray-600">Location:</Label>
                             <p className="text-sm">{selectedListing.location}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-gray-600">Listed By:</Label>
+                            <div className="flex items-center gap-2 mt-1">
+                              {getListedBy(selectedListing).type === 'dealer' ? (
+                                <Building className="w-4 h-4 text-blue-600" />
+                              ) : (
+                                <User className="w-4 h-4 text-gray-600" />
+                              )}
+                              <div>
+                                <p className="text-sm font-medium">{getListedBy(selectedListing).name}</p>
+                                <p className="text-xs text-gray-500 capitalize">{getListedBy(selectedListing).type}</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

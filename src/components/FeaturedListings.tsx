@@ -1,201 +1,89 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Heart, Eye, User, Building } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const allCars = [
-  {
-    id: 1,
-    title: "2020 Toyota Camry LE",
-    price: "₦15,500,000",
-    location: "Lagos, Nigeria",
-    mileage: "45,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-  {
-    id: 2,
-    title: "2019 Honda Accord Sport",
-    price: "₦13,200,000",
-    location: "Abuja, Nigeria",
-    mileage: "52,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-  },
-  {
-    id: 3,
-    title: "2021 Mercedes C-Class",
-    price: "₦28,900,000",
-    location: "Port Harcourt, Nigeria",
-    mileage: "28,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-  },
-  {
-    id: 4,
-    title: "2018 BMW X5",
-    price: "₦22,500,000",
-    location: "Lagos, Nigeria",
-    mileage: "65,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
-  },
-  {
-    id: 5,
-    title: "2019 Audi A4",
-    price: "₦18,700,000",
-    location: "Abuja, Nigeria",
-    mileage: "38,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-  },
-  {
-    id: 6,
-    title: "2020 Lexus RX 350",
-    price: "₦32,000,000",
-    location: "Lagos, Nigeria",
-    mileage: "25,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-  {
-    id: 7,
-    title: "2018 Ford Explorer",
-    price: "₦14,500,000",
-    location: "Port Harcourt, Nigeria",
-    mileage: "78,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-  },
-  {
-    id: 8,
-    title: "2019 Nissan Altima",
-    price: "₦11,800,000",
-    location: "Abuja, Nigeria",
-    mileage: "45,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
-  },
-  {
-    id: 9,
-    title: "2020 Hyundai Sonata",
-    price: "₦12,900,000",
-    location: "Lagos, Nigeria",
-    mileage: "32,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-  },
-  {
-    id: 10,
-    title: "2018 Volkswagen Passat",
-    price: "₦13,500,000",
-    location: "Port Harcourt, Nigeria",
-    mileage: "56,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-  {
-    id: 11,
-    title: "2019 Kia Optima",
-    price: "₦10,500,000",
-    location: "Abuja, Nigeria",
-    mileage: "48,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-  },
-  {
-    id: 12,
-    title: "2020 Peugeot 508",
-    price: "₦16,200,000",
-    location: "Lagos, Nigeria",
-    mileage: "22,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
-  },
-  {
-    id: 13,
-    title: "2018 Mazda CX-5",
-    price: "₦17,800,000",
-    location: "Port Harcourt, Nigeria",
-    mileage: "62,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-  },
-  {
-    id: 14,
-    title: "2019 Subaru Outback",
-    price: "₦19,300,000",
-    location: "Abuja, Nigeria",
-    mileage: "35,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-  {
-    id: 15,
-    title: "2020 Infiniti Q50",
-    price: "₦21,700,000",
-    location: "Lagos, Nigeria",
-    mileage: "28,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-  },
-  {
-    id: 16,
-    title: "2018 Acura TLX",
-    price: "₦18,900,000",
-    location: "Port Harcourt, Nigeria",
-    mileage: "55,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
-  },
-  {
-    id: 17,
-    title: "2019 Cadillac XT5",
-    price: "₦24,500,000",
-    location: "Abuja, Nigeria",
-    mileage: "42,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-  },
-  {
-    id: 18,
-    title: "2020 Lincoln MKZ",
-    price: "₦20,800,000",
-    location: "Lagos, Nigeria",
-    mileage: "30,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 export const FeaturedListings = () => {
+  const [carListings, setCarListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [visibleRows, setVisibleRows] = useState(3);
   const carsPerRow = 6;
   const totalCarsPerPage = visibleRows * carsPerRow;
   const maxRows = 6;
 
-  const displayedCars = allCars.slice(0, totalCarsPerPage);
-  const canLoadMore = visibleRows < maxRows;
-  const isViewListings = visibleRows >= maxRows;
+  useEffect(() => {
+    fetchCarListings();
+  }, []);
+
+  const fetchCarListings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('car_listings')
+        .select(`
+          *,
+          profiles!car_listings_user_id_fkey(first_name, last_name, user_type),
+          dealers!left(business_name, contact_name),
+          car_listing_images(image_url, is_primary)
+        `)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(108); // 6 rows * 6 cars * 3 pages
+
+      if (error) {
+        console.error('Error fetching car listings:', error);
+      } else {
+        setCarListings(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchCarListings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getListedBy = (listing) => {
+    if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
+      return {
+        type: 'dealer',
+        name: listing.dealers[0].business_name,
+        icon: <Building className="w-3 h-3 text-blue-600" />
+      };
+    } else if (listing.profiles) {
+      return {
+        type: 'user',
+        name: 'Private Seller',
+        icon: <User className="w-3 h-3 text-gray-600" />
+      };
+    }
+    return {
+      type: 'unknown',
+      name: 'Unknown',
+      icon: <User className="w-3 h-3 text-gray-600" />
+    };
+  };
+
+  const getCarImage = (listing) => {
+    const images = listing.car_listing_images || [];
+    const primaryImage = images.find(img => img.is_primary)?.image_url;
+    return primaryImage || images[0]?.image_url || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gradient-to-r from-red-600 to-red-700 text-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center">Loading featured listings...</div>
+        </div>
+      </section>
+    );
+  }
+
+  const displayedCars = carListings.slice(0, totalCarsPerPage);
+  const canLoadMore = visibleRows < maxRows && displayedCars.length >= totalCarsPerPage;
 
   const handleLoadMore = () => {
     if (canLoadMore) {
@@ -215,37 +103,44 @@ export const FeaturedListings = () => {
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {displayedCars.map((car, index) => (
-            <Card 
-              key={car.id} 
-              className="overflow-hidden hover:shadow-lg transition-all duration-500 hover:scale-105 animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="relative">
-                <img src={car.image} alt={car.title} className="w-full h-32 object-cover" />
-                <Button size="sm" variant="secondary" className="absolute top-1 right-1 p-1">
-                  <Heart className="h-3 w-3" />
-                </Button>
-              </div>
-              <CardContent className="p-3">
-                <h3 className="font-bold text-sm mb-2 truncate">{car.title}</h3>
-                <p className="text-lg font-bold text-red-600 mb-1">{car.price}</p>
-                <p className="text-xs text-gray-600 mb-2 truncate">{car.location}</p>
-                <div className="grid grid-cols-1 gap-1 text-xs">
-                  <span className="truncate">{car.mileage}</span>
-                  <span className="truncate">{car.fuel} • {car.transmission}</span>
-                </div>
-              </CardContent>
-              <CardFooter className="p-3 pt-0">
-                <Link to={`/cars/${car.id}`} className="w-full">
-                  <Button className="w-full text-xs py-1">
-                    <Eye className="mr-1 h-3 w-3" />
-                    View Details
+          {displayedCars.map((car, index) => {
+            const listedBy = getListedBy(car);
+            return (
+              <Card 
+                key={car.id} 
+                className="overflow-hidden hover:shadow-lg transition-all duration-500 hover:scale-105 animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="relative">
+                  <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
+                  <Button size="sm" variant="secondary" className="absolute top-1 right-1 p-1">
+                    <Heart className="h-3 w-3" />
                   </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+                </div>
+                <CardContent className="p-3">
+                  <h3 className="font-bold text-sm mb-2 truncate">{car.year} {car.make} {car.model}</h3>
+                  <p className="text-lg font-bold text-red-600 mb-1">₦{car.price.toLocaleString()}</p>
+                  <p className="text-xs text-gray-600 mb-2 truncate">{car.location}</p>
+                  <div className="grid grid-cols-1 gap-1 text-xs">
+                    {car.mileage && <span className="truncate">{car.mileage}</span>}
+                    <span className="truncate">{car.fuel_type || 'Petrol'} • {car.transmission || 'Automatic'}</span>
+                    <div className="flex items-center gap-1 mt-1">
+                      {listedBy.icon}
+                      <span className="text-xs text-gray-500 truncate">{listedBy.name}</span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-3 pt-0">
+                  <Link to={`/cars/${car.id}`} className="w-full">
+                    <Button className="w-full text-xs py-1">
+                      <Eye className="mr-1 h-3 w-3" />
+                      View Details
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
         
         {/* Load More Button */}
