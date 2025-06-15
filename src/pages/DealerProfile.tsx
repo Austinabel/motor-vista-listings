@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -20,7 +21,7 @@ const DealerProfile = () => {
   const { dealerId } = useParams<{ dealerId: string }>();
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [reviewText, setReviewText] = useState "";
+  const [reviewText, setReviewText] = useState("");
 
   const { data: dealer, isLoading: isLoadingDealer } = useQuery({
     queryKey: ['dealer', dealerId],
