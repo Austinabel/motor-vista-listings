@@ -21,25 +21,67 @@ export const FeaturedListings = () => {
 
   const fetchCarListings = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch car listings
+      const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
         .select(`
           *,
-          profiles!car_listings_user_id_fkey(first_name, last_name, user_type),
-          dealers!left(business_name, contact_name),
           car_listing_images(image_url, is_primary)
         `)
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(108); // 6 rows * 6 cars * 3 pages
 
-      if (error) {
-        console.error('Error fetching car listings:', error);
-      } else {
-        setCarListings(data || []);
+      if (listingsError) {
+        console.error('Error fetching car listings:', listingsError);
+        setCarListings([]);
+        return;
       }
+
+      // Get unique user IDs from listings
+      const userIds = [...new Set(listings?.map(listing => listing.user_id).filter(Boolean))];
+      
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, user_type')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      // Fetch dealers for dealer users
+      const dealerUserIds = profiles?.filter(p => p.user_type === 'dealer').map(p => p.id) || [];
+      let dealers = [];
+      
+      if (dealerUserIds.length > 0) {
+        const { data: dealersData, error: dealersError } = await supabase
+          .from('dealers')
+          .select('business_name, contact_name')
+          .in('id', dealerUserIds);
+
+        if (!dealersError) {
+          dealers = dealersData || [];
+        }
+      }
+
+      // Combine the data
+      const enrichedListings = listings?.map(listing => {
+        const profile = profiles?.find(p => p.id === listing.user_id);
+        const dealer = dealers?.find(d => d.id === listing.user_id);
+        
+        return {
+          ...listing,
+          profiles: profile,
+          dealers: dealer ? [dealer] : []
+        };
+      }) || [];
+
+      setCarListings(enrichedListings);
     } catch (error) {
       console.error('Error in fetchCarListings:', error);
+      setCarListings([]);
     } finally {
       setLoading(false);
     }

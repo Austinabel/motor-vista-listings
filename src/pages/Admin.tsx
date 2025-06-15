@@ -44,21 +44,59 @@ const Admin = () => {
 
   const fetchCarListings = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch car listings
+      const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
-        .select(`
-          *,
-          profiles!car_listings_user_id_fkey(first_name, last_name, user_type),
-          dealers!left(business_name, contact_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching car listings:', error);
+      if (listingsError) {
+        console.error('Error fetching car listings:', listingsError);
         toast.error('Failed to load car listings');
-      } else {
-        setCarListings(data || []);
+        return;
       }
+
+      // Get unique user IDs from listings
+      const userIds = [...new Set(listings?.map(listing => listing.user_id).filter(Boolean))];
+      
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, user_type')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      // Fetch dealers for dealer users
+      const dealerUserIds = profiles?.filter(p => p.user_type === 'dealer').map(p => p.id) || [];
+      let dealersData = [];
+      
+      if (dealerUserIds.length > 0) {
+        const { data: dealers, error: dealersError } = await supabase
+          .from('dealers')
+          .select('business_name, contact_name')
+          .in('id', dealerUserIds);
+
+        if (!dealersError) {
+          dealersData = dealers || [];
+        }
+      }
+
+      // Combine the data
+      const enrichedListings = listings?.map(listing => {
+        const profile = profiles?.find(p => p.id === listing.user_id);
+        const dealer = dealersData?.find(d => d.id === listing.user_id);
+        
+        return {
+          ...listing,
+          profiles: profile,
+          dealers: dealer ? [dealer] : []
+        };
+      }) || [];
+
+      setCarListings(enrichedListings);
     } catch (error) {
       console.error('Error in fetchCarListings:', error);
       toast.error('An unexpected error occurred');

@@ -22,23 +22,58 @@ const CarDetail = () => {
 
   const fetchCarDetails = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch the car listing with images
+      const { data: carData, error: carError } = await supabase
         .from('car_listings')
         .select(`
           *,
-          profiles!car_listings_user_id_fkey(first_name, last_name, user_type),
-          dealers!left(business_name, contact_name, phone, email),
           car_listing_images(image_url, is_primary)
         `)
         .eq('id', id)
         .single();
 
-      if (error) {
-        console.error('Error fetching car details:', error);
+      if (carError) {
+        console.error('Error fetching car details:', carError);
         toast.error('Failed to load car details');
-      } else {
-        setListing(data);
+        return;
       }
+
+      // Fetch user profile if user_id exists
+      let profileData = null;
+      if (carData.user_id) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, user_type')
+          .eq('id', carData.user_id)
+          .single();
+
+        if (!profileError) {
+          profileData = profile;
+        }
+      }
+
+      // Fetch dealer info if user is a dealer
+      let dealerData = null;
+      if (profileData?.user_type === 'dealer' && carData.user_id) {
+        const { data: dealer, error: dealerError } = await supabase
+          .from('dealers')
+          .select('business_name, contact_name, phone, email')
+          .eq('id', carData.user_id)
+          .single();
+
+        if (!dealerError) {
+          dealerData = dealer;
+        }
+      }
+
+      // Combine all the data
+      const enrichedListing = {
+        ...carData,
+        profiles: profileData,
+        dealers: dealerData ? [dealerData] : []
+      };
+
+      setListing(enrichedListing);
     } catch (error) {
       console.error('Error in fetchCarDetails:', error);
       toast.error('An unexpected error occurred');
