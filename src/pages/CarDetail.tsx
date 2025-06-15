@@ -8,6 +8,7 @@ import { Heart, Share2, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Us
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import MessageSellerButton from "@/components/MessageSellerButton";
 
 const CarDetail = () => {
   const { id } = useParams();
@@ -473,6 +474,13 @@ const CarDetail = () => {
                   
                   {user ? (
                     <>
+                      <MessageSellerButton
+                        listingId={listing.id}
+                        sellerId={listing.user_id || ''}
+                        carTitle={`${listing.year} ${listing.make} ${listing.model}`}
+                        sellerName={listedBy.name}
+                      />
+                      
                       <Button 
                         className="w-full bg-red-600 hover:bg-red-700"
                         onClick={handleCallSeller}
