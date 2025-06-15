@@ -26,7 +26,11 @@ export interface Conversation {
     year: string;
     price: number;
   };
-  profiles?: {
+  buyer_profile?: {
+    first_name: string;
+    last_name: string;
+  };
+  seller_profile?: {
     first_name: string;
     last_name: string;
   };
@@ -43,23 +47,77 @@ export const useMessaging = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // First fetch conversations
+      const { data: conversationsData, error: conversationsError } = await supabase
         .from('conversations')
-        .select(`
-          *,
-          car_listings (make, model, year, price),
-          profiles!conversations_buyer_id_fkey (first_name, last_name)
-        `)
+        .select('*')
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order('updated_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching conversations:', error);
+      if (conversationsError) {
+        console.error('Error fetching conversations:', conversationsError);
         toast.error('Failed to load conversations');
         return;
       }
 
-      setConversations(data || []);
+      if (!conversationsData || conversationsData.length === 0) {
+        setConversations([]);
+        return;
+      }
+
+      // Fetch car listings for each conversation
+      const listingIds = conversationsData.map(conv => conv.listing_id);
+      const { data: carListings, error: carListingsError } = await supabase
+        .from('car_listings')
+        .select('id, make, model, year, price')
+        .in('id', listingIds);
+
+      if (carListingsError) {
+        console.error('Error fetching car listings:', carListingsError);
+      }
+
+      // Fetch profiles for buyers and sellers
+      const userIds = [...new Set([
+        ...conversationsData.map(conv => conv.buyer_id),
+        ...conversationsData.map(conv => conv.seller_id)
+      ])];
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      // Combine the data
+      const enrichedConversations = conversationsData.map(conversation => {
+        const carListing = carListings?.find(listing => listing.id === conversation.listing_id);
+        const buyerProfile = profiles?.find(profile => profile.id === conversation.buyer_id);
+        const sellerProfile = profiles?.find(profile => profile.id === conversation.seller_id);
+
+        return {
+          ...conversation,
+          car_listings: carListing ? {
+            make: carListing.make,
+            model: carListing.model,
+            year: carListing.year,
+            price: carListing.price
+          } : undefined,
+          buyer_profile: buyerProfile ? {
+            first_name: buyerProfile.first_name || '',
+            last_name: buyerProfile.last_name || ''
+          } : undefined,
+          seller_profile: sellerProfile ? {
+            first_name: sellerProfile.first_name || '',
+            last_name: sellerProfile.last_name || ''
+          } : undefined
+        };
+      });
+
+      setConversations(enrichedConversations);
     } catch (error) {
       console.error('Error in fetchConversations:', error);
       toast.error('An error occurred while loading conversations');

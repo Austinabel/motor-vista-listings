@@ -31,14 +31,14 @@ const Messages = () => {
     
     // If current user is buyer, show seller info
     if (conversation.buyer_id === user.id) {
-      return conversation.profiles?.first_name && conversation.profiles?.last_name
-        ? `${conversation.profiles.first_name} ${conversation.profiles.last_name}`
+      return conversation.seller_profile?.first_name && conversation.seller_profile?.last_name
+        ? `${conversation.seller_profile.first_name} ${conversation.seller_profile.last_name}`
         : 'Seller';
     }
     
     // If current user is seller, show buyer info  
-    return conversation.profiles?.first_name && conversation.profiles?.last_name
-      ? `${conversation.profiles.first_name} ${conversation.profiles.last_name}`
+    return conversation.buyer_profile?.first_name && conversation.buyer_profile?.last_name
+      ? `${conversation.buyer_profile.first_name} ${conversation.buyer_profile.last_name}`
       : 'Buyer';
   };
 
