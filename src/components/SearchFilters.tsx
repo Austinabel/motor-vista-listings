@@ -20,12 +20,22 @@ const nigerianStates = [
   "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
 ];
 
+const quickCategories = [
+  { id: "brand-new", name: "Brand New", icon: "✨" },
+  { id: "foreign-used", name: "Foreign Used", icon: "🌍" },
+  { id: "toyota", name: "Toyota", icon: "🚗" },
+  { id: "honda", name: "Honda", icon: "🚗" },
+  { id: "mercedes-benz", name: "Mercedes", icon: "🚗" },
+  { id: "electric-cars", name: "Electric", icon: "⚡" },
+];
+
 export const SearchFilters = () => {
   const [searchForm, setSearchForm] = useState({
     make: "",
     model: "",
     priceRange: "",
-    location: ""
+    location: "",
+    condition: ""
   });
   const navigate = useNavigate();
 
@@ -37,12 +47,37 @@ export const SearchFilters = () => {
     navigate(`/cars?${searchParams.toString()}`);
   };
 
+  const handleQuickCategory = (categoryId) => {
+    navigate(`/cars?categories=${categoryId}`);
+  };
+
   return (
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
         <Card className="p-8 shadow-lg">
           <h2 className="text-2xl font-bold text-center mb-8">Find Your Perfect Car</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          
+          {/* Quick Category Buttons */}
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold mb-3 text-gray-600">Quick Categories</h3>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {quickCategories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full flex items-center gap-1"
+                  onClick={() => handleQuickCategory(category.id)}
+                >
+                  <span className="text-xs">{category.icon}</span>
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search Form */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div>
               <Label htmlFor="make">Make</Label>
               <select 
@@ -65,6 +100,20 @@ export const SearchFilters = () => {
                 value={searchForm.model}
                 onChange={(e) => setSearchForm({...searchForm, model: e.target.value})}
               />
+            </div>
+            <div>
+              <Label htmlFor="condition">Condition</Label>
+              <select 
+                id="condition" 
+                className="w-full p-2 border rounded-md"
+                value={searchForm.condition}
+                onChange={(e) => setSearchForm({...searchForm, condition: e.target.value})}
+              >
+                <option value="">Any condition</option>
+                <option value="brand_new">Brand New</option>
+                <option value="foreign_used">Foreign Used</option>
+                <option value="local_used">Local Used</option>
+              </select>
             </div>
             <div>
               <Label htmlFor="price">Price Range</Label>

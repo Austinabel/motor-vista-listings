@@ -12,20 +12,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const categories = [
-  { id: "electric-cars", name: "Electric Cars", logo: "⚡" },
-  { id: "tricycles", name: "Tricycles", logo: "🛺" },
-  { id: "trucks", name: "Trucks", logo: "🚛" },
-  { id: "motorbikes", name: "Motorbikes", logo: "🏍️" },
-  { id: "buses-shuttles", name: "Buses & Shuttles", logo: "🚌" },
-  { id: "toyota", name: "Toyota", logo: "🚗" },
-  { id: "ford", name: "Ford", logo: "🚙" },
-  { id: "honda", name: "Honda", logo: "🚗" },
-  { id: "lexus", name: "Lexus", logo: "🚗" },
-  { id: "mercedes-benz", name: "Mercedes Benz", logo: "🚗" },
-  { id: "bmw", name: "BMW", logo: "🚗" },
-  { id: "acura", name: "Acura", logo: "🚗" },
-  { id: "innoson", name: "Innoson", logo: "🚗" },
-  { id: "nissan", name: "Nissan", logo: "🚗" },
+  // Vehicle Types
+  { id: "electric-cars", name: "Electric Cars", logo: "⚡", type: "vehicle_type" },
+  { id: "tricycles", name: "Tricycles", logo: "🛺", type: "vehicle_type" },
+  { id: "trucks", name: "Trucks", logo: "🚛", type: "vehicle_type" },
+  { id: "motorbikes", name: "Motorbikes", logo: "🏍️", type: "vehicle_type" },
+  { id: "buses-shuttles", name: "Buses & Shuttles", logo: "🚌", type: "vehicle_type" },
+  
+  // Car Brands
+  { id: "toyota", name: "Toyota", logo: "🚗", type: "brand" },
+  { id: "ford", name: "Ford", logo: "🚙", type: "brand" },
+  { id: "honda", name: "Honda", logo: "🚗", type: "brand" },
+  { id: "lexus", name: "Lexus", logo: "🚗", type: "brand" },
+  { id: "mercedes-benz", name: "Mercedes Benz", logo: "🚗", type: "brand" },
+  { id: "bmw", name: "BMW", logo: "🚗", type: "brand" },
+  { id: "acura", name: "Acura", logo: "🚗", type: "brand" },
+  { id: "innoson", name: "Innoson", logo: "🚗", type: "brand" },
+  { id: "nissan", name: "Nissan", logo: "🚗", type: "brand" },
+  
+  // Conditions
+  { id: "brand-new", name: "Brand New", logo: "✨", type: "condition" },
+  { id: "foreign-used", name: "Foreign Used", logo: "🌍", type: "condition" },
+  { id: "local-used", name: "Local Used", logo: "🏠", type: "condition" },
 ];
 
 const nigerianStates = [
@@ -40,7 +48,7 @@ const CARS_PER_PAGE = 8;
 
 const CarListings = () => {
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [displayedCars, setDisplayedCars] = useState(CARS_PER_PAGE);
   const [carListings, setCarListings] = useState([]);
@@ -62,6 +70,13 @@ const CarListings = () => {
 
   useEffect(() => {
     fetchCarListings();
+    
+    // Check URL parameters for initial category selection
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeParam = urlParams.get('type');
+    if (typeParam) {
+      setSelectedCategories([typeParam]);
+    }
   }, []);
 
   const fetchCarListings = async () => {
@@ -172,25 +187,51 @@ const CarListings = () => {
     }
   };
 
-  const filterCarsByCategory = (cars, category) => {
-    if (!category) return cars;
-    return cars.filter(car => {
+  // Updated function to check if a car matches any of the selected categories
+  const carMatchesCategories = (car, categories) => {
+    if (!categories || categories.length === 0) return true;
+    
+    return categories.some(categoryId => {
       const make = car.make?.toLowerCase();
       const fuelType = car.fuel_type?.toLowerCase();
+      const condition = car.condition;
+      const model = car.model?.toLowerCase();
       
-      switch(category) {
+      switch(categoryId) {
+        // Vehicle types
         case 'electric-cars':
           return fuelType === 'electric';
         case 'tricycles':
-          return make?.includes('bajaj') || car.model?.toLowerCase().includes('tricycle');
+          return make?.includes('bajaj') || model?.includes('tricycle');
         case 'trucks':
-          return make?.includes('man') || car.model?.toLowerCase().includes('truck');
+          return make?.includes('man') || model?.includes('truck');
         case 'motorbikes':
-          return make?.includes('honda') && car.model?.toLowerCase().includes('cbr');
+          return make?.includes('honda') && model?.includes('cbr');
         case 'buses-shuttles':
-          return car.model?.toLowerCase().includes('bus') || car.model?.toLowerCase().includes('hiace');
+          return model?.includes('bus') || model?.includes('hiace');
+          
+        // Conditions
+        case 'brand-new':
+          return condition === 'brand_new';
+        case 'foreign-used':
+          return condition === 'foreign_used';
+        case 'local-used':
+          return condition === 'local_used';
+          
+        // Brands
+        case 'toyota':
+        case 'ford':
+        case 'honda':
+        case 'lexus':
+        case 'mercedes-benz':
+        case 'bmw':
+        case 'acura':
+        case 'innoson':
+        case 'nissan':
+          return make === categoryId || make?.includes(categoryId.replace('-', ' '));
+          
         default:
-          return make === category || make?.includes(category.replace('-', ' '));
+          return false;
       }
     });
   };
@@ -221,6 +262,28 @@ const CarListings = () => {
     setCurrentPage(1);
   };
 
+  const handleCategoryToggle = (categoryId) => {
+    setSelectedCategories(prev => {
+      const isSelected = prev.includes(categoryId);
+      const newCategories = isSelected 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId];
+      
+      // Update URL to reflect selected categories
+      const params = new URLSearchParams(window.location.search);
+      if (newCategories.length > 0) {
+        params.set('categories', newCategories.join(','));
+      } else {
+        params.delete('categories');
+      }
+      window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+      
+      return newCategories;
+    });
+    setDisplayedCars(CARS_PER_PAGE);
+    setCurrentPage(1);
+  };
+
   const resetFilters = () => {
     setFilters({
       minPrice: "",
@@ -236,12 +299,18 @@ const CarListings = () => {
       location: "",
       condition: ""
     });
-    setSelectedCategory("");
+    setSelectedCategories([]);
     setDisplayedCars(CARS_PER_PAGE);
     setCurrentPage(1);
+    
+    // Clear URL parameters
+    window.history.replaceState({}, '', window.location.pathname);
   };
 
-  let filteredCars = filterCarsByCategory(carListings, selectedCategory);
+  // Apply category and other filters
+  let filteredCars = carMatchesCategories(carListings, selectedCategories) 
+    ? carListings.filter(car => carMatchesCategories(car, selectedCategories))
+    : carListings;
   filteredCars = applyFilters(filteredCars);
 
   const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
@@ -255,6 +324,13 @@ const CarListings = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
     setDisplayedCars(page * CARS_PER_PAGE);
+  };
+
+  // Group categories by type for better organization
+  const categoryGroups = {
+    vehicle_type: categories.filter(cat => cat.type === 'vehicle_type'),
+    condition: categories.filter(cat => cat.type === 'condition'),
+    brand: categories.filter(cat => cat.type === 'brand')
   };
 
   if (loading) {
@@ -281,29 +357,86 @@ const CarListings = () => {
           </div>
 
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">Categories</h3>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                variant={selectedCategory === "" ? "default" : "outline"}
-                size="sm"
-                className="rounded-full"
-                onClick={() => setSelectedCategory("")}
-              >
-                All Categories
-              </Button>
-              {categories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  size="sm"
-                  className="rounded-full flex items-center gap-2"
-                  onClick={() => setSelectedCategory(selectedCategory === category.id ? "" : category.id)}
-                >
-                  <span className="text-xs">{category.logo}</span>
-                  {category.name}
-                </Button>
-              ))}
-            </div>
+            <Tabs defaultValue="vehicle_type" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="vehicle_type">Vehicle Types</TabsTrigger>
+                <TabsTrigger value="condition">Conditions</TabsTrigger>
+                <TabsTrigger value="brand">Brands</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="vehicle_type" className="mt-4">
+                <div className="flex flex-wrap gap-3">
+                  {categoryGroups.vehicle_type.map((category) => (
+                    <Button
+                      key={category.id}
+                      variant={selectedCategories.includes(category.id) ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-full flex items-center gap-2"
+                      onClick={() => handleCategoryToggle(category.id)}
+                    >
+                      <span className="text-xs">{category.logo}</span>
+                      {category.name}
+                    </Button>
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="condition" className="mt-4">
+                <div className="flex flex-wrap gap-3">
+                  {categoryGroups.condition.map((category) => (
+                    <Button
+                      key={category.id}
+                      variant={selectedCategories.includes(category.id) ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-full flex items-center gap-2"
+                      onClick={() => handleCategoryToggle(category.id)}
+                    >
+                      <span className="text-xs">{category.logo}</span>
+                      {category.name}
+                    </Button>
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="brand" className="mt-4">
+                <div className="flex flex-wrap gap-3">
+                  {categoryGroups.brand.map((category) => (
+                    <Button
+                      key={category.id}
+                      variant={selectedCategories.includes(category.id) ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-full flex items-center gap-2"
+                      onClick={() => handleCategoryToggle(category.id)}
+                    >
+                      <span className="text-xs">{category.logo}</span>
+                      {category.name}
+                    </Button>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            {selectedCategories.length > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800 mb-2">Active Categories:</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedCategories.map(categoryId => {
+                    const category = categories.find(cat => cat.id === categoryId);
+                    return (
+                      <span key={categoryId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-200 text-blue-800 rounded-full text-xs">
+                        {category?.logo} {category?.name}
+                        <button 
+                          onClick={() => handleCategoryToggle(categoryId)}
+                          className="ml-1 hover:bg-blue-300 rounded-full w-4 h-4 flex items-center justify-center"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
