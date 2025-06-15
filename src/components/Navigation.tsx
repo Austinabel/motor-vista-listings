@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, User, ChevronDown, LogOut, Edit, Heart, MessageSquare, Zap } from "lucide-react";
@@ -12,6 +13,7 @@ export const Navigation = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileBuyCarOpen, setIsMobileBuyCarOpen] = useState(false);
+  const [isMobileUserDropdownOpen, setIsMobileUserDropdownOpen] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
@@ -381,51 +383,81 @@ export const Navigation = () => {
                     <div className="w-full h-8 bg-gray-200 rounded animate-pulse"></div>
                   ) : user ? (
                     <>
-                      <span className="text-sm text-gray-600 truncate py-1">{getUserDisplayName()}</span>
-                      <Link 
-                        to="/profile/edit" 
-                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Profile
-                      </Link>
-                      <Link 
-                        to="/profile/favorites" 
-                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Heart className="h-4 w-4 mr-2" />
-                        Favorites
-                      </Link>
-                      <Link 
-                        to="/profile/messages" 
-                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Messages
-                      </Link>
-                      <Link 
-                        to="/profile/boost-sales" 
-                        className="text-sm text-gray-600 hover:text-red-600 flex items-center py-1"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Zap className="h-4 w-4 mr-2" />
-                        Boost Sales
-                      </Link>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => {
-                          handleSignOut();
-                          setIsMenuOpen(false);
-                        }} 
-                        className="w-full justify-start mt-2"
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                      </Button>
+                      {/* Mobile User Profile Dropdown */}
+                      <div>
+                        <button 
+                          onClick={() => setIsMobileUserDropdownOpen(!isMobileUserDropdownOpen)}
+                          className="flex items-center justify-between w-full text-gray-700 hover:text-red-600 font-medium py-2"
+                        >
+                          <span className="flex items-center">
+                            <User className="h-4 w-4 mr-2" />
+                            <span className="truncate max-w-32">{getUserDisplayName()}</span>
+                          </span>
+                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMobileUserDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {isMobileUserDropdownOpen && (
+                          <div className="ml-6 space-y-2 bg-gray-50 rounded-lg p-3 mt-2">
+                            <Link 
+                              to="/profile/edit" 
+                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileUserDropdownOpen(false);
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Profile
+                            </Link>
+                            <Link 
+                              to="/profile/favorites" 
+                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileUserDropdownOpen(false);
+                              }}
+                            >
+                              <Heart className="h-4 w-4 mr-2" />
+                              Favorites
+                            </Link>
+                            <Link 
+                              to="/profile/messages" 
+                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileUserDropdownOpen(false);
+                              }}
+                            >
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Messages
+                            </Link>
+                            <Link 
+                              to="/profile/boost-sales" 
+                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileUserDropdownOpen(false);
+                              }}
+                            >
+                              <Zap className="h-4 w-4 mr-2" />
+                              Boost Sales
+                            </Link>
+                            <div className="border-t border-gray-200 pt-2 mt-2">
+                              <button
+                                onClick={() => {
+                                  handleSignOut();
+                                  setIsMenuOpen(false);
+                                  setIsMobileUserDropdownOpen(false);
+                                }}
+                                className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2 w-full text-left"
+                              >
+                                <LogOut className="h-4 w-4 mr-2" />
+                                Sign Out
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <div className="flex flex-col space-y-2">
