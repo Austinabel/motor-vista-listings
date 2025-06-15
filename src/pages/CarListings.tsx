@@ -1,223 +1,15 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Eye, Filter } from "lucide-react";
+import { Heart, Eye, Filter, User, Building } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
-
-const cars = [
-  {
-    id: 1,
-    title: "2020 Toyota Camry LE",
-    price: "₦15,500,000",
-    location: "Lagos, Nigeria",
-    mileage: "45,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2020,
-    type: "brand-new",
-    category: "toyota",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-  {
-    id: 2,
-    title: "2019 Honda Accord Sport",
-    price: "₦13,200,000",
-    location: "Abuja, Nigeria",
-    mileage: "52,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2019,
-    type: "foreign-used",
-    category: "honda",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-  },
-  {
-    id: 3,
-    title: "2021 Mercedes C-Class",
-    price: "₦28,900,000",
-    location: "Port Harcourt, Nigeria",
-    mileage: "28,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2021,
-    type: "brand-new",
-    category: "mercedes-benz",
-    image: "https://images.unsplash.com/photo-1617886903355-9354bb57751f?w=400&h=250&fit=crop",
-  },
-  {
-    id: 4,
-    title: "2018 BMW 3 Series",
-    price: "₦18,750,000",
-    location: "Lagos, Nigeria",
-    mileage: "68,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2018,
-    type: "local-used",
-    category: "bmw",
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop",
-  },
-  {
-    id: 5,
-    title: "2022 Toyota Corolla",
-    price: "₦12,500,000",
-    location: "Kano, Nigeria",
-    mileage: "15,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2022,
-    type: "foreign-used",
-    category: "toyota",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-  {
-    id: 6,
-    title: "2017 Hyundai Elantra",
-    price: "₦8,200,000",
-    location: "Ibadan, Nigeria",
-    mileage: "85,000 km",
-    fuel: "Petrol",
-    transmission: "Manual",
-    year: 2017,
-    type: "local-used",
-    category: "hyundai",
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop",
-  },
-  {
-    id: 7,
-    title: "Tesla Model 3",
-    price: "₦35,000,000",
-    location: "Lagos, Nigeria",
-    mileage: "12,000 km",
-    fuel: "Electric",
-    transmission: "Automatic",
-    year: 2023,
-    type: "brand-new",
-    category: "electric-cars",
-    image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=250&fit=crop",
-  },
-  {
-    id: 8,
-    title: "Ford Explorer 2020",
-    price: "₦22,000,000",
-    location: "Abuja, Nigeria",
-    mileage: "35,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2020,
-    type: "foreign-used",
-    category: "ford",
-    image: "https://images.unsplash.com/photo-1493238792000-8113da705763?w=400&h=250&fit=crop",
-  },
-  {
-    id: 9,
-    title: "Lexus RX 350",
-    price: "₦32,500,000",
-    location: "Port Harcourt, Nigeria",
-    mileage: "28,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2021,
-    type: "brand-new",
-    category: "lexus",
-    image: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=400&h=250&fit=crop",
-  },
-  {
-    id: 10,
-    title: "Acura MDX 2019",
-    price: "₦25,000,000",
-    location: "Lagos, Nigeria",
-    mileage: "42,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2019,
-    type: "foreign-used",
-    category: "acura",
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=250&fit=crop",
-  },
-  {
-    id: 11,
-    title: "Innoson IVM G40",
-    price: "₦8,500,000",
-    location: "Nnewi, Nigeria",
-    mileage: "15,000 km",
-    fuel: "Petrol",
-    transmission: "Manual",
-    year: 2022,
-    type: "brand-new",
-    category: "innoson",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop",
-  },
-  {
-    id: 12,
-    title: "Nissan Altima 2020",
-    price: "₦14,000,000",
-    location: "Kaduna, Nigeria",
-    mileage: "38,000 km",
-    fuel: "Petrol",
-    transmission: "Automatic",
-    year: 2020,
-    type: "foreign-used",
-    category: "nissan",
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=250&fit=crop",
-  },
-  {
-    id: 13,
-    title: "Bajaj Tricycle RE",
-    price: "₦1,800,000",
-    location: "Kano, Nigeria",
-    mileage: "5,000 km",
-    fuel: "Petrol",
-    transmission: "Manual",
-    year: 2023,
-    type: "brand-new",
-    category: "tricycles",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
-  },
-  {
-    id: 14,
-    title: "Honda CBR 600",
-    price: "₦3,200,000",
-    location: "Lagos, Nigeria",
-    mileage: "8,000 km",
-    fuel: "Petrol",
-    transmission: "Manual",
-    year: 2022,
-    type: "foreign-used",
-    category: "motorbikes",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
-  },
-  {
-    id: 15,
-    title: "MAN Truck TGS",
-    price: "₦45,000,000",
-    location: "Lagos, Nigeria",
-    mileage: "120,000 km",
-    fuel: "Diesel",
-    transmission: "Manual",
-    year: 2019,
-    type: "foreign-used",
-    category: "trucks",
-    image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&h=250&fit=crop",
-  },
-  {
-    id: 16,
-    title: "Toyota Hiace Bus",
-    price: "₦18,500,000",
-    location: "Abuja, Nigeria",
-    mileage: "65,000 km",
-    fuel: "Petrol",
-    transmission: "Manual",
-    year: 2020,
-    type: "foreign-used",
-    category: "buses-shuttles",
-    image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&h=250&fit=crop",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const categories = [
   { id: "electric-cars", name: "Electric Cars", logo: "⚡" },
@@ -251,13 +43,206 @@ const CarListings = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [displayedCars, setDisplayedCars] = useState(CARS_PER_PAGE);
+  const [carListings, setCarListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    minPrice: "",
+    maxPrice: "",
+    make: "",
+    model: "",
+    yearFrom: "",
+    yearTo: "",
+    minMileage: "",
+    maxMileage: "",
+    transmission: "",
+    fuelType: "",
+    location: "",
+    condition: ""
+  });
 
-  const filterCarsByCategory = (cars: any[], category: string) => {
-    if (!category) return cars;
-    return cars.filter(car => car.category === category);
+  useEffect(() => {
+    fetchCarListings();
+  }, []);
+
+  const fetchCarListings = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch car listings with images
+      const { data: listings, error: listingsError } = await supabase
+        .from('car_listings')
+        .select(`
+          *,
+          car_listing_images(image_url, is_primary)
+        `)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (listingsError) {
+        console.error('Error fetching car listings:', listingsError);
+        toast.error('Failed to load car listings');
+        return;
+      }
+
+      // Get unique user IDs from listings
+      const userIds = [...new Set(listings?.map(listing => listing.user_id).filter(Boolean))];
+      
+      // Fetch profiles for these users
+      let profiles = [];
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, user_type')
+          .in('id', userIds);
+
+        if (!profilesError) {
+          profiles = profilesData || [];
+        }
+      }
+
+      // Fetch dealers for dealer users
+      const dealerUserIds = profiles?.filter(p => p.user_type === 'dealer').map(p => p.id) || [];
+      let dealers = [];
+      
+      if (dealerUserIds.length > 0) {
+        const { data: dealersData, error: dealersError } = await supabase
+          .from('dealers')
+          .select('id, business_name, contact_name')
+          .in('id', dealerUserIds);
+
+        if (!dealersError) {
+          dealers = dealersData || [];
+        }
+      }
+
+      // Combine the data
+      const enrichedListings = listings?.map(listing => {
+        const profile = profiles?.find(p => p.id === listing.user_id);
+        const dealer = dealers?.find(d => d.id === listing.user_id);
+        
+        return {
+          ...listing,
+          profiles: profile,
+          dealers: dealer ? [dealer] : []
+        };
+      }) || [];
+
+      setCarListings(enrichedListings);
+    } catch (error) {
+      console.error('Error in fetchCarListings:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  let filteredCars = filterCarsByCategory(cars, selectedCategory);
+  const getListedBy = (listing) => {
+    if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
+      return {
+        type: 'dealer',
+        name: listing.dealers[0].business_name,
+        icon: <Building className="w-3 h-3 text-blue-600" />
+      };
+    } else if (listing.profiles) {
+      return {
+        type: 'user',
+        name: 'Private Seller',
+        icon: <User className="w-3 h-3 text-gray-600" />
+      };
+    }
+    return {
+      type: 'unknown',
+      name: 'Unknown',
+      icon: <User className="w-3 h-3 text-gray-600" />
+    };
+  };
+
+  const getCarImage = (listing) => {
+    const images = listing.car_listing_images || [];
+    const primaryImage = images.find(img => img.is_primary)?.image_url;
+    return primaryImage || images[0]?.image_url || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
+  };
+
+  const getConditionLabel = (condition) => {
+    switch(condition) {
+      case 'brand_new': return 'Brand New';
+      case 'foreign_used': return 'Foreign Used';
+      case 'local_used': return 'Local Used';
+      default: return condition;
+    }
+  };
+
+  const filterCarsByCategory = (cars, category) => {
+    if (!category) return cars;
+    return cars.filter(car => {
+      const make = car.make?.toLowerCase();
+      const fuelType = car.fuel_type?.toLowerCase();
+      
+      switch(category) {
+        case 'electric-cars':
+          return fuelType === 'electric';
+        case 'tricycles':
+          return make?.includes('bajaj') || car.model?.toLowerCase().includes('tricycle');
+        case 'trucks':
+          return make?.includes('man') || car.model?.toLowerCase().includes('truck');
+        case 'motorbikes':
+          return make?.includes('honda') && car.model?.toLowerCase().includes('cbr');
+        case 'buses-shuttles':
+          return car.model?.toLowerCase().includes('bus') || car.model?.toLowerCase().includes('hiace');
+        default:
+          return make === category || make?.includes(category.replace('-', ' '));
+      }
+    });
+  };
+
+  const applyFilters = (cars) => {
+    return cars.filter(car => {
+      const price = parseFloat(car.price);
+      const year = parseInt(car.year);
+      
+      if (filters.minPrice && price < parseFloat(filters.minPrice)) return false;
+      if (filters.maxPrice && price > parseFloat(filters.maxPrice)) return false;
+      if (filters.make && !car.make?.toLowerCase().includes(filters.make.toLowerCase())) return false;
+      if (filters.model && !car.model?.toLowerCase().includes(filters.model.toLowerCase())) return false;
+      if (filters.yearFrom && year < parseInt(filters.yearFrom)) return false;
+      if (filters.yearTo && year > parseInt(filters.yearTo)) return false;
+      if (filters.transmission && car.transmission?.toLowerCase() !== filters.transmission.toLowerCase()) return false;
+      if (filters.fuelType && car.fuel_type?.toLowerCase() !== filters.fuelType.toLowerCase()) return false;
+      if (filters.location && !car.location?.toLowerCase().includes(filters.location.toLowerCase())) return false;
+      if (filters.condition && car.condition !== filters.condition) return false;
+      
+      return true;
+    });
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setDisplayedCars(CARS_PER_PAGE);
+    setCurrentPage(1);
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      minPrice: "",
+      maxPrice: "",
+      make: "",
+      model: "",
+      yearFrom: "",
+      yearTo: "",
+      minMileage: "",
+      maxMileage: "",
+      transmission: "",
+      fuelType: "",
+      location: "",
+      condition: ""
+    });
+    setSelectedCategory("");
+    setDisplayedCars(CARS_PER_PAGE);
+    setCurrentPage(1);
+  };
+
+  let filteredCars = filterCarsByCategory(carListings, selectedCategory);
+  filteredCars = applyFilters(filteredCars);
 
   const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
   const paginatedCars = filteredCars.slice(0, displayedCars);
@@ -267,10 +252,18 @@ const CarListings = () => {
     setDisplayedCars(prev => Math.min(prev + CARS_PER_PAGE, filteredCars.length));
   };
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page) => {
     setCurrentPage(page);
     setDisplayedCars(page * CARS_PER_PAGE);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div>Loading car listings...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -321,44 +314,81 @@ const CarListings = () => {
                   <div>
                     <Label htmlFor="priceRange">Price Range (₦)</Label>
                     <div className="flex gap-2">
-                      <Input placeholder="Min" />
-                      <Input placeholder="Max" />
+                      <Input 
+                        placeholder="Min" 
+                        value={filters.minPrice}
+                        onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                      />
+                      <Input 
+                        placeholder="Max" 
+                        value={filters.maxPrice}
+                        onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                      />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="make">Make</Label>
-                    <Input placeholder="Select make" />
+                    <Input 
+                      placeholder="Select make" 
+                      value={filters.make}
+                      onChange={(e) => handleFilterChange('make', e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="model">Model</Label>
-                    <Input placeholder="Select model" />
+                    <Input 
+                      placeholder="Select model" 
+                      value={filters.model}
+                      onChange={(e) => handleFilterChange('model', e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="year">Year</Label>
                     <div className="flex gap-2">
-                      <Input placeholder="From" />
-                      <Input placeholder="To" />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="mileage">Mileage (km)</Label>
-                    <div className="flex gap-2">
-                      <Input placeholder="Min" />
-                      <Input placeholder="Max" />
+                      <Input 
+                        placeholder="From" 
+                        value={filters.yearFrom}
+                        onChange={(e) => handleFilterChange('yearFrom', e.target.value)}
+                      />
+                      <Input 
+                        placeholder="To" 
+                        value={filters.yearTo}
+                        onChange={(e) => handleFilterChange('yearTo', e.target.value)}
+                      />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="transmission">Transmission</Label>
-                    <Input placeholder="Any" />
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      value={filters.transmission}
+                      onChange={(e) => handleFilterChange('transmission', e.target.value)}
+                    >
+                      <option value="">Any</option>
+                      <option value="automatic">Automatic</option>
+                      <option value="manual">Manual</option>
+                    </select>
                   </div>
                   <div>
                     <Label htmlFor="fuel">Fuel Type</Label>
-                    <Input placeholder="Any" />
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      value={filters.fuelType}
+                      onChange={(e) => handleFilterChange('fuelType', e.target.value)}
+                    >
+                      <option value="">Any</option>
+                      <option value="petrol">Petrol</option>
+                      <option value="diesel">Diesel</option>
+                      <option value="electric">Electric</option>
+                      <option value="hybrid">Hybrid</option>
+                    </select>
                   </div>
                   <div>
                     <Label htmlFor="location">Location/State</Label>
                     <select 
                       className="w-full p-2 border rounded-md"
+                      value={filters.location}
+                      onChange={(e) => handleFilterChange('location', e.target.value)}
                     >
                       <option value="">All States</option>
                       {nigerianStates.map(state => (
@@ -368,78 +398,102 @@ const CarListings = () => {
                   </div>
                   <div>
                     <Label htmlFor="condition">Condition</Label>
-                    <Input placeholder="Any condition" />
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      value={filters.condition}
+                      onChange={(e) => handleFilterChange('condition', e.target.value)}
+                    >
+                      <option value="">Any condition</option>
+                      <option value="brand_new">Brand New</option>
+                      <option value="foreign_used">Foreign Used</option>
+                      <option value="local_used">Local Used</option>
+                    </select>
                   </div>
                   <Button className="w-full bg-red-600 hover:bg-red-700">Apply Filters</Button>
-                  <Button variant="outline" className="w-full">Reset Filters</Button>
+                  <Button variant="outline" className="w-full" onClick={resetFilters}>Reset Filters</Button>
                 </div>
               </Card>
             </div>
 
             <div className="lg:w-3/4">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                {paginatedCars.map((car) => (
-                  <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
-                    <div className="relative">
-                      <img src={car.image} alt={car.title} className="w-full h-40 object-cover" />
-                      <Button size="sm" variant="secondary" className="absolute top-2 right-2">
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                      <div className="absolute top-2 left-2">
-                        <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
-                          {car.type === "brand-new" ? "Brand New" : 
-                           car.type === "foreign-used" ? "Foreign Used" : "Local Used"}
-                        </span>
-                      </div>
-                    </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-bold text-sm mb-1 line-clamp-2">{car.title}</h3>
-                      <p className="text-lg font-bold text-red-600 mb-1">{car.price}</p>
-                      <p className="text-xs text-gray-600 mb-2">{car.location}</p>
-                      <div className="grid grid-cols-1 gap-1 text-xs">
-                        <span>{car.mileage}</span>
-                        <span>{car.fuel} • {car.transmission}</span>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-3 pt-0">
-                      <Link to={`/cars/${car.id}`} className="w-full">
-                        <Button className="w-full bg-red-600 hover:bg-red-700 text-xs">
-                          <Eye className="mr-1 h-3 w-3" />
-                          View Details
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Pagination and Load More */}
-              <div className="mt-8 flex flex-col items-center gap-4">
-                {hasMore && (
-                  <Button 
-                    onClick={handleLoadMore}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Load More Cars
-                  </Button>
-                )}
-                
-                {totalPages > 1 && (
-                  <div className="flex gap-2">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className={currentPage === page ? "bg-red-600 hover:bg-red-700" : ""}
-                      >
-                        {page}
-                      </Button>
-                    ))}
+              {paginatedCars.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 text-lg">No car listings found matching your criteria.</p>
+                  <Button onClick={resetFilters} className="mt-4">Clear Filters</Button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {paginatedCars.map((car) => {
+                      const listedBy = getListedBy(car);
+                      return (
+                        <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
+                          <div className="relative">
+                            <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-40 object-cover" />
+                            <Button size="sm" variant="secondary" className="absolute top-2 right-2">
+                              <Heart className="h-4 w-4" />
+                            </Button>
+                            <div className="absolute top-2 left-2">
+                              <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                {getConditionLabel(car.condition)}
+                              </span>
+                            </div>
+                          </div>
+                          <CardContent className="p-3">
+                            <h3 className="font-bold text-sm mb-1 line-clamp-2">{car.year} {car.make} {car.model}</h3>
+                            <p className="text-lg font-bold text-red-600 mb-1">₦{parseFloat(car.price).toLocaleString()}</p>
+                            <p className="text-xs text-gray-600 mb-2">{car.location}</p>
+                            <div className="grid grid-cols-1 gap-1 text-xs">
+                              {car.mileage && <span>{car.mileage}</span>}
+                              <span>{car.fuel_type || 'Petrol'} • {car.transmission || 'Automatic'}</span>
+                              <div className="flex items-center gap-1 mt-1">
+                                {listedBy.icon}
+                                <span className="text-xs text-gray-500 truncate">{listedBy.name}</span>
+                              </div>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="p-3 pt-0">
+                            <Link to={`/cars/${car.id}`} className="w-full">
+                              <Button className="w-full bg-red-600 hover:bg-red-700 text-xs">
+                                <Eye className="mr-1 h-3 w-3" />
+                                View Details
+                              </Button>
+                            </Link>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
+
+                  {/* Pagination and Load More */}
+                  <div className="mt-8 flex flex-col items-center gap-4">
+                    {hasMore && (
+                      <Button 
+                        onClick={handleLoadMore}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Load More Cars
+                      </Button>
+                    )}
+                    
+                    {totalPages > 1 && (
+                      <div className="flex gap-2">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className={currentPage === page ? "bg-red-600 hover:bg-red-700" : ""}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
