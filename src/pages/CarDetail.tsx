@@ -245,27 +245,6 @@ const CarDetail = () => {
     }
   };
 
-  const handleSendMessage = () => {
-    if (!user) {
-      toast.error('Please sign in to contact the seller');
-      return;
-    }
-
-    const listedBy = getListedBy();
-    const subject = `Inquiry about ${listing?.year} ${listing?.make} ${listing?.model}`;
-    const body = `Hi, I'm interested in your ${listing?.year} ${listing?.make} ${listing?.model} listed for ₦${listing?.price?.toLocaleString()}. Please let me know if it's still available.`;
-    
-    if (listedBy.email) {
-      window.open(`mailto:${listedBy.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
-    } else if (listedBy.phone) {
-      // Fallback to WhatsApp if no email
-      const message = `Hi, I'm interested in your ${listing?.year} ${listing?.make} ${listing?.model} listed for ₦${listing?.price?.toLocaleString()}. Please let me know if it's still available.`;
-      window.open(`https://wa.me/${listedBy.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
-    } else {
-      toast.error('Contact information not available');
-    }
-  };
-
   const handleScheduleTestDrive = () => {
     if (!user) {
       toast.error('Please sign in to schedule a test drive');
@@ -488,16 +467,6 @@ const CarDetail = () => {
                       >
                         <Phone className="mr-2 h-4 w-4" />
                         {listedBy.phone ? 'Call Seller' : 'No Phone Available'}
-                      </Button>
-                      
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={handleSendMessage}
-                        disabled={!listedBy.email && !listedBy.phone}
-                      >
-                        <Mail className="mr-2 h-4 w-4" />
-                        Send Message
                       </Button>
                       
                       <Button 
