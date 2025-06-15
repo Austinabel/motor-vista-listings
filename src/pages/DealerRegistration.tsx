@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { IdCard, Upload, Copy, CreditCard } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const states = [
   "Lagos", "FCT", "Rivers", "Kano", "Oyo", "Kaduna", "Edo", "Delta", "Anambra", "Imo"
@@ -24,6 +25,7 @@ const idCardTypes = [
 
 const DealerRegistration = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [idCardFile, setIdCardFile] = useState<File | null>(null);
   const [paymentReference, setPaymentReference] = useState("");
@@ -102,6 +104,11 @@ const DealerRegistration = () => {
   };
 
   const handleRegistrationSubmission = async () => {
+    if (!user) {
+      toast.error("You must be logged in to register as a dealer.");
+      setIsSubmitting(false);
+      return;
+    }
     try {
       const registrationData = {
         business_name: formData.businessName,
@@ -115,6 +122,7 @@ const DealerRegistration = () => {
         tax_id: formData.taxId?.trim() || null,
         description: formData.description,
         website: formData.website?.trim() || null,
+        user_id: user.id,
         monthly_inventory: formData.monthlyInventory,
         id_card_type: formData.idCardType,
         id_card_number: formData.idCardNumber.trim(),

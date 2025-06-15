@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import CarListings from "./pages/CarListings";
 import CarDetail from "./pages/CarDetail";
@@ -33,11 +33,43 @@ import EditProfile from "./pages/EditProfile";
 import Favorites from "./pages/Favorites";
 import Messages from "./pages/Messages";
 import BoostSales from "./pages/BoostSales";
+import DealerDashboard from "./pages/DealerDashboard";
+import { useEffect } from "react";
+import { supabase } from "./integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, lastAuthEvent, clearLastAuthEvent, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    const onAuthPage = ['/login', '/register'].includes(location.pathname);
+    const justSignedIn = lastAuthEvent === 'SIGNED_IN';
+
+    if (justSignedIn || onAuthPage) {
+      if (justSignedIn) clearLastAuthEvent();
+
+      const userType = user.user_metadata?.user_type;
+      if (userType === 'dealer') {
+        supabase.from('dealers').select('id').eq('user_id', user.id).maybeSingle()
+          .then(({ data: dealerProfile }) => {
+            if (dealerProfile) {
+              navigate('/dealer/dashboard', { replace: true });
+            } else {
+              navigate('/dealer-registration', { replace: true });
+            }
+          });
+      } else if (onAuthPage) {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [user, lastAuthEvent, authLoading, location.pathname, navigate, clearLastAuthEvent]);
+
   const isHomepage = location.pathname === "/";
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/forgot-password";
   const isAdminAuthPage = location.pathname === "/admin/login" || location.pathname === "/admin/register";
@@ -54,6 +86,7 @@ const AppContent = () => {
           <Route path="/dealers" element={<Dealers />} />
           <Route path="/dealer/:id" element={<DealerProfile />} />
           <Route path="/dealer-registration" element={<DealerRegistration />} />
+          <Route path="/dealer/dashboard" element={<DealerDashboard />} />
           <Route path="/buy-from-abroad" element={<BuyFromAbroad />} />
           <Route path="/sell" element={<SellYourCar />} />
           <Route path="/admin" element={<Admin />} />
