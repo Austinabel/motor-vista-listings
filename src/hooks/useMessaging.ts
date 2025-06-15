@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -41,8 +40,9 @@ export const useMessaging = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
-  // Set up real-time subscription for messages - this will work across all conversations
+  // Set up real-time subscription for messages
   useEffect(() => {
     if (!user) return;
 
@@ -61,21 +61,18 @@ export const useMessaging = () => {
           console.log('New message received via real-time:', payload);
           const newMessage = payload.new as Message;
           
-          // Add message to current conversation if it matches
-          setMessages(prevMessages => {
-            // Check if this message belongs to the currently viewed conversation
-            if (prevMessages.length > 0 && prevMessages[0].conversation_id === newMessage.conversation_id) {
+          // Only add message if it belongs to the current conversation
+          if (currentConversationId && newMessage.conversation_id === currentConversationId) {
+            setMessages(prevMessages => {
               // Check if message already exists to avoid duplicates
               const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
               if (!messageExists) {
                 console.log('Adding new message to current conversation');
-                return [...prevMessages, newMessage].sort((a, b) => 
-                  new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                );
+                return [...prevMessages, newMessage];
               }
-            }
-            return prevMessages;
-          });
+              return prevMessages;
+            });
+          }
         }
       )
       .on(
@@ -89,11 +86,13 @@ export const useMessaging = () => {
           console.log('Message updated via real-time:', payload);
           const updatedMessage = payload.new as Message;
           
-          setMessages(prevMessages => 
-            prevMessages.map(msg => 
-              msg.id === updatedMessage.id ? updatedMessage : msg
-            )
-          );
+          if (currentConversationId && updatedMessage.conversation_id === currentConversationId) {
+            setMessages(prevMessages => 
+              prevMessages.map(msg => 
+                msg.id === updatedMessage.id ? updatedMessage : msg
+              )
+            );
+          }
         }
       )
       .subscribe((status) => {
@@ -104,7 +103,7 @@ export const useMessaging = () => {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, currentConversationId]);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -186,9 +185,10 @@ export const useMessaging = () => {
     }
   };
 
-  const fetchMessages = async (conversationId: string) => {
+  const fetchMessages = useCallback(async (conversationId: string) => {
     try {
       console.log('Fetching messages for conversation:', conversationId);
+      setCurrentConversationId(conversationId);
 
       const { data, error } = await supabase
         .from('messages')
@@ -219,7 +219,7 @@ export const useMessaging = () => {
       console.error('Error in fetchMessages:', error);
       toast.error('An error occurred while loading messages');
     }
-  };
+  }, [user]);
 
   const startConversation = async (listingId: string, sellerId: string) => {
     if (!user) {
@@ -281,6 +281,19 @@ export const useMessaging = () => {
     try {
       console.log('Sending message to conversation:', conversationId);
       
+      // Optimistically add the message to the UI immediately
+      const tempMessage: Message = {
+        id: `temp-${Date.now()}`,
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content: content.trim(),
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+
+      // Add message immediately to UI
+      setMessages(prevMessages => [...prevMessages, tempMessage]);
+      
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -293,11 +306,22 @@ export const useMessaging = () => {
 
       if (error) {
         console.error('Error sending message:', error);
+        // Remove the temporary message on error
+        setMessages(prevMessages => 
+          prevMessages.filter(msg => msg.id !== tempMessage.id)
+        );
         toast.error('Failed to send message');
         return false;
       }
 
       console.log('Message sent successfully:', data);
+      
+      // Replace temporary message with real message
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg.id === tempMessage.id ? data : msg
+        )
+      );
       
       // Update conversation timestamp
       await supabase
