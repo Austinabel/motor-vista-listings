@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar } from '@/components/ui/avatar';
 import { Send, MessageCircle } from 'lucide-react';
 import { useMessaging, Message } from '@/hooks/useMessaging';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +23,7 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
 
   useEffect(() => {
     if (conversationId) {
+      console.log('ChatInterface: Setting up for conversation:', conversationId);
       fetchMessages(conversationId);
     }
   }, [conversationId]);
@@ -40,9 +40,12 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
     if (!newMessage.trim() || sending) return;
 
     setSending(true);
+    console.log('Sending message:', newMessage);
+    
     const success = await sendMessage(conversationId, newMessage);
     if (success) {
       setNewMessage('');
+      console.log('Message sent successfully, clearing input');
     }
     setSending(false);
   };

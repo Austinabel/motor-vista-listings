@@ -41,6 +41,43 @@ export const useMessaging = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+
+  // Real-time subscription for messages
+  useEffect(() => {
+    if (!currentConversationId) return;
+
+    console.log('Setting up real-time subscription for conversation:', currentConversationId);
+    
+    const channel = supabase
+      .channel('messages-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${currentConversationId}`
+        },
+        (payload) => {
+          console.log('New message received:', payload);
+          const newMessage = payload.new as Message;
+          setMessages(prevMessages => {
+            // Avoid duplicates
+            if (prevMessages.some(msg => msg.id === newMessage.id)) {
+              return prevMessages;
+            }
+            return [...prevMessages, newMessage];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [currentConversationId]);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -128,6 +165,9 @@ export const useMessaging = () => {
 
   const fetchMessages = async (conversationId: string) => {
     try {
+      console.log('Fetching messages for conversation:', conversationId);
+      setCurrentConversationId(conversationId);
+
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -218,6 +258,8 @@ export const useMessaging = () => {
     if (!user || !content.trim()) return false;
 
     try {
+      console.log('Sending message to conversation:', conversationId);
+      
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -232,8 +274,9 @@ export const useMessaging = () => {
         return false;
       }
 
-      // Refresh messages
-      await fetchMessages(conversationId);
+      // Note: We don't need to manually refresh messages here because 
+      // the real-time subscription will automatically add the new message
+      console.log('Message sent successfully');
       return true;
     } catch (error) {
       console.error('Error in sendMessage:', error);
