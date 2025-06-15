@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { MessageSquare, Car, Clock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { useMessaging, Conversation } from "@/hooks/useMessaging";
 import { useAuth } from "@/contexts/AuthContext";
 import ChatInterface from "@/components/ChatInterface";
 import { formatDistanceToNow } from "date-fns";
+import { Separator } from "@/components/ui/separator"; // <-- NEW
 
 function stringAvatar(name?: string) {
   // Generate initials from name or fallback
@@ -133,27 +133,22 @@ const Messages = () => {
                 </a>
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {conversations.map((conversation) => {
+              <div className="divide-y divide-gray-200 rounded-xl overflow-hidden shadow-inner bg-gray-50">
+                {conversations.map((conversation, idx) => {
                   const unreadCount = getUnreadCount(conversation.id);
                   const isSelected = selectedConversation?.id === conversation.id;
                   return (
-                    <div
-                      key={conversation.id}
-                      onClick={() => handleOpenChat(conversation)}
-                      tabIndex={0}
-                      className={`transition-shadow duration-200
-                        group bg-white/90 
-                        rounded-xl border border-gray-200 shadow-md hover:shadow-lg cursor-pointer 
-                        focus:ring-2 focus:ring-red-400 outline-none
-                        hover:border-red-400
-                        ${isSelected ? 'ring-2 ring-red-500 border-red-500' : ''}`
-                      }
-                    >
-                      <div className="p-4 flex items-center space-x-4">
+                    <div key={conversation.id} className="group hover:bg-white/80 transition-all duration-150">
+                      <div
+                        onClick={() => handleOpenChat(conversation)}
+                        tabIndex={0}
+                        className={`flex cursor-pointer px-4 py-4 sm:px-6 items-center space-x-4 transition-shadow hover:shadow-lg rounded-xl border border-transparent hover:border-red-200 hover:ring-1 hover:ring-red-100 focus:ring-2 focus:ring-red-400 outline-none ${
+                          isSelected ? "ring-2 ring-red-500 border-red-500 shadow-xl" : ""
+                        }`}
+                      >
                         {/* Avatar/Fallback */}
                         <div className="flex-shrink-0">
-                          <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center text-2xl font-bold text-red-600 border border-gray-300">
+                          <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center text-2xl font-bold text-red-600 border border-gray-300 shadow-sm">
                             <span>
                               {stringAvatar(getOtherUserName(conversation))}
                             </span>
@@ -184,12 +179,16 @@ const Messages = () => {
                             <Clock className="h-4 w-4 mr-0.5" />
                             {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
                           </span>
-                          <Button variant="secondary" size="sm" className="opacity-80 hover:opacity-100 flex items-center gap-1">
+                          <Button variant="secondary" size="sm" className="opacity-80 hover:opacity-100 flex items-center gap-1 border border-gray-200 shadow">
                             <MessageSquare className="h-4 w-4" />
                             <span className="hidden sm:inline">Open</span>
                           </Button>
                         </div>
                       </div>
+                      {/* ADD DIVIDER unless last item */}
+                      {idx !== conversations.length - 1 && (
+                        <Separator orientation="horizontal" className="my-0 mx-6 bg-gray-200" />
+                      )}
                     </div>
                   );
                 })}
@@ -200,25 +199,39 @@ const Messages = () => {
 
         {/* Chat Dialog */}
         <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-          <DialogContent className="max-w-lg sm:max-w-2xl border-0 rounded-2xl shadow-2xl px-0 py-0 bg-white">
-            <DialogHeader className="rounded-t-2xl p-6 pb-2 bg-gradient-to-r from-red-600/80 to-red-400/80">
-              <DialogTitle className="text-white font-bold text-xl tracking-tight flex items-center gap-2">
-                <MessageSquare className="h-6 w-6" />
-                {selectedConversation && `Chat about ${getCarTitle(selectedConversation)}`}
-              </DialogTitle>
-              <div className="text-sm text-red-50">
-                {selectedConversation && (
-                  <>With {getOtherUserName(selectedConversation)}</>
-                )}
-              </div>
-            </DialogHeader>
-            <div className="p-2 sm:p-4">
+          <DialogContent className="max-w-lg sm:max-w-2xl border-0 rounded-2xl shadow-2xl px-0 py-0 bg-white overflow-hidden">
+            {/* Header Callout */}
+            <div className="bg-gradient-to-r from-red-600/80 to-red-400/80 px-6 pt-6 pb-2 rounded-t-2xl shadow-inner">
+              <DialogHeader className="p-0">
+                <DialogTitle className="text-white font-bold text-xl tracking-tight flex items-center gap-2">
+                  <MessageSquare className="h-6 w-6" />
+                  {selectedConversation && `Chat about ${getCarTitle(selectedConversation)}`}
+                </DialogTitle>
+                <div className="text-sm text-red-50">
+                  {selectedConversation && <>With {getOtherUserName(selectedConversation)}</>}
+                </div>
+              </DialogHeader>
+            </div>
+            {/* Divider between header and chat */}
+            <Separator orientation="horizontal" className="bg-gray-200" />
+            {/* Main chat callout area */}
+            <div className="bg-gray-50 px-2 sm:px-4 py-6 min-h-[310px] rounded-b-2xl shadow-inner flex flex-col">
               {selectedConversation && (
-                <ChatInterface
-                  conversationId={selectedConversation.id}
-                  carTitle={getCarTitle(selectedConversation)}
-                  otherUserName={getOtherUserName(selectedConversation)}
-                />
+                <>
+                  {/* ChatInterface is already styled, but frame it in a card/callout for focus */}
+                  <div className="bg-white border border-gray-100 rounded-xl shadow p-0 overflow-hidden flex flex-col flex-1">
+                    {/* Messages area */}
+                    <div className="flex-1 flex flex-col">
+                      {/* Since ChatInterface has its own card, avoid nested headers. Insert a divider after messages */}
+                      <ChatInterface
+                        conversationId={selectedConversation.id}
+                        carTitle={getCarTitle(selectedConversation)}
+                        otherUserName={getOtherUserName(selectedConversation)}
+                      />
+                    </div>
+                    {/* Divider after message input if you wish */}
+                  </div>
+                </>
               )}
             </div>
           </DialogContent>
