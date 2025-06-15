@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -42,14 +41,24 @@ export const useMessaging = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Store channel in a ref so it's not recreated/subscribed repeatedly
+  const channelRef = useRef<any>(null);
+
   // Set up real-time subscription for messages
   useEffect(() => {
     if (!user) return;
 
+    // Only create and subscribe ONCE per user
+    if (channelRef.current) {
+      // Clean up existing channel if any
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
     console.log('Setting up real-time subscription for user:', user.id);
-    
+
     const channel = supabase
-      .channel('messages-channel')
+      .channel(`messages-channel-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -60,13 +69,13 @@ export const useMessaging = () => {
         (payload) => {
           console.log('New message received via real-time:', payload);
           const newMessage = payload.new as Message;
-          
+
           setMessages(prevMessages => {
             // Check if message already exists to avoid duplicates
             const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
             if (!messageExists) {
               console.log('Adding new message to state');
-              return [...prevMessages, newMessage].sort((a, b) => 
+              return [...prevMessages, newMessage].sort((a, b) =>
                 new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
               );
             }
@@ -74,13 +83,18 @@ export const useMessaging = () => {
           });
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         console.log('Real-time subscription status:', status);
       });
 
+    channelRef.current = channel;
+
     return () => {
-      console.log('Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        console.log('Cleaning up real-time subscription');
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [user]);
 
