@@ -43,14 +43,21 @@ export const useMessaging = () => {
   const [loading, setLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
-  // Real-time subscription for messages
+  // Real-time subscription for messages - improved implementation
   useEffect(() => {
-    if (!currentConversationId) return;
+    if (!currentConversationId) {
+      // Clear messages when no conversation is selected
+      setMessages([]);
+      return;
+    }
 
     console.log('Setting up real-time subscription for conversation:', currentConversationId);
     
+    // Create a unique channel name for this conversation
+    const channelName = `messages-${currentConversationId}`;
+    
     const channel = supabase
-      .channel('messages-realtime')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -60,21 +67,49 @@ export const useMessaging = () => {
           filter: `conversation_id=eq.${currentConversationId}`
         },
         (payload) => {
-          console.log('New message received:', payload);
+          console.log('New message received via real-time:', payload);
           const newMessage = payload.new as Message;
+          
           setMessages(prevMessages => {
-            // Avoid duplicates
-            if (prevMessages.some(msg => msg.id === newMessage.id)) {
+            // Check if message already exists to avoid duplicates
+            const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
+            if (messageExists) {
+              console.log('Message already exists, skipping duplicate');
               return prevMessages;
             }
-            return [...prevMessages, newMessage];
+            
+            console.log('Adding new message to state');
+            return [...prevMessages, newMessage].sort((a, b) => 
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
           });
         }
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${currentConversationId}`
+        },
+        (payload) => {
+          console.log('Message updated via real-time:', payload);
+          const updatedMessage = payload.new as Message;
+          
+          setMessages(prevMessages => 
+            prevMessages.map(msg => 
+              msg.id === updatedMessage.id ? updatedMessage : msg
+            )
+          );
+        }
+      )
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
 
     return () => {
-      console.log('Cleaning up real-time subscription');
+      console.log('Cleaning up real-time subscription for:', channelName);
       supabase.removeChannel(channel);
     };
   }, [currentConversationId]);
@@ -85,7 +120,6 @@ export const useMessaging = () => {
     try {
       setLoading(true);
       
-      // First fetch conversations
       const { data: conversationsData, error: conversationsError } = await supabase
         .from('conversations')
         .select('*')
@@ -103,7 +137,6 @@ export const useMessaging = () => {
         return;
       }
 
-      // Fetch car listings for each conversation
       const listingIds = conversationsData.map(conv => conv.listing_id);
       const { data: carListings, error: carListingsError } = await supabase
         .from('car_listings')
@@ -114,7 +147,6 @@ export const useMessaging = () => {
         console.error('Error fetching car listings:', carListingsError);
       }
 
-      // Fetch profiles for buyers and sellers
       const userIds = [...new Set([
         ...conversationsData.map(conv => conv.buyer_id),
         ...conversationsData.map(conv => conv.seller_id)
@@ -129,7 +161,6 @@ export const useMessaging = () => {
         console.error('Error fetching profiles:', profilesError);
       }
 
-      // Combine the data
       const enrichedConversations = conversationsData.map(conversation => {
         const carListing = carListings?.find(listing => listing.id === conversation.listing_id);
         const buyerProfile = profiles?.find(profile => profile.id === conversation.buyer_id);
@@ -166,6 +197,8 @@ export const useMessaging = () => {
   const fetchMessages = async (conversationId: string) => {
     try {
       console.log('Fetching messages for conversation:', conversationId);
+      
+      // Set the current conversation ID first to start real-time subscription
       setCurrentConversationId(conversationId);
 
       const { data, error } = await supabase
@@ -180,6 +213,7 @@ export const useMessaging = () => {
         return;
       }
 
+      console.log('Fetched messages:', data);
       setMessages(data || []);
 
       // Mark messages as read
@@ -210,7 +244,6 @@ export const useMessaging = () => {
     }
 
     try {
-      // Check if conversation already exists
       const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')
         .select('id')
@@ -229,7 +262,6 @@ export const useMessaging = () => {
         return existingConversation.id;
       }
 
-      // Create new conversation
       const { data: newConversation, error: createError } = await supabase
         .from('conversations')
         .insert({
@@ -260,13 +292,15 @@ export const useMessaging = () => {
     try {
       console.log('Sending message to conversation:', conversationId);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: user.id,
           content: content.trim()
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error sending message:', error);
@@ -274,9 +308,14 @@ export const useMessaging = () => {
         return false;
       }
 
-      // Note: We don't need to manually refresh messages here because 
-      // the real-time subscription will automatically add the new message
-      console.log('Message sent successfully');
+      console.log('Message sent successfully:', data);
+      
+      // Update conversation timestamp
+      await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', conversationId);
+
       return true;
     } catch (error) {
       console.error('Error in sendMessage:', error);

@@ -20,6 +20,7 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (conversationId) {
@@ -32,6 +33,13 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
     scrollToBottom();
   }, [messages]);
 
+  // Focus input when component mounts
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -39,13 +47,23 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
   const handleSendMessage = async () => {
     if (!newMessage.trim() || sending) return;
 
+    const messageToSend = newMessage.trim();
     setSending(true);
-    console.log('Sending message:', newMessage);
+    setNewMessage(''); // Clear input immediately for better UX
     
-    const success = await sendMessage(conversationId, newMessage);
-    if (success) {
-      setNewMessage('');
-      console.log('Message sent successfully, clearing input');
+    console.log('Sending message:', messageToSend);
+    
+    const success = await sendMessage(conversationId, messageToSend);
+    if (!success) {
+      // If sending failed, restore the message
+      setNewMessage(messageToSend);
+      console.error('Failed to send message, restoring input');
+    } else {
+      console.log('Message sent successfully');
+      // Focus back to input after sending
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
     setSending(false);
   };
@@ -59,7 +77,7 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
 
   return (
     <Card className="h-[600px] flex flex-col">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 flex-shrink-0">
         <CardTitle className="flex items-center gap-2 text-lg">
           <MessageCircle className="h-5 w-5" />
           Chat about {carTitle}
@@ -67,9 +85,9 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
         <p className="text-sm text-gray-600">Chatting with {otherUserName}</p>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-4 pt-0">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto mb-4 space-y-3 max-h-[400px]">
+      <CardContent className="flex-1 flex flex-col p-4 pt-0 min-h-0">
+        {/* Messages Container */}
+        <div className="flex-1 overflow-y-auto mb-4 space-y-3 min-h-0">
           {messages.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -90,7 +108,7 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
                       : 'bg-gray-100 text-gray-900'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm break-words">{message.content}</p>
                   <p
                     className={`text-xs mt-1 ${
                       message.sender_id === user?.id
@@ -107,9 +125,10 @@ const ChatInterface = ({ conversationId, carTitle, otherUserName }: ChatInterfac
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Message Input */}
-        <div className="flex gap-2">
+        {/* Message Input - Fixed at bottom */}
+        <div className="flex gap-2 flex-shrink-0">
           <Input
+            ref={inputRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
