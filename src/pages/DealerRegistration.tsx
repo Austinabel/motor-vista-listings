@@ -106,10 +106,33 @@ const DealerRegistration = () => {
   const handleRegistrationSubmission = async () => {
     if (!user) {
       toast.error("You must be logged in to register as a dealer.");
-      setIsSubmitting(false);
       return;
     }
+    setIsSubmitting(true);
+
     try {
+      // 1. Upload ID card
+      if (!idCardFile) {
+        toast.error("ID card file is missing. Please upload it.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const fileExt = idCardFile.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('dealer_documents')
+        .upload(filePath, idCardFile);
+
+      if (uploadError) {
+        console.error('Error uploading ID card:', uploadError);
+        toast.error(`There was an error uploading your ID card: ${uploadError.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+      
       const registrationData = {
         business_name: formData.businessName,
         contact_name: formData.contactName,
@@ -128,7 +151,8 @@ const DealerRegistration = () => {
         id_card_number: formData.idCardNumber.trim(),
         payment_reference: paymentReference.trim(),
         payment_status: 'pending',
-        status: 'pending'
+        status: 'pending',
+        id_card_path: uploadData.path, // The path of the uploaded file
       };
 
       console.log('Submitting registration data:', registrationData);
@@ -140,6 +164,8 @@ const DealerRegistration = () => {
 
       if (error) {
         console.error('Registration error:', error);
+        // To prevent orphaned file uploads, try to delete the file if DB insert fails
+        await supabase.storage.from('dealer_documents').remove([filePath]);
         const errorMessage = getDetailedErrorMessage(error);
         toast.error(errorMessage);
       } else {
@@ -219,7 +245,6 @@ const DealerRegistration = () => {
       return;
     }
 
-    setIsSubmitting(true);
     await handleRegistrationSubmission();
   };
 

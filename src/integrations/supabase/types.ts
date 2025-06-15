@@ -154,6 +154,7 @@ export type Database = {
           email: string
           id: string
           id_card_number: string | null
+          id_card_path: string | null
           id_card_type: string | null
           monthly_inventory: string
           payment_reference: string | null
@@ -177,6 +178,7 @@ export type Database = {
           email: string
           id?: string
           id_card_number?: string | null
+          id_card_path?: string | null
           id_card_type?: string | null
           monthly_inventory: string
           payment_reference?: string | null
@@ -200,6 +202,7 @@ export type Database = {
           email?: string
           id?: string
           id_card_number?: string | null
+          id_card_path?: string | null
           id_card_type?: string | null
           monthly_inventory?: string
           payment_reference?: string | null
