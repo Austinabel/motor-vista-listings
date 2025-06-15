@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -12,19 +13,22 @@ const Admin: React.FC = () => {
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [cars, setCars] = useState([]);
-  const [dealers, setDealers] = useState([]);
+
+  // Rename state to reflect proper table name
+  const [carListings, setCarListings] = useState<any[]>([]);
+  const [dealers, setDealers] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchCars = async () => {
+    const fetchCarListings = async () => {
+      // Use correct table name
       const { data, error } = await supabase
-        .from('cars')
+        .from('car_listings')
         .select('*');
 
       if (error) {
-        console.error('Error fetching cars:', error);
+        console.error('Error fetching car listings:', error);
       } else {
-        setCars(data || []);
+        setCarListings(data || []);
       }
     };
 
@@ -40,7 +44,7 @@ const Admin: React.FC = () => {
       }
     };
 
-    fetchCars();
+    fetchCarListings();
     fetchDealers();
   }, []);
 
@@ -78,10 +82,13 @@ const Admin: React.FC = () => {
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Car Listings</h2>
-          {cars.length > 0 ? (
+          {carListings.length > 0 ? (
             <ul className="list-disc pl-5">
-              {cars.map((car) => (
-                <li key={car.id}>{car.make} - {car.model}</li>
+              {carListings.map((car) => (
+                <li key={car.id}>
+                  {/* Use car_listings fields: make, model, status */}
+                  {car.make} - {car.model} ({car.status})
+                </li>
               ))}
             </ul>
           ) : (
@@ -94,7 +101,7 @@ const Admin: React.FC = () => {
           {dealers.length > 0 ? (
             <ul className="list-disc pl-5">
               {dealers.map((dealer) => (
-                <li key={dealer.id}>{dealer.name} - {dealer.location}</li>
+                <li key={dealer.id}>{dealer.business_name} - {dealer.state}</li>
               ))}
             </ul>
           ) : (
