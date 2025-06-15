@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Admin = () => {
   const [dealers, setDealers] = useState([]);
@@ -15,11 +18,23 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDealer, setSelectedDealer] = useState(null);
   const [selectedListing, setSelectedListing] = useState(null);
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDealers();
     fetchCarListings();
   }, []);
+
+  const handleLogout = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast.error("Logout failed: " + error.message);
+    } else {
+      toast.success("You have been logged out.");
+      navigate("/admin-login");
+    }
+  };
 
   const fetchDealers = async () => {
     try {
@@ -237,6 +252,10 @@ const Admin = () => {
             </div>
             <Button onClick={() => { fetchDealers(); fetchCarListings(); }} variant="outline">
               Refresh
+            </Button>
+            <Button onClick={handleLogout} variant="destructive">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
