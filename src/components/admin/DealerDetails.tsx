@@ -6,13 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Dealer = Database['public']['Tables']['dealers']['Row'];
 
 interface DealerDetailsProps {
   dealer: Dealer | null;
+  onUpdateStatus?: (dealerId: string, status: string) => void;
 }
 
 const DetailItem = ({ label, value }: { label: string; value: string | number | null | undefined }) => (
@@ -22,7 +23,7 @@ const DetailItem = ({ label, value }: { label: string; value: string | number | 
   </div>
 );
 
-export const DealerDetails = ({ dealer }: DealerDetailsProps) => {
+export const DealerDetails = ({ dealer, onUpdateStatus }: DealerDetailsProps) => {
   const [idCardUrl, setIdCardUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
 
@@ -117,6 +118,46 @@ export const DealerDetails = ({ dealer }: DealerDetailsProps) => {
             <DetailItem label="Payment Reference" value={dealer.payment_reference} />
             <DetailItem label="Payment Status" value={dealer.payment_status} />
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-between items-center pt-4 border-t">
+          {dealer.status === 'pending' && (
+            <div className="flex gap-2">
+              <Button
+                onClick={() => onUpdateStatus?.(dealer.id, 'verified')}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Approve
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => onUpdateStatus?.(dealer.id, 'rejected')}
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Reject
+              </Button>
+            </div>
+          )}
+          {dealer.status === 'verified' && (
+            <Button
+              variant="destructive"
+              onClick={() => onUpdateStatus?.(dealer.id, 'rejected')}
+            >
+              <XCircle className="w-4 h-4 mr-1" />
+              Revoke Verification
+            </Button>
+          )}
+          {dealer.status === 'rejected' && (
+            <Button
+              onClick={() => onUpdateStatus?.(dealer.id, 'verified')}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="w-4 h-4 mr-1" />
+              Approve
+            </Button>
+          )}
         </div>
 
       </CardContent>

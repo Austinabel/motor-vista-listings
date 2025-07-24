@@ -30,10 +30,9 @@ const DealerProfile = () => {
         .from('dealers')
         .select('*')
         .eq('id', dealerId)
+        .eq('status', 'verified')
         .single();
       if (error) {
-        // It's better to return null or let react-query handle the error state
-        // instead of throwing, which might crash the component.
         console.error("Error fetching dealer:", error);
         return null;
       };

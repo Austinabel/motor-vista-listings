@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { DealerDetails } from "@/components/admin/DealerDetails";
+import { ListingModal } from "@/components/admin/ListingModal";
 
 const Admin = () => {
   const [dealers, setDealers] = useState([]);
@@ -32,7 +34,7 @@ const Admin = () => {
       toast.error("Logout failed: " + error.message);
     } else {
       toast.success("You have been logged out.");
-      navigate("/admin-login");
+      navigate("/");
     }
   };
 
@@ -341,14 +343,36 @@ const Admin = () => {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setSelectedListing(listing)}
-                              >
-                                <Eye className="w-4 h-4 mr-1" />
-                                View
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setSelectedListing(listing)}
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View
+                                </Button>
+                                {listing.status === 'pending_review' && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => updateListingStatus(listing.id, 'active')}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      <CheckCircle className="w-4 h-4 mr-1" />
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => updateListingStatus(listing.id, 'rejected')}
+                                    >
+                                      <XCircle className="w-4 h-4 mr-1" />
+                                      Reject
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
@@ -358,184 +382,13 @@ const Admin = () => {
                 </CardContent>
               </Card>
 
-              {/* Selected Listing Details */}
-              {selectedListing && (
-                <Card className="lg:col-span-2">
-                  <CardHeader>
-                    <CardTitle>
-                      {selectedListing.year} {selectedListing.make} {selectedListing.model} - Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {/* Basic Details */}
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-lg border-b pb-2">Basic Information</h4>
-                        <div className="space-y-2">
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Make & Model:</Label>
-                            <p className="text-sm">{selectedListing.make} {selectedListing.model}</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Year:</Label>
-                            <p className="text-sm">{selectedListing.year}</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Price:</Label>
-                            <p className="text-sm font-semibold">₦{selectedListing.price.toLocaleString()}</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Condition:</Label>
-                            <p className="text-sm">{selectedListing.condition}</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Location:</Label>
-                            <p className="text-sm">{selectedListing.location}</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Listed By:</Label>
-                            <div className="flex items-center gap-2 mt-1">
-                              {getListedBy(selectedListing).type === 'dealer' ? (
-                                <Building className="w-4 h-4 text-blue-600" />
-                              ) : (
-                                <User className="w-4 h-4 text-gray-600" />
-                              )}
-                              <div>
-                                <p className="text-sm font-medium">{getListedBy(selectedListing).name}</p>
-                                <p className="text-xs text-gray-500 capitalize">{getListedBy(selectedListing).type}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Technical Details */}
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-lg border-b pb-2">Technical Details</h4>
-                        <div className="space-y-2">
-                          {selectedListing.mileage && (
-                            <div>
-                              <Label className="text-sm font-medium text-gray-600">Mileage:</Label>
-                              <p className="text-sm">{selectedListing.mileage} km</p>
-                            </div>
-                          )}
-                          {selectedListing.fuel_type && (
-                            <div>
-                              <Label className="text-sm font-medium text-gray-600">Fuel Type:</Label>
-                              <p className="text-sm">{selectedListing.fuel_type}</p>
-                            </div>
-                          )}
-                          {selectedListing.transmission && (
-                            <div>
-                              <Label className="text-sm font-medium text-gray-600">Transmission:</Label>
-                              <p className="text-sm">{selectedListing.transmission}</p>
-                            </div>
-                          )}
-                          {selectedListing.color && (
-                            <div>
-                              <Label className="text-sm font-medium text-gray-600">Color:</Label>
-                              <p className="text-sm">{selectedListing.color}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Listing Details */}
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-lg border-b pb-2">Listing Information</h4>
-                        <div className="space-y-2">
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Plan:</Label>
-                            <div>{getPlanBadge(selectedListing.listing_plan)}</div>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Listing Fee:</Label>
-                            <p className="text-sm">₦{selectedListing.listing_price.toLocaleString()}</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Duration:</Label>
-                            <p className="text-sm">{selectedListing.listing_duration} days</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Expires:</Label>
-                            <p className="text-sm">{new Date(selectedListing.expires_at).toLocaleDateString()}</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-gray-600">Status:</Label>
-                            <div>{getStatusBadge(selectedListing.status)}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Features */}
-                    {selectedListing.features && selectedListing.features.length > 0 && (
-                      <div className="mt-6">
-                        <h4 className="font-semibold text-lg border-b pb-2 mb-3">Features</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedListing.features.map((feature: string, index: number) => (
-                            <Badge key={index} variant="outline">{feature}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Description */}
-                    {selectedListing.description && (
-                      <div className="mt-6">
-                        <h4 className="font-semibold text-lg border-b pb-2 mb-3">Description</h4>
-                        <p className="text-sm text-gray-700">{selectedListing.description}</p>
-                      </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    <div className="flex space-x-4 pt-6 border-t mt-6">
-                      {selectedListing.status === 'pending' && (
-                        <>
-                          <Button
-                            onClick={() => updateListingStatus(selectedListing.id, 'approved')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Approve Listing
-                          </Button>
-                          <Button
-                            onClick={() => updateListingStatus(selectedListing.id, 'rejected')}
-                            variant="destructive"
-                          >
-                            <XCircle className="w-4 h-4 mr-2" />
-                            Reject Listing
-                          </Button>
-                        </>
-                      )}
-                      {selectedListing.status === 'approved' && (
-                        <Button
-                          onClick={() => updateListingStatus(selectedListing.id, 'rejected')}
-                          variant="destructive"
-                        >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Revoke Approval
-                        </Button>
-                      )}
-                      {selectedListing.status === 'rejected' && (
-                        <Button
-                          onClick={() => updateListingStatus(selectedListing.id, 'approved')}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Approve Listing
-                        </Button>
-                      )}
-                      <Button
-                        onClick={() => setSelectedListing(null)}
-                        variant="outline"
-                      >
-                        Close Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Listing Modal */}
+              <ListingModal
+                listing={selectedListing}
+                isOpen={!!selectedListing}
+                onClose={() => setSelectedListing(null)}
+                onUpdateStatus={updateListingStatus}
+              />
             </div>
           </TabsContent>
 
@@ -590,131 +443,11 @@ const Admin = () => {
                 </CardContent>
               </Card>
 
-              {/* Dealer Details */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {selectedDealer ? `${selectedDealer.business_name} Details` : 'Select a Dealer'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {selectedDealer ? (
-                    <div className="space-y-6">
-                      {/* Basic Information */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-sm font-medium">Business Name</Label>
-                          <p className="text-sm text-gray-900">{selectedDealer.business_name}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Contact Person</Label>
-                          <p className="text-sm text-gray-900">{selectedDealer.contact_name}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Email</Label>
-                          <p className="text-sm text-gray-900">{selectedDealer.email}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Phone</Label>
-                          <p className="text-sm text-gray-900">{selectedDealer.phone}</p>
-                        </div>
-                      </div>
-
-                      {/* ID Verification */}
-                      {selectedDealer.id_card_number && (
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                          <h4 className="font-medium text-blue-700 flex items-center mb-2">
-                            <IdCard className="w-4 h-4 mr-2" />
-                            ID Card Verification
-                          </h4>
-                          <p className="text-sm text-gray-700">
-                            ID Number: {selectedDealer.id_card_number}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Payment Information */}
-                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                        <h4 className="font-medium text-green-700 flex items-center mb-2">
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Payment Information
-                        </h4>
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-700">
-                            Status: {getPaymentStatusBadge(selectedDealer.payment_status)}
-                          </p>
-                          {selectedDealer.payment_reference && (
-                            <p className="text-sm text-gray-700">
-                              Reference: {selectedDealer.payment_reference}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Business Details */}
-                      <div>
-                        <Label className="text-sm font-medium">Business Description</Label>
-                        <p className="text-sm text-gray-900 mt-1">{selectedDealer.description}</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-sm font-medium">CAC Number</Label>
-                          <p className="text-sm text-gray-900">{selectedDealer.cac_number}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Year Established</Label>
-                          <p className="text-sm text-gray-900">{selectedDealer.year_established}</p>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex space-x-4 pt-4 border-t">
-                        {selectedDealer.status === 'pending' && (
-                          <>
-                            <Button
-                              onClick={() => updateDealerStatus(selectedDealer.id, 'verified')}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={() => updateDealerStatus(selectedDealer.id, 'rejected')}
-                              variant="destructive"
-                            >
-                              <XCircle className="w-4 h-4 mr-2" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        {selectedDealer.status === 'verified' && (
-                          <Button
-                            onClick={() => updateDealerStatus(selectedDealer.id, 'rejected')}
-                            variant="destructive"
-                          >
-                            <XCircle className="w-4 h-4 mr-2" />
-                            Revoke Verification
-                          </Button>
-                        )}
-                        {selectedDealer.status === 'rejected' && (
-                          <Button
-                            onClick={() => updateDealerStatus(selectedDealer.id, 'verified')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Approve
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-center py-8">
-                      Select a dealer from the list to view details
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+                {/* Dealer Details */}
+                <DealerDetails 
+                  dealer={selectedDealer} 
+                  onUpdateStatus={updateDealerStatus}
+                />
             </div>
           </TabsContent>
 
