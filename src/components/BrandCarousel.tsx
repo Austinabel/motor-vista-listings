@@ -6,18 +6,18 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 
 const brands = [
-  { name: "Toyota", logo: "🚗", category: "toyota" },
-  { name: "Honda", logo: "🚙", category: "honda" },
+  { name: "Toyota", logo: "/lovable-uploads/d49dd33e-5468-4b54-9b5b-3eec1aca920b.png", category: "toyota" },
+  { name: "Honda", logo: "/lovable-uploads/79a65471-83c9-4031-a90e-98c709b6bad3.png", category: "honda" },
   { name: "Mercedes", logo: "🚐", category: "mercedes-benz" },
   { name: "BMW", logo: "🚕", category: "bmw" },
-  { name: "Audi", logo: "🚘", category: "audi" },
-  { name: "Lexus", logo: "🚗", category: "lexus" },
-  { name: "Nissan", logo: "🚙", category: "nissan" },
-  { name: "Hyundai", logo: "🚐", category: "hyundai" },
-  { name: "Ford", logo: "🚗", category: "ford" },
-  { name: "Volkswagen", logo: "🚙", category: "volkswagen" },
-  { name: "Peugeot", logo: "🚐", category: "peugeot" },
-  { name: "Kia", logo: "🚕", category: "kia" },
+  { name: "Audi", logo: "/lovable-uploads/087252cd-5dcf-470d-b026-42653d7c4368.png", category: "audi" },
+  { name: "Lexus", logo: "/lovable-uploads/554f272d-906e-4747-a23a-746fbbabcff2.png", category: "lexus" },
+  { name: "Nissan", logo: "/lovable-uploads/ccfa7639-b973-439d-820f-75c3113bcb8c.png", category: "nissan" },
+  { name: "Hyundai", logo: "/lovable-uploads/39ae951c-b5b7-4e95-ac27-4cb3855d72ec.png", category: "hyundai" },
+  { name: "Ford", logo: "/lovable-uploads/e5138f58-2ca5-40fc-8c7a-7c255b1826c3.png", category: "ford" },
+  { name: "Volkswagen", logo: "/lovable-uploads/128717c6-02b7-4803-884e-e691e915e37d.png", category: "volkswagen" },
+  { name: "Peugeot", logo: "/lovable-uploads/5918e91e-c4eb-4696-8b7f-bc623715aabf.png", category: "peugeot" },
+  { name: "Kia", logo: "/lovable-uploads/791a836f-b8ff-4c5b-98e8-269a886da868.png", category: "kia" },
 ];
 
 export const BrandCarousel = () => {
@@ -59,7 +59,17 @@ export const BrandCarousel = () => {
             {brands.map((brand) => (
               <Link key={brand.name} to={`/cars?category=${brand.category}`}>
                 <Card className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer flex-shrink-0 min-w-[140px]">
-                  <div className="text-4xl mb-2">{brand.logo}</div>
+                  <div className="h-12 mb-2 flex items-center justify-center">
+                    {brand.logo.startsWith('/') ? (
+                      <img 
+                        src={brand.logo} 
+                        alt={`${brand.name} logo`}
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    ) : (
+                      <span className="text-4xl">{brand.logo}</span>
+                    )}
+                  </div>
                   <h3 className="font-semibold">{brand.name}</h3>
                 </Card>
               </Link>
