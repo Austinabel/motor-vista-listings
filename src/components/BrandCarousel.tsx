@@ -8,8 +8,8 @@ import { Link } from "react-router-dom";
 const brands = [
   { name: "Toyota", logo: "/lovable-uploads/d49dd33e-5468-4b54-9b5b-3eec1aca920b.png", category: "toyota" },
   { name: "Honda", logo: "/lovable-uploads/79a65471-83c9-4031-a90e-98c709b6bad3.png", category: "honda" },
-  { name: "Mercedes", logo: "🚐", category: "mercedes-benz" },
-  { name: "BMW", logo: "🚕", category: "bmw" },
+  { name: "Mercedes", logo: "/lovable-uploads/97aaac92-9fdc-47e4-b122-489f9c56e961.png", category: "mercedes-benz" },
+  { name: "BMW", logo: "/lovable-uploads/c314a3e8-3bb7-4b66-b810-bd2239e1a525.png", category: "bmw" },
   { name: "Audi", logo: "/lovable-uploads/087252cd-5dcf-470d-b026-42653d7c4368.png", category: "audi" },
   { name: "Lexus", logo: "/lovable-uploads/554f272d-906e-4747-a23a-746fbbabcff2.png", category: "lexus" },
   { name: "Nissan", logo: "/lovable-uploads/ccfa7639-b973-439d-820f-75c3113bcb8c.png", category: "nissan" },
@@ -18,6 +18,9 @@ const brands = [
   { name: "Volkswagen", logo: "/lovable-uploads/128717c6-02b7-4803-884e-e691e915e37d.png", category: "volkswagen" },
   { name: "Peugeot", logo: "/lovable-uploads/5918e91e-c4eb-4696-8b7f-bc623715aabf.png", category: "peugeot" },
   { name: "Kia", logo: "/lovable-uploads/791a836f-b8ff-4c5b-98e8-269a886da868.png", category: "kia" },
+  { name: "Innoson", logo: "/lovable-uploads/826e6a5e-7dce-4d9f-83b8-d78721e0112d.png", category: "innoson" },
+  { name: "Suzuki", logo: "/lovable-uploads/8bb6fd5d-877c-44c3-ad02-70f54b9f77a9.png", category: "suzuki" },
+  { name: "TVS", logo: "/lovable-uploads/a978cc74-ff62-4e77-909e-9c428cab037d.png", category: "tvs" },
 ];
 
 export const BrandCarousel = () => {
