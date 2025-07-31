@@ -326,12 +326,48 @@ const SellYourCar = () => {
                           <SelectValue placeholder="Select make" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="toyota">Toyota</SelectItem>
-                          <SelectItem value="honda">Honda</SelectItem>
-                          <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
-                          <SelectItem value="bmw">BMW</SelectItem>
+                          <SelectItem value="acura">Acura</SelectItem>
                           <SelectItem value="audi">Audi</SelectItem>
+                          <SelectItem value="bestune">Bestune</SelectItem>
+                          <SelectItem value="bmw">BMW</SelectItem>
+                          <SelectItem value="brilliance">Brilliance</SelectItem>
+                          <SelectItem value="buick">Buick</SelectItem>
+                          <SelectItem value="cadillac">Cadillac</SelectItem>
+                          <SelectItem value="changan">Changan</SelectItem>
+                          <SelectItem value="chevrolet">Chevrolet</SelectItem>
+                          <SelectItem value="chrysler">Chrysler</SelectItem>
+                          <SelectItem value="daihatsu">Daihatsu</SelectItem>
+                          <SelectItem value="dodge">Dodge</SelectItem>
+                          <SelectItem value="ford">Ford</SelectItem>
+                          <SelectItem value="gac">GAC</SelectItem>
+                          <SelectItem value="gmc">GMC</SelectItem>
+                          <SelectItem value="honda">Honda</SelectItem>
+                          <SelectItem value="hyundai">Hyundai</SelectItem>
+                          <SelectItem value="infiniti">Infiniti</SelectItem>
+                          <SelectItem value="ivm">IVM</SelectItem>
+                          <SelectItem value="jeep">Jeep</SelectItem>
+                          <SelectItem value="kia">Kia</SelectItem>
+                          <SelectItem value="land-rover">Land Rover</SelectItem>
                           <SelectItem value="lexus">Lexus</SelectItem>
+                          <SelectItem value="lincoln">Lincoln</SelectItem>
+                          <SelectItem value="mazda">Mazda</SelectItem>
+                          <SelectItem value="mercedes-benz">Mercedes‑Benz</SelectItem>
+                          <SelectItem value="mini">Mini</SelectItem>
+                          <SelectItem value="mitsubishi">Mitsubishi</SelectItem>
+                          <SelectItem value="nissan">Nissan</SelectItem>
+                          <SelectItem value="opel">Opel</SelectItem>
+                          <SelectItem value="peugeot">Peugeot</SelectItem>
+                          <SelectItem value="pontiac">Pontiac</SelectItem>
+                          <SelectItem value="porsche">Porsche</SelectItem>
+                          <SelectItem value="renault">Renault</SelectItem>
+                          <SelectItem value="rover">Rover</SelectItem>
+                          <SelectItem value="saturn">Saturn</SelectItem>
+                          <SelectItem value="scion">Scion</SelectItem>
+                          <SelectItem value="subaru">Subaru</SelectItem>
+                          <SelectItem value="suzuki">Suzuki</SelectItem>
+                          <SelectItem value="toyota">Toyota</SelectItem>
+                          <SelectItem value="volkswagen">Volkswagen</SelectItem>
+                          <SelectItem value="volvo">Volvo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

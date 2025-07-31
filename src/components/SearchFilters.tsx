@@ -8,8 +8,12 @@ import { Search, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const carMakes = [
-  "Toyota", "Honda", "Mercedes-Benz", "BMW", "Audi", "Lexus", "Nissan", 
-  "Hyundai", "Ford", "Volkswagen", "Peugeot", "Kia", "Acura", "Innoson"
+  "Acura", "Audi", "Bestune", "BMW", "Brilliance", "Buick", "Cadillac", 
+  "Changan", "Chevrolet", "Chrysler", "Daihatsu", "Dodge", "Ford", "GAC", 
+  "GMC", "Honda", "Hyundai", "Infiniti", "IVM", "Jeep", "Kia", "Land Rover", 
+  "Lexus", "Lincoln", "Mazda", "Mercedes‑Benz", "Mini", "Mitsubishi", 
+  "Nissan", "Opel", "Peugeot", "Pontiac", "Porsche", "Renault", "Rover", 
+  "Saturn", "Scion", "Subaru", "Suzuki", "Toyota", "Volkswagen", "Volvo"
 ];
 
 const nigerianStates = [
