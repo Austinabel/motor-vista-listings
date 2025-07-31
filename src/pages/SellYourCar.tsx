@@ -37,6 +37,41 @@ const SellYourCar = () => {
     features: [] as string[],
   });
 
+  const carMakes = [
+    "Acura", "Audi", "Bestune", "BMW", "Brilliance", "Buick", "Cadillac", 
+    "Changan", "Chevrolet", "Chrysler", "Daihatsu", "Dodge", "Ford", "GAC", 
+    "GMC", "Honda", "Hyundai", "Infiniti", "IVM", "Jeep", "Kia", "Land Rover", 
+    "Lexus", "Lincoln", "Mazda", "Mercedes‑Benz", "Mini", "Mitsubishi", 
+    "Nissan", "Opel", "Peugeot", "Pontiac", "Porsche", "Renault", "Rover", 
+    "Saturn", "Scion", "Subaru", "Suzuki", "Toyota", "Volkswagen", "Volvo", "Others"
+  ];
+
+  const carModels: { [key: string]: string[] } = {
+    "Toyota": ["Camry", "Corolla", "RAV4", "Highlander", "Prius", "Sienna", "Tacoma", "Tundra", "4Runner", "Yaris", "Avalon", "Venza", "Others"],
+    "Honda": ["Accord", "Civic", "CR-V", "Pilot", "Odyssey", "Fit", "HR-V", "Passport", "Ridgeline", "Insight", "Others"],
+    "Mercedes‑Benz": ["C-Class", "E-Class", "S-Class", "GLC", "GLE", "GLS", "A-Class", "CLA", "GLA", "ML-Class", "G-Class", "Others"],
+    "BMW": ["3 Series", "5 Series", "7 Series", "X3", "X5", "X7", "i3", "i8", "Z4", "X1", "2 Series", "Others"],
+    "Audi": ["A3", "A4", "A6", "A8", "Q3", "Q5", "Q7", "Q8", "TT", "R8", "Others"],
+    "Lexus": ["ES", "IS", "LS", "RX", "GX", "LX", "NX", "UX", "LC", "RC", "Others"],
+    "Nissan": ["Altima", "Sentra", "Rogue", "Pathfinder", "Murano", "Frontier", "Titan", "Armada", "Versa", "Maxima", "Others"],
+    "Hyundai": ["Elantra", "Sonata", "Santa Fe", "Tucson", "Accent", "Genesis", "Veloster", "Palisade", "Kona", "Others"],
+    "Ford": ["F-150", "Mustang", "Explorer", "Escape", "Focus", "Fusion", "Edge", "Expedition", "Ranger", "Bronco", "Others"],
+    "Volkswagen": ["Jetta", "Passat", "Golf", "Tiguan", "Atlas", "Arteon", "Beetle", "Touareg", "Others"],
+    "Kia": ["Optima", "Forte", "Sorento", "Sportage", "Soul", "Stinger", "Telluride", "Rio", "Sedona", "Others"],
+    "Chevrolet": ["Silverado", "Malibu", "Equinox", "Traverse", "Camaro", "Corvette", "Tahoe", "Suburban", "Others"],
+    "Acura": ["TLX", "ILX", "RDX", "MDX", "NSX", "Others"],
+    "Infiniti": ["Q50", "Q60", "QX50", "QX60", "QX80", "Others"],
+    "Jeep": ["Wrangler", "Grand Cherokee", "Cherokee", "Compass", "Renegade", "Gladiator", "Others"],
+    "Land Rover": ["Range Rover", "Discovery", "Defender", "Evoque", "Velar", "Others"],
+    "Mazda": ["Mazda3", "Mazda6", "CX-3", "CX-5", "CX-9", "MX-5 Miata", "Others"],
+    "Mitsubishi": ["Outlander", "Eclipse Cross", "Mirage", "Pajero", "Lancer", "Others"],
+    "Subaru": ["Outback", "Forester", "Impreza", "Legacy", "Ascent", "Crosstrek", "WRX", "Others"],
+    "Peugeot": ["208", "308", "508", "2008", "3008", "5008", "Others"],
+    "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "Others"],
+    "Volvo": ["XC90", "XC60", "XC40", "S60", "S90", "V60", "Others"],
+    "Others": ["Other Model"]
+  };
+
   const pricingPlans = [
     {
       id: "free",
@@ -94,6 +129,10 @@ const SellYourCar = () => {
     "ABS", "Airbags", "Alloy Wheels", "Bluetooth", "GPS Navigation", "Sunroof",
     "Leather Seats", "Parking Sensors", "Reverse Camera", "Cruise Control"
   ];
+
+  const handleMakeChange = (value: string) => {
+    setFormData(prev => ({ ...prev, make: value, model: "" })); // Clear model when make changes
+  };
 
   const handleFeatureChange = (feature: string, checked: boolean) => {
     if (checked) {
@@ -319,68 +358,43 @@ const SellYourCar = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Basic Information */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="make">Make *</Label>
-                      <Select value={formData.make} onValueChange={(value) => setFormData(prev => ({ ...prev, make: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select make" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="acura">Acura</SelectItem>
-                          <SelectItem value="audi">Audi</SelectItem>
-                          <SelectItem value="bestune">Bestune</SelectItem>
-                          <SelectItem value="bmw">BMW</SelectItem>
-                          <SelectItem value="brilliance">Brilliance</SelectItem>
-                          <SelectItem value="buick">Buick</SelectItem>
-                          <SelectItem value="cadillac">Cadillac</SelectItem>
-                          <SelectItem value="changan">Changan</SelectItem>
-                          <SelectItem value="chevrolet">Chevrolet</SelectItem>
-                          <SelectItem value="chrysler">Chrysler</SelectItem>
-                          <SelectItem value="daihatsu">Daihatsu</SelectItem>
-                          <SelectItem value="dodge">Dodge</SelectItem>
-                          <SelectItem value="ford">Ford</SelectItem>
-                          <SelectItem value="gac">GAC</SelectItem>
-                          <SelectItem value="gmc">GMC</SelectItem>
-                          <SelectItem value="honda">Honda</SelectItem>
-                          <SelectItem value="hyundai">Hyundai</SelectItem>
-                          <SelectItem value="infiniti">Infiniti</SelectItem>
-                          <SelectItem value="ivm">IVM</SelectItem>
-                          <SelectItem value="jeep">Jeep</SelectItem>
-                          <SelectItem value="kia">Kia</SelectItem>
-                          <SelectItem value="land-rover">Land Rover</SelectItem>
-                          <SelectItem value="lexus">Lexus</SelectItem>
-                          <SelectItem value="lincoln">Lincoln</SelectItem>
-                          <SelectItem value="mazda">Mazda</SelectItem>
-                          <SelectItem value="mercedes-benz">Mercedes‑Benz</SelectItem>
-                          <SelectItem value="mini">Mini</SelectItem>
-                          <SelectItem value="mitsubishi">Mitsubishi</SelectItem>
-                          <SelectItem value="nissan">Nissan</SelectItem>
-                          <SelectItem value="opel">Opel</SelectItem>
-                          <SelectItem value="peugeot">Peugeot</SelectItem>
-                          <SelectItem value="pontiac">Pontiac</SelectItem>
-                          <SelectItem value="porsche">Porsche</SelectItem>
-                          <SelectItem value="renault">Renault</SelectItem>
-                          <SelectItem value="rover">Rover</SelectItem>
-                          <SelectItem value="saturn">Saturn</SelectItem>
-                          <SelectItem value="scion">Scion</SelectItem>
-                          <SelectItem value="subaru">Subaru</SelectItem>
-                          <SelectItem value="suzuki">Suzuki</SelectItem>
-                          <SelectItem value="toyota">Toyota</SelectItem>
-                          <SelectItem value="volkswagen">Volkswagen</SelectItem>
-                          <SelectItem value="volvo">Volvo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="model">Model *</Label>
-                      <Input 
-                        id="model" 
-                        value={formData.model}
-                        onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
-                        placeholder="Enter model" 
-                        required
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="make">Make *</Label>
+                       <Select value={formData.make} onValueChange={handleMakeChange}>
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select make" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {carMakes.map((make) => (
+                             <SelectItem key={make.toLowerCase()} value={make}>
+                               {make}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div>
+                       <Label htmlFor="model">Model *</Label>
+                       <Select 
+                         value={formData.model} 
+                         onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                         disabled={!formData.make}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {formData.make && carModels[formData.make] ? 
+                             carModels[formData.make].map((model) => (
+                               <SelectItem key={model.toLowerCase()} value={model}>
+                                 {model}
+                               </SelectItem>
+                             )) : 
+                             <SelectItem value="other">Other</SelectItem>
+                           }
+                         </SelectContent>
+                       </Select>
+                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

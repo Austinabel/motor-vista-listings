@@ -13,7 +13,7 @@ const carMakes = [
   "GMC", "Honda", "Hyundai", "Infiniti", "IVM", "Jeep", "Kia", "Land Rover", 
   "Lexus", "Lincoln", "Mazda", "Mercedes‑Benz", "Mini", "Mitsubishi", 
   "Nissan", "Opel", "Peugeot", "Pontiac", "Porsche", "Renault", "Rover", 
-  "Saturn", "Scion", "Subaru", "Suzuki", "Toyota", "Volkswagen", "Volvo"
+  "Saturn", "Scion", "Subaru", "Suzuki", "Toyota", "Volkswagen", "Volvo", "Others"
 ];
 
 const nigerianStates = [
