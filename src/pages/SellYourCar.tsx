@@ -32,6 +32,8 @@ const SellYourCar = () => {
     fuelType: "",
     transmission: "",
     color: "",
+    state: "",
+    area: "",
     location: "",
     description: "",
     features: [] as string[],
@@ -70,6 +72,47 @@ const SellYourCar = () => {
     "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "Others"],
     "Volvo": ["XC90", "XC60", "XC40", "S60", "S90", "V60", "Others"],
     "Others": ["Other Model"]
+  };
+
+  // Nigerian states and their areas
+  const stateAreas: { [key: string]: string[] } = {
+    'Abia': ['Aba', 'Umuahia', 'Arochukwu', 'Ohafia', 'Bende'],
+    'Adamawa': ['Yola', 'Mubi', 'Numan', 'Jimeta', 'Ganye'],
+    'Akwa Ibom': ['Uyo', 'Eket', 'Ikot Ekpene', 'Oron', 'Abak'],
+    'Anambra': ['Awka', 'Onitsha', 'Nnewi', 'Ekwulobia', 'Agulu'],
+    'Bauchi': ['Bauchi', 'Azare', 'Misau', 'Jama\'are', 'Katagum'],
+    'Bayelsa': ['Yenagoa', 'Brass', 'Sagbama', 'Nembe', 'Ogbia'],
+    'Benue': ['Makurdi', 'Gboko', 'Otukpo', 'Katsina-Ala', 'Vandeikya'],
+    'Borno': ['Maiduguri', 'Biu', 'Bama', 'Dikwa', 'Gubio'],
+    'Cross River': ['Calabar', 'Ugep', 'Obudu', 'Ogoja', 'Ikom'],
+    'Delta': ['Asaba', 'Warri', 'Sapele', 'Ughelli', 'Agbor'],
+    'Ebonyi': ['Abakaliki', 'Afikpo', 'Onueke', 'Ezza', 'Ikwo'],
+    'Edo': ['Benin City', 'Auchi', 'Ekpoma', 'Uromi', 'Igarra'],
+    'Ekiti': ['Ado-Ekiti', 'Ikere', 'Oye', 'Ijero', 'Ikole'],
+    'Enugu': ['Enugu', 'Nsukka', 'Oji River', 'Agbani', 'Awgu'],
+    'FCT': ['Abuja', 'Gwagwalada', 'Kuje', 'Kwali', 'Bwari'],
+    'Gombe': ['Gombe', 'Billiri', 'Kaltungo', 'Dukku', 'Bajoga'],
+    'Imo': ['Owerri', 'Orlu', 'Okigwe', 'Mbaise', 'Ngor Okpala'],
+    'Jigawa': ['Dutse', 'Hadejia', 'Kazaure', 'Ringim', 'Birnin Kudu'],
+    'Kaduna': ['Kaduna', 'Zaria', 'Kafanchan', 'Kagoro', 'Saminaka'],
+    'Kano': ['Kano', 'Wudil', 'Gwarzo', 'Rano', 'Karaye'],
+    'Katsina': ['Katsina', 'Daura', 'Funtua', 'Malumfashi', 'Dutsin-Ma'],
+    'Kebbi': ['Birnin Kebbi', 'Argungu', 'Yauri', 'Zuru', 'Bagudo'],
+    'Kogi': ['Lokoja', 'Okene', 'Kabba', 'Anyigba', 'Idah'],
+    'Kwara': ['Ilorin', 'Offa', 'Omu-Aran', 'Lafiagi', 'Esie'],
+    'Lagos': ['Lagos Island', 'Ikeja', 'Surulere', 'Yaba', 'Victoria Island', 'Ikoyi', 'Lekki', 'Ajah', 'Alaba', 'Mushin'],
+    'Nasarawa': ['Lafia', 'Keffi', 'Akwanga', 'Nasarawa', 'Doma'],
+    'Niger': ['Minna', 'Bida', 'Kontagora', 'Suleja', 'New Bussa'],
+    'Ogun': ['Abeokuta', 'Sagamu', 'Ijebu Ode', 'Ota', 'Ilaro'],
+    'Ondo': ['Akure', 'Ondo', 'Owo', 'Ikare', 'Okitipupa'],
+    'Osun': ['Osogbo', 'Ile-Ife', 'Ilesa', 'Ede', 'Iwo'],
+    'Oyo': ['Ibadan', 'Ogbomoso', 'Oyo', 'Iseyin', 'Saki'],
+    'Plateau': ['Jos', 'Bukuru', 'Pankshin', 'Shendam', 'Mangu'],
+    'Rivers': ['Port Harcourt', 'Obio-Akpor', 'Okrika', 'Bonny', 'Degema'],
+    'Sokoto': ['Sokoto', 'Tambuwal', 'Gwadabawa', 'Bodinga', 'Yabo'],
+    'Taraba': ['Jalingo', 'Wukari', 'Bali', 'Gembu', 'Serti'],
+    'Yobe': ['Damaturu', 'Potiskum', 'Gashua', 'Nguru', 'Geidam'],
+    'Zamfara': ['Gusau', 'Kaura Namoda', 'Talata Mafara', 'Bukkuyum', 'Anka']
   };
 
   const pricingPlans = [
@@ -204,11 +247,14 @@ const SellYourCar = () => {
       }
 
       // Validate required fields
-      if (!formData.make || !formData.model || !formData.year || !formData.price || !formData.condition || !formData.location) {
+      if (!formData.make || !formData.model || !formData.year || !formData.price || !formData.condition || !formData.state || !formData.area) {
         toast.error("Please fill in all required fields");
         setLoading(false);
         return;
       }
+
+      // Combine state and area for location
+      const location = `${formData.area}, ${formData.state}`;
 
       const selectedPlanDetails = pricingPlans.find(p => p.id === selectedPlan);
       const durationInDays = selectedPlan === "free" ? 30 : selectedPlan === "standard" ? 60 : 90;
@@ -231,7 +277,7 @@ const SellYourCar = () => {
           fuel_type: formData.fuelType || null,
           transmission: formData.transmission || null,
           color: formData.color || null,
-          location: formData.location,
+          location: location,
           description: formData.description || null,
           features: formData.features,
           listing_plan: selectedPlan,
@@ -487,19 +533,40 @@ const SellYourCar = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="location">Location *</Label>
-                      <Select value={formData.location} onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}>
+                      <Label htmlFor="state">State *</Label>
+                      <Select value={formData.state} onValueChange={(value) => setFormData(prev => ({ ...prev, state: value, area: '' }))}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select location" />
+                          <SelectValue placeholder="Select state" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="lagos">Lagos</SelectItem>
-                          <SelectItem value="abuja">Abuja</SelectItem>
-                          <SelectItem value="port-harcourt">Port Harcourt</SelectItem>
-                          <SelectItem value="kano">Kano</SelectItem>
-                          <SelectItem value="ibadan">Ibadan</SelectItem>
+                          {Object.keys(stateAreas).map((state) => (
+                            <SelectItem key={state} value={state}>{state}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="area">Area *</Label>
+                      <Select 
+                        value={formData.area} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, area: value }))}
+                        disabled={!formData.state}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={formData.state ? "Select area" : "Select state first"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {formData.state && stateAreas[formData.state]?.map((area) => (
+                            <SelectItem key={area} value={area}>{area}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-end">
+                      {/* Empty div for spacing */}
                     </div>
                   </div>
 
