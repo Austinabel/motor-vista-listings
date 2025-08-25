@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ const SellYourCar = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
   const [newListing, setNewListing] = useState<any>(null);
+  const [listingPlansEnabled, setListingPlansEnabled] = useState(false);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -173,6 +174,23 @@ const SellYourCar = () => {
     "Leather Seats", "Parking Sensors", "Reverse Camera", "Cruise Control"
   ];
 
+  // Check if listing plans are enabled
+  useEffect(() => {
+    const checkListingPlansStatus = async () => {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'listing_plans_enabled')
+        .single();
+      
+      if (!error && data) {
+        setListingPlansEnabled(data.value === 'true' || data.value === true);
+      }
+    };
+    
+    checkListingPlansStatus();
+  }, []);
+
   const handleMakeChange = (value: string) => {
     setFormData(prev => ({ ...prev, make: value, model: "" })); // Clear model when make changes
   };
@@ -193,10 +211,10 @@ const SellYourCar = () => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const maxImages = selectedPlan === "free" ? 5 : selectedPlan === "standard" ? 15 : 50;
+    const maxImages = listingPlansEnabled ? (selectedPlan === "free" ? 5 : selectedPlan === "standard" ? 15 : 50) : 15;
     
     if (files.length > maxImages) {
-      toast.error(`Maximum ${maxImages} images allowed for ${selectedPlan} plan`);
+      toast.error(`Maximum ${maxImages} images allowed`);
       return;
     }
     
@@ -257,11 +275,11 @@ const SellYourCar = () => {
       const location = `${formData.area}, ${formData.state}`;
 
       const selectedPlanDetails = pricingPlans.find(p => p.id === selectedPlan);
-      const durationInDays = selectedPlan === "free" ? 30 : selectedPlan === "standard" ? 60 : 90;
+      const durationInDays = listingPlansEnabled ? (selectedPlan === "free" ? 30 : selectedPlan === "standard" ? 60 : 90) : 30;
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + durationInDays);
 
-      const listingStatus = selectedPlan === 'free' ? 'pending_review' : 'pending_payment';
+      const listingStatus = (!listingPlansEnabled || selectedPlan === 'free') ? 'pending_review' : 'pending_payment';
 
       // Insert car listing
       const { data: listing, error: listingError } = await supabase
@@ -280,8 +298,8 @@ const SellYourCar = () => {
           location: location,
           description: formData.description || null,
           features: formData.features,
-          listing_plan: selectedPlan,
-          listing_price: selectedPlanDetails?.listingPrice || 0,
+          listing_plan: listingPlansEnabled ? selectedPlan : 'free',
+          listing_price: listingPlansEnabled ? (selectedPlanDetails?.listingPrice || 0) : 0,
           listing_duration: durationInDays,
           expires_at: expiresAt.toISOString(),
           status: listingStatus
@@ -301,7 +319,7 @@ const SellYourCar = () => {
         await uploadImages(listing.id);
       }
 
-      if (selectedPlan === "free") {
+      if (!listingPlansEnabled || selectedPlan === "free") {
         toast.success("Your car listing has been submitted for review!");
         navigate("/");
       } else {
@@ -359,43 +377,45 @@ const SellYourCar = () => {
           <p className="text-gray-600 text-lg">List your car and reach thousands of potential buyers</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Pricing Plans */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Choose Your Plan</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RadioGroup value={selectedPlan} onValueChange={setSelectedPlan}>
-                  {pricingPlans.map((plan) => (
-                    <div key={plan.id} className={`p-4 rounded-lg border-2 ${plan.color} ${selectedPlan === plan.id ? 'ring-2 ring-red-500' : ''}`}>
-                      <div className="flex items-center space-x-2 mb-3">
-                        <RadioGroupItem value={plan.id} id={plan.id} />
-                        <plan.icon className="h-5 w-5" />
-                        <Label htmlFor={plan.id} className="font-semibold">{plan.name}</Label>
+        <div className={`grid grid-cols-1 ${listingPlansEnabled ? 'lg:grid-cols-3' : ''} gap-8`}>
+          {/* Pricing Plans - only show if enabled */}
+          {listingPlansEnabled && (
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Choose Your Plan</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup value={selectedPlan} onValueChange={setSelectedPlan}>
+                    {pricingPlans.map((plan) => (
+                      <div key={plan.id} className={`p-4 rounded-lg border-2 ${plan.color} ${selectedPlan === plan.id ? 'ring-2 ring-red-500' : ''}`}>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <RadioGroupItem value={plan.id} id={plan.id} />
+                          <plan.icon className="h-5 w-5" />
+                          <Label htmlFor={plan.id} className="font-semibold">{plan.name}</Label>
+                        </div>
+                        <div className="ml-6">
+                          <div className="text-2xl font-bold text-red-600 mb-1">{plan.price}</div>
+                          <div className="text-sm text-gray-500 mb-3">Valid for {plan.duration}</div>
+                          <ul className="space-y-1">
+                            {plan.features.map((feature, index) => (
+                              <li key={index} className="flex items-center text-sm">
+                                <Check className="h-3 w-3 text-green-500 mr-2" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
-                      <div className="ml-6">
-                        <div className="text-2xl font-bold text-red-600 mb-1">{plan.price}</div>
-                        <div className="text-sm text-gray-500 mb-3">Valid for {plan.duration}</div>
-                        <ul className="space-y-1">
-                          {plan.features.map((feature, index) => (
-                            <li key={index} className="flex items-center text-sm">
-                              <Check className="h-3 w-3 text-green-500 mr-2" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </CardContent>
-            </Card>
-          </div>
+                    ))}
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Car Listing Form */}
-          <div className="lg:col-span-2">
+          <div className={listingPlansEnabled ? 'lg:col-span-2' : ''}>
             <Card>
               <CardHeader>
                 <CardTitle>Car Details</CardTitle>
@@ -643,28 +663,26 @@ const SellYourCar = () => {
                           ))}
                         </div>
                       </div>
-                    )}
-                  </div>
+                     )}
+                   </div>
 
-                  {/* Submit Button */}
-                  <div className="flex justify-between items-center pt-6 border-t">
-                    <div>
-                      <p className="text-lg font-semibold">
-                        Total: {pricingPlans.find(p => p.id === selectedPlan)?.price}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {pricingPlans.find(p => p.id === selectedPlan)?.duration} listing
-                      </p>
+                   {/* Summary - only show if pricing plans are enabled */}
+                  {listingPlansEnabled && (
+                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                      <h3 className="font-semibold mb-2">Listing Summary</h3>
+                      <div className="space-y-1 text-sm">
+                        <div>Plan: <span className="font-medium">{pricingPlans.find(p => p.id === selectedPlan)?.name}</span></div>
+                        <div>Price: <span className="font-medium">{pricingPlans.find(p => p.id === selectedPlan)?.price}</span></div>
+                        <div>Duration: <span className="font-medium">{pricingPlans.find(p => p.id === selectedPlan)?.duration}</span></div>
+                      </div>
                     </div>
-                    <Button 
-                      type="submit" 
-                      className="bg-red-600 hover:bg-red-700 px-8"
-                      disabled={loading}
-                    >
-                      {loading ? "Creating Listing..." : 
-                       selectedPlan === "free" ? "List Car for Free" : "Proceed to Payment"}
-                    </Button>
-                  </div>
+                  )}
+
+                  <Button type="submit" className="w-full mt-6 bg-red-600 hover:bg-red-700" disabled={loading}>
+                    {loading ? "Creating listing..." : 
+                     (!listingPlansEnabled || selectedPlan === "free") ? "Submit Free Listing" : 
+                     `Proceed to Payment (${pricingPlans.find(p => p.id === selectedPlan)?.price})`}
+                  </Button>
                 </form>
               </CardContent>
             </Card>

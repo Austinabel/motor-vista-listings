@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DealerDetails } from "@/components/admin/DealerDetails";
@@ -20,12 +21,14 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDealer, setSelectedDealer] = useState(null);
   const [selectedListing, setSelectedListing] = useState(null);
+  const [listingPlansEnabled, setListingPlansEnabled] = useState(false);
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDealers();
     fetchCarListings();
+    fetchListingPlansStatus();
   }, []);
 
   const handleLogout = async () => {
@@ -56,6 +59,45 @@ const Admin = () => {
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchListingPlansStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'listing_plans_enabled')
+        .single();
+      
+      if (!error && data) {
+        setListingPlansEnabled(data.value === 'true' || data.value === true);
+      }
+    } catch (error) {
+      console.error('Error fetching listing plans status:', error);
+    }
+  };
+
+  const toggleListingPlans = async (enabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('app_settings')
+        .update({ 
+          value: enabled,
+          updated_at: new Date().toISOString()
+        })
+        .eq('key', 'listing_plans_enabled');
+
+      if (error) {
+        console.error('Error updating listing plans status:', error);
+        toast.error('Failed to update listing plans status');
+      } else {
+        setListingPlansEnabled(enabled);
+        toast.success(`Listing plans ${enabled ? 'enabled' : 'disabled'} successfully`);
+      }
+    } catch (error) {
+      console.error('Error in toggleListingPlans:', error);
+      toast.error('An unexpected error occurred');
     }
   };
 
@@ -266,6 +308,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="listings">Car Listings</TabsTrigger>
             <TabsTrigger value="dealers">Dealers</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="stats">Statistics</TabsTrigger>
           </TabsList>
 
@@ -449,6 +492,44 @@ const Admin = () => {
                   onUpdateStatus={updateDealerStatus}
                 />
             </div>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Application Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <Label className="text-base font-medium">Listing Plans</Label>
+                    <p className="text-sm text-gray-600">
+                      Enable or disable pricing plans for car listings. When disabled, all listings are free.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={listingPlansEnabled}
+                    onCheckedChange={toggleListingPlans}
+                  />
+                </div>
+                
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-blue-900">Current Status</h4>
+                      <p className="text-sm text-blue-700">
+                        Listing plans are currently <strong>{listingPlansEnabled ? 'enabled' : 'disabled'}</strong>.
+                        {listingPlansEnabled ? ' Users can choose between free, standard, and featured plans.' : ' All listings are free for users.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="stats">
