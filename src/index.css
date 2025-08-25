@@ -93,11 +93,16 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+* {
+  @apply border-border;
+}
 
-  body {
-    @apply bg-background text-foreground;
-  }
+body {
+  @apply bg-background text-foreground;
+}
+
+/* Mobile app safe area support */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 }

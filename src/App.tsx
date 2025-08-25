@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import CarListings from "./pages/CarListings";
@@ -78,7 +79,7 @@ const AppContent = () => {
   return (
     <>
       {!isAuthPage && !isAdminPage && <Navigation />}
-      <div className={isHomepage || isAuthPage || isAdminPage ? "" : "pt-24"}>
+      <div className={`${isHomepage || isAuthPage || isAdminPage ? "" : "pt-24"} ${!isAuthPage && !isAdminPage ? "pb-20 md:pb-0" : ""}`}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cars" element={<CarListings />} />
@@ -110,6 +111,7 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
+      <MobileBottomNav />
     </>
   );
 };

@@ -291,226 +291,29 @@ export const Navigation = () => {
               )}
             </div>
 
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden p-2"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            {/* Mobile menu button - simplified for app-like experience */}
+            <div className="md:hidden flex items-center space-x-2">
+              {user ? (
+                <Link to={isDealer ? "/dealer/dashboard" : "/profile/edit"}>
+                  <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100">
+                    <User className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700 max-w-20 truncate">
+                      {getUserDisplayName()}
+                    </span>
+                  </div>
+                </Link>
+              ) : (
+                <Link to="/login">
+                  <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-red-600 text-white">
+                    <User className="h-4 w-4" />
+                    <span className="text-sm font-medium">Login</span>
+                  </div>
+                </Link>
+              )}
+            </div>
           </div>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden pb-4 border-t border-gray-200">
-              <div className="flex flex-col space-y-3 pt-4">
-                <div className="space-y-2">
-                  {/* Mobile Buy Car Dropdown */}
-                  <div>
-                    <button 
-                      onClick={() => setIsMobileBuyCarOpen(!isMobileBuyCarOpen)}
-                      className="flex items-center justify-between w-full text-gray-700 hover:text-red-600 font-medium py-2"
-                    >
-                      Buy Car
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMobileBuyCarOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    
-                    {isMobileBuyCarOpen && (
-                      <div className="ml-4 space-y-2 max-h-64 overflow-y-auto bg-gray-50 rounded-lg p-3 mt-2">
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Vehicle Types</p>
-                          {carCategories.map((category, index) => (
-                            <Link 
-                              key={index} 
-                              to={category.link} 
-                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-1"
-                              onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsMobileBuyCarOpen(false);
-                              }}
-                            >
-                              {category.logo && (
-                                <span className="w-4 h-4 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
-                                  {category.logo}
-                                </span>
-                              )}
-                              {category.name}
-                            </Link>
-                          ))}
-                        </div>
-                        
-                        <div className="border-t border-gray-200 pt-2 mt-3">
-                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Popular Brands</p>
-                          {carBrands.slice(0, 6).map((brand, index) => (
-                            <Link 
-                              key={index} 
-                              to={brand.link} 
-                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-1"
-                              onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsMobileBuyCarOpen(false);
-                              }}
-                            >
-                              <span className="w-4 h-4 mr-2 flex items-center justify-center bg-gray-100 rounded-full text-xs">
-                                {brand.logo}
-                              </span>
-                              {brand.name}
-                            </Link>
-                          ))}
-                        </div>
-                        
-                        <div className="border-t border-gray-200 pt-2 mt-3">
-                          <Link 
-                            to="/cars" 
-                            className="text-sm text-red-600 font-medium py-1 block text-center"
-                            onClick={() => {
-                              setIsMenuOpen(false);
-                              setIsMobileBuyCarOpen(false);
-                            }}
-                          >
-                            View All Listings →
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <Link 
-                  to="/sell" 
-                  className="text-gray-700 hover:text-red-600 font-medium py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sell Your Car
-                </Link>
-                <Link 
-                  to="/buy-from-abroad" 
-                  className="text-gray-700 hover:text-red-600 font-medium py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Buy From Abroad
-                </Link>
-                <Link 
-                  to="/dealers" 
-                  className="text-gray-700 hover:text-red-600 font-medium py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dealers
-                </Link>
-                
-                <div className="flex flex-col space-y-3 pt-3 border-t border-gray-200">
-                  {loading ? (
-                    <div className="w-full h-8 bg-gray-200 rounded animate-pulse"></div>
-                  ) : user ? (
-                    <>
-                      {/* Mobile User Profile Dropdown */}
-                      <div>
-                        <button 
-                          onClick={() => setIsMobileUserDropdownOpen(!isMobileUserDropdownOpen)}
-                          className="flex items-center justify-between w-full text-gray-700 hover:text-red-600 font-medium py-2"
-                        >
-                          <span className="flex items-center">
-                            <User className="h-4 w-4 mr-2" />
-                            <span className="truncate max-w-32">{getUserDisplayName()}</span>
-                          </span>
-                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMobileUserDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        {isMobileUserDropdownOpen && (
-                          <div className="ml-6 space-y-2 bg-gray-50 rounded-lg p-3 mt-2">
-                            {isDealer && (
-                               <Link
-                                to="/dealer/dashboard"
-                                className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
-                                onClick={() => {
-                                  setIsMenuOpen(false);
-                                  setIsMobileUserDropdownOpen(false);
-                                }}
-                              >
-                                <LayoutDashboard className="h-4 w-4 mr-2" />
-                                Dashboard
-                              </Link>
-                            )}
-                            <Link 
-                              to="/profile/edit" 
-                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
-                              onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsMobileUserDropdownOpen(false);
-                              }}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Profile
-                            </Link>
-                            <Link 
-                              to="/profile/favorites" 
-                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
-                              onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsMobileUserDropdownOpen(false);
-                              }}
-                            >
-                              <Heart className="h-4 w-4 mr-2" />
-                              Favorites
-                            </Link>
-                            <Link 
-                              to="/profile/messages" 
-                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
-                              onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsMobileUserDropdownOpen(false);
-                              }}
-                            >
-                              <MessageSquare className="h-4 w-4 mr-2" />
-                              Messages
-                            </Link>
-                            <Link 
-                              to="/profile/boost-sales" 
-                              className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2"
-                              onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsMobileUserDropdownOpen(false);
-                              }}
-                            >
-                              <Zap className="h-4 w-4 mr-2" />
-                              Boost Sales
-                            </Link>
-                            <div className="border-t border-gray-200 pt-2 mt-2">
-                              <button
-                                onClick={() => {
-                                  handleSignOut();
-                                  setIsMenuOpen(false);
-                                  setIsMobileUserDropdownOpen(false);
-                                }}
-                                className="flex items-center text-sm text-gray-600 hover:text-red-600 py-2 w-full text-left"
-                              >
-                                <LogOut className="h-4 w-4 mr-2" />
-                                Sign Out
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col space-y-2">
-                      <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="outline" size="sm" className="w-full justify-start">
-                          <User className="h-4 w-4 mr-2" />
-                          Login
-                        </Button>
-                      </Link>
-                      <Link to="/register" onClick={() => setIsMenuOpen(false)}>
-                        <Button size="sm" className="bg-red-600 hover:bg-red-700 w-full">
-                          Register
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Mobile Navigation - Removed for cleaner app experience */}
         </div>
       </div>
     </nav>
