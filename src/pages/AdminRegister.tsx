@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, EyeOff, Shield } from "lucide-react";
+import { Eye, EyeOff, Shield, Check, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { validatePassword } from "@/lib/password-validation";
 
 const AdminRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -38,6 +39,13 @@ const AdminRegister = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate password complexity
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      toast.error(`Password requirements not met: ${passwordValidation.errors.join(". ")}`);
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match!");
@@ -208,6 +216,23 @@ const AdminRegister = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {formData.password && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-sm text-gray-400">Password requirements:</div>
+                    {[
+                      { test: formData.password.length >= 8, text: "At least 8 characters" },
+                      { test: /[A-Z]/.test(formData.password), text: "One uppercase letter" },
+                      { test: /[a-z]/.test(formData.password), text: "One lowercase letter" },
+                      { test: /\d/.test(formData.password), text: "One number" },
+                      { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?]/.test(formData.password), text: "One special character" }
+                    ].map((req, index) => (
+                      <div key={index} className={`flex items-center text-xs ${req.test ? 'text-green-400' : 'text-red-400'}`}>
+                        {req.test ? <Check className="h-3 w-3 mr-1" /> : <X className="h-3 w-3 mr-1" />}
+                        {req.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>

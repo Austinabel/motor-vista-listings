@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Car } from "lucide-react";
+import { Eye, EyeOff, Car, Check, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { validatePassword } from "@/lib/password-validation";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,6 +44,17 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate password complexity
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      toast({
+        title: "Password Requirements Not Met",
+        description: passwordValidation.errors.join(". "),
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -201,6 +213,23 @@ const Register = () => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  {formData.password && (
+                    <div className="mt-2 space-y-1">
+                      <div className="text-sm text-gray-600">Password requirements:</div>
+                      {[
+                        { test: formData.password.length >= 8, text: "At least 8 characters" },
+                        { test: /[A-Z]/.test(formData.password), text: "One uppercase letter" },
+                        { test: /[a-z]/.test(formData.password), text: "One lowercase letter" },
+                        { test: /\d/.test(formData.password), text: "One number" },
+                        { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?]/.test(formData.password), text: "One special character" }
+                      ].map((req, index) => (
+                        <div key={index} className={`flex items-center text-xs ${req.test ? 'text-green-600' : 'text-red-500'}`}>
+                          {req.test ? <Check className="h-3 w-3 mr-1" /> : <X className="h-3 w-3 mr-1" />}
+                          {req.text}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
