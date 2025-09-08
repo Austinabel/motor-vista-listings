@@ -26,30 +26,16 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 const categories = [
-  { id: 'post', name: 'Post ad', icon: Plus, color: 'bg-orange-400', link: '/sell' },
-  { id: 'trending', name: 'Trending', icon: TrendingUp, color: 'bg-red-400', link: '/cars' },
-  { id: 'vehicles', name: 'Vehicles', icon: Car, color: 'bg-blue-400', link: '/cars' },
-  { id: 'property', name: 'Property', icon: Home, color: 'bg-gray-400', link: '/cars' },
-  { id: 'phones', name: 'Mobile Phones & Tablets', icon: Smartphone, color: 'bg-purple-400', link: '/cars' },
-  { id: 'electronics', name: 'Electronics', icon: Monitor, color: 'bg-blue-300', link: '/cars' },
-  { id: 'furniture', name: 'Home, Furniture & Appliances', icon: Sofa, color: 'bg-indigo-400', link: '/cars' },
-  { id: 'beauty', name: 'Beauty & Personal Care', icon: Sparkles, color: 'bg-pink-400', link: '/cars' },
-  { id: 'fashion', name: 'Fashion', icon: Shirt, color: 'bg-red-300', link: '/cars' },
-  { id: 'leisure', name: 'Leisure & Activities', icon: Gamepad2, color: 'bg-gray-300', link: '/cars' },
-  { id: 'jobs', name: 'Seeking Work CVs', icon: FileText, color: 'bg-blue-500', link: '/cars' },
-  { id: 'services', name: 'Services', icon: Wrench, color: 'bg-yellow-600', link: '/cars' },
-  { id: 'employment', name: 'Jobs', icon: Briefcase, color: 'bg-brown-400', link: '/cars' },
-  { id: 'babies', name: 'Babies & Kids', icon: Baby, color: 'bg-orange-300', link: '/cars' },
-  { id: 'animals', name: 'Animals & Pets', icon: PawPrint, color: 'bg-yellow-700', link: '/cars' },
-  { id: 'food', name: 'Food, Agriculture & Farming', icon: Wheat, color: 'bg-green-400', link: '/cars' },
-  { id: 'commercial', name: 'Commercial Equipment & Tools', icon: HardHat, color: 'bg-gray-600', link: '/cars' },
-  { id: 'construction', name: 'Repair & Construction', icon: Construction, color: 'bg-yellow-500', link: '/cars' },
-];
-
-const actionCards = [
-  { title: 'Apply for job', bg: 'bg-green-100', icon: Briefcase },
-  { title: 'How to sell', bg: 'bg-yellow-100', icon: Plus },
-  { title: 'How to buy', bg: 'bg-blue-100', icon: Search },
+  { id: 'post', name: 'Post ad', icon: Plus, color: 'bg-red-500', link: '/sell' },
+  { id: 'verified-dealers', name: 'Verified Dealers', icon: TrendingUp, color: 'bg-red-600', link: '/dealers' },
+  { id: 'brand-new', name: 'Brand New', icon: Car, color: 'bg-red-400', link: '/cars?type=brand-new' },
+  { id: 'foreign-used', name: 'Foreign Used', icon: Car, color: 'bg-red-500', link: '/cars?type=foreign-used' },
+  { id: 'local-used', name: 'Local Used', icon: Car, color: 'bg-red-600', link: '/cars?type=local-used' },
+  { id: 'electric-cars', name: 'Electric Cars', icon: Car, color: 'bg-red-400', link: '/cars?category=electric' },
+  { id: 'tricycles', name: 'Tricycles', icon: Car, color: 'bg-red-500', link: '/cars?category=tricycles' },
+  { id: 'trucks', name: 'Trucks', icon: Car, color: 'bg-red-600', link: '/cars?category=trucks' },
+  { id: 'motorbikes', name: 'Motorbikes', icon: Car, color: 'bg-red-400', link: '/cars?category=motorbikes' },
+  { id: 'buses', name: 'Buses', icon: Car, color: 'bg-red-500', link: '/cars?category=buses' },
 ];
 
 export const MobileHero = () => {
@@ -65,14 +51,16 @@ export const MobileHero = () => {
   };
 
   const locations = [
-    "All Nigeria", "Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan", 
-    "Kaduna", "Jos", "Warri", "Benin City", "Enugu"
+    "All Nigeria", "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", 
+    "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", 
+    "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", 
+    "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
   ];
 
   return (
     <div className="md:hidden bg-white">
-      {/* Green Header */}
-      <section className="bg-green-500 text-white py-8 pt-20">
+      {/* Red Header */}
+      <section className="bg-red-500 text-white py-8 pt-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold mb-4">
@@ -153,27 +141,6 @@ export const MobileHero = () => {
         </div>
       </section>
 
-      {/* Action Cards */}
-      <section className="bg-gray-50 py-6">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-3 gap-3">
-            {actionCards.map((card, index) => {
-              const Icon = card.icon;
-              return (
-                <div
-                  key={index}
-                  className={`${card.bg} p-4 rounded-lg text-center`}
-                >
-                  <Icon className="h-8 w-8 mx-auto mb-2 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">
-                    {card.title}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

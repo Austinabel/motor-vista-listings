@@ -2,6 +2,7 @@
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { MobileHero } from "@/components/MobileHero";
+import { MobileCarGrid } from "@/components/MobileCarGrid";
 import { SearchFilters } from "@/components/SearchFilters";
 import { BrandCarousel } from "@/components/BrandCarousel";
 import { FeaturedListings } from "@/components/FeaturedListings";
@@ -25,10 +26,7 @@ const Index = () => {
       {isMobile ? (
         <>
           <MobileHero />
-          <div className="px-2">
-            <FeaturedListings />
-            <VerifiedDealers />
-          </div>
+          <MobileCarGrid />
         </>
       ) : (
         <>
