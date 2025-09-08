@@ -1,6 +1,7 @@
 
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
+import { MobileHero } from "@/components/MobileHero";
 import { SearchFilters } from "@/components/SearchFilters";
 import { BrandCarousel } from "@/components/BrandCarousel";
 import { FeaturedListings } from "@/components/FeaturedListings";
@@ -12,25 +13,43 @@ import { DownloadApp } from "@/components/DownloadApp";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 import { VerifiedDealers } from "@/components/VerifiedDealers";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
+  const isMobile = useIsMobile();
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Navigation />
-      <Hero />
-      <div className="px-2 md:px-0">
-        <SearchFilters />
-        <BrandCarousel />
-        <FeaturedListings />
-        <VerifiedDealers />
-        <TrustedPartners />
-        <HelpIcons />
-        <Testimonials />
-        <ToolsSection />
-        <DownloadApp />
-        <FAQ />
+      {/* Mobile Hero with conditional content */}
+      {isMobile ? (
+        <>
+          <MobileHero />
+          <div className="px-2">
+            <FeaturedListings />
+            <VerifiedDealers />
+          </div>
+        </>
+      ) : (
+        <>
+          <Hero />
+          <div className="px-2 md:px-0">
+            <SearchFilters />
+            <BrandCarousel />
+            <FeaturedListings />
+            <VerifiedDealers />
+            <TrustedPartners />
+            <HelpIcons />
+            <Testimonials />
+            <ToolsSection />
+            <DownloadApp />
+            <FAQ />
+          </div>
+        </>
+      )}
+      <div className={isMobile ? "hidden" : ""}>
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 };

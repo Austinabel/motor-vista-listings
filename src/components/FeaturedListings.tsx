@@ -174,7 +174,7 @@ export const FeaturedListings = () => {
                 </CardContent>
                 <CardFooter className="p-3 pt-0">
                   <Link to={`/cars/${car.id}`} className="w-full">
-                    <Button className="w-full text-xs py-1">
+                    <Button className="w-full text-xs py-1 bg-red-600 hover:bg-red-700 text-white border-none">
                       <Eye className="mr-1 h-3 w-3" />
                       View Details
                     </Button>

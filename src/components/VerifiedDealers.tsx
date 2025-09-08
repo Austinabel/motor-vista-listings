@@ -39,6 +39,11 @@ export const VerifiedDealers = () => {
     }
   };
 
+  const getDealerImage = (dealer: any) => {
+    // For now use random images until we implement dealer image uploads
+    return getRandomImage();
+  };
+
   const handleLoadMore = () => {
     if (visibleDealers >= dealers.length) {
       setShowLoadMore(false);
@@ -83,7 +88,7 @@ export const VerifiedDealers = () => {
             <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="relative">
                 <img 
-                  src={getRandomImage()} 
+                  src={getDealerImage(dealer)} 
                   alt={dealer.business_name}
                   className="w-full h-32 object-cover rounded-t-lg"
                 />

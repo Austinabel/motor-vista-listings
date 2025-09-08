@@ -26,16 +26,17 @@ const DealerProfile = () => {
   const { data: dealer, isLoading: isLoadingDealer } = useQuery({
     queryKey: ['dealer', dealerId],
     queryFn: async () => {
+      console.log('Fetching dealer with ID:', dealerId);
       const { data, error } = await supabase
         .from('dealers')
         .select('*')
         .eq('id', dealerId)
-        .eq('status', 'verified')
         .single();
       if (error) {
         console.error("Error fetching dealer:", error);
         return null;
       };
+      console.log('Dealer fetched:', data);
       return data;
     },
     enabled: !!dealerId,

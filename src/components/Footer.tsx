@@ -5,7 +5,7 @@ import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Building } from "luc
 import { Link } from "react-router-dom";
 
 export const Footer = () => {
-  return <footer className="bg-gray-900 text-white py-16">
+  return <footer className="bg-gray-900 text-white py-16 hidden md:block">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>

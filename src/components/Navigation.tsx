@@ -294,14 +294,80 @@ export const Navigation = () => {
             {/* Mobile menu button - simplified for app-like experience */}
             <div className="md:hidden flex items-center space-x-2">
               {user ? (
-                <Link to={isDealer ? "/dealer/dashboard" : "/profile/edit"}>
-                  <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100">
+                <div className="relative">
+                  <button
+                    onClick={() => setIsMobileUserDropdownOpen(!isMobileUserDropdownOpen)}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100"
+                  >
                     <User className="h-4 w-4 text-gray-600" />
                     <span className="text-sm font-medium text-gray-700 max-w-20 truncate">
                       {getUserDisplayName()}
                     </span>
-                  </div>
-                </Link>
+                    <ChevronDown className="h-3 w-3 text-gray-600" />
+                  </button>
+                  
+                  {isMobileUserDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                      {isDealer && (
+                        <>
+                          <Link
+                            to="/dealer/dashboard"
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                            onClick={() => setIsMobileUserDropdownOpen(false)}
+                          >
+                            <LayoutDashboard className="h-4 w-4 mr-2" />
+                            Dashboard
+                          </Link>
+                          <div className="border-t border-gray-100 my-1" />
+                        </>
+                      )}
+                      <Link
+                        to="/profile/edit"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsMobileUserDropdownOpen(false)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Link>
+                      <Link
+                        to="/profile/favorites"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsMobileUserDropdownOpen(false)}
+                      >
+                        <Heart className="h-4 w-4 mr-2" />
+                        Favorites
+                      </Link>
+                      <Link
+                        to="/profile/messages"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsMobileUserDropdownOpen(false)}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Messages
+                      </Link>
+                      <Link
+                        to="/profile/boost-sales"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsMobileUserDropdownOpen(false)}
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Boost Sales
+                      </Link>
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={() => {
+                            handleSignOut();
+                            setIsMobileUserDropdownOpen(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Link to="/login">
                   <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-red-600 text-white">
