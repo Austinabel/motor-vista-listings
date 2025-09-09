@@ -59,7 +59,7 @@ export const VerifiedDealers = () => {
   };
 
   const handleViewDealer = (dealer: any) => {
-    navigate(`/dealer/${dealer.user_id}`);
+    navigate(`/dealer/${dealer.id}`);
   };
 
   const getRandomImage = () => {
