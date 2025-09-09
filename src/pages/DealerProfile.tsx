@@ -31,7 +31,7 @@ const DealerProfile = () => {
         .from('dealers')
         .select('*')
         .eq('id', dealerId)
-        .single();
+        .maybeSingle();
       if (error) {
         console.error("Error fetching dealer:", error);
         return null;
@@ -145,7 +145,7 @@ const DealerProfile = () => {
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row gap-6">
                 <img 
-                  src={"https://images.unsplash.com/photo-1486162928267-e6274cb3106f?w=400&h=250&fit=crop"} 
+                  src={dealer.image_url || "https://images.unsplash.com/photo-1486162928267-e6274cb3106f?w=400&h=250&fit=crop"} 
                   alt={dealer.business_name}
                   className="w-full md:w-48 h-48 object-cover rounded-lg"
                 />
