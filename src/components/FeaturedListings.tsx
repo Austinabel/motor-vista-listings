@@ -30,7 +30,7 @@ export const FeaturedListings = () => {
           *,
           car_listing_images(image_url, is_primary)
         `)
-        .eq('status', 'approved')
+        .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(108); // 6 rows * 6 cars * 3 pages
 

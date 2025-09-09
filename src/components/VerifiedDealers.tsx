@@ -40,8 +40,8 @@ export const VerifiedDealers = () => {
   };
 
   const getDealerImage = (dealer: any) => {
-    // For now use random images until we implement dealer image uploads
-    return getRandomImage();
+    // Use uploaded dealer image if available, otherwise fallback to random image
+    return dealer.image_url || getRandomImage();
   };
 
   const handleLoadMore = () => {
@@ -58,8 +58,8 @@ export const VerifiedDealers = () => {
     }
   };
 
-  const handleViewDealer = (dealerId: string) => {
-    navigate(`/dealer/${dealerId}`);
+  const handleViewDealer = (dealer: any) => {
+    navigate(`/dealer/${dealer.user_id}`);
   };
 
   const getRandomImage = () => {
@@ -120,7 +120,7 @@ export const VerifiedDealers = () => {
                 </div>
                 <Button 
                   className="w-full mt-3 bg-red-600 hover:bg-red-700 text-xs py-1"
-                  onClick={() => handleViewDealer(dealer.id)}
+                  onClick={() => handleViewDealer(dealer)}
                 >
                   View Dealer
                 </Button>
@@ -133,7 +133,8 @@ export const VerifiedDealers = () => {
           <div className="text-center mt-8">
             <Button 
               onClick={handleLoadMore}
-              className="bg-white text-red-600 hover:bg-gray-100 border-2 border-red-600"
+              variant="outline"
+              className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
             >
               Load More Dealers
             </Button>
@@ -143,7 +144,8 @@ export const VerifiedDealers = () => {
         <div className="text-center mt-8">
           <Button 
             onClick={() => navigate('/dealers')}
-            className="bg-white text-red-600 hover:bg-gray-100 border-2 border-red-600"
+            variant="outline"
+            className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
           >
             View All Dealers
           </Button>

@@ -28,6 +28,7 @@ const DealerRegistration = () => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [idCardFile, setIdCardFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [paymentReference, setPaymentReference] = useState("");
   const [formData, setFormData] = useState({
     businessName: "",
@@ -68,6 +69,27 @@ const DealerRegistration = () => {
       
       setIdCardFile(file);
       toast.success("ID card uploaded successfully");
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please upload a valid image (JPG or PNG)");
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+      
+      setImageFile(file);
+      toast.success("Business image uploaded successfully");
     }
   };
 
@@ -132,6 +154,29 @@ const DealerRegistration = () => {
         setIsSubmitting(false);
         return;
       }
+
+      // 2. Upload business image (optional)
+      let imageUrl = null;
+      if (imageFile) {
+        const imageExt = imageFile.name.split('.').pop();
+        const imageName = `image_${Date.now()}.${imageExt}`;
+        const imagePath = `${user.id}/${imageName}`;
+
+        const { data: imageUploadData, error: imageUploadError } = await supabase.storage
+          .from('dealer_documents')
+          .upload(imagePath, imageFile);
+
+        if (imageUploadError) {
+          console.error('Error uploading business image:', imageUploadError);
+          toast.error(`There was an error uploading your business image: ${imageUploadError.message}`);
+        } else {
+          // Get public URL for the image
+          const { data: { publicUrl } } = supabase.storage
+            .from('dealer_documents')
+            .getPublicUrl(imageUploadData.path);
+          imageUrl = publicUrl;
+        }
+      }
       
       const registrationData = {
         business_name: formData.businessName,
@@ -153,6 +198,7 @@ const DealerRegistration = () => {
         payment_status: 'pending',
         status: 'pending',
         id_card_path: uploadData.path, // The path of the uploaded file
+        image_url: imageUrl, // The public URL of the business image
       };
 
       console.log('Submitting registration data:', registrationData);
@@ -420,6 +466,31 @@ const DealerRegistration = () => {
                 </div>
 
                 
+                <div className="mb-6 p-6 bg-purple-50 rounded-lg border border-purple-200">
+                  <h3 className="text-lg font-bold text-purple-700 mb-4">Business Image (Optional)</h3>
+                  <div>
+                    <Label htmlFor="businessImage">Upload Business Logo or Photo</Label>
+                    <div className="relative">
+                      <Input 
+                        id="businessImage" 
+                        type="file" 
+                        accept=".jpg,.jpeg,.png" 
+                        onChange={handleImageUpload}
+                        className="cursor-pointer"
+                      />
+                      <Upload className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Upload your business logo or a photo of your dealership (JPG, PNG - Max 5MB)
+                    </p>
+                    {imageFile && (
+                      <p className="text-sm text-green-600 mt-1">
+                        ✓ {imageFile.name} uploaded successfully
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="businessName">Business Name *</Label>
