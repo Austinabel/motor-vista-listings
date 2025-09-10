@@ -18,7 +18,7 @@ type ListingWithImages = Tables<'car_listings'> & {
 };
 
 const DealerProfile = () => {
-  const { dealerId } = useParams<{ dealerId: string }>();
+  const { id: dealerId } = useParams<{ id: string }>();
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
