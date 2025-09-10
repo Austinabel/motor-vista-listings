@@ -173,12 +173,6 @@ const DealerProfile = () => {
                           Call
                         </Button>
                       </a>
-                      <a href={`mailto:${dealer.email}`}>
-                        <Button variant="outline">
-                          <Mail className="mr-2 h-4 w-4" />
-                          Message
-                        </Button>
-                      </a>
                     </div>
                   </div>
                   <p className="text-gray-600">{dealer.description}</p>
