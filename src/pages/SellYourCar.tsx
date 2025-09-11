@@ -14,9 +14,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ManualPaymentDetails } from "@/components/ManualPaymentDetails";
+import { useDealer } from "@/contexts/DealerContext";
+import { DealerRegistrationBanner } from "@/components/DealerRegistrationBanner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SellYourCar = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { dealerInfo, isDealer, loading: dealerLoading } = useDealer();
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [loading, setLoading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -256,11 +261,16 @@ const SellYourCar = () => {
 
     try {
       // Check if user is authenticated
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
+      if (!user) {
         toast.error("Please log in to list your car");
         navigate("/login");
+        return;
+      }
+
+      // Check if user has completed dealer registration
+      if (!isDealer || !dealerInfo || dealerInfo.status !== 'verified') {
+        toast.error("You must be a verified dealer to list cars. Please complete your registration.");
+        navigate("/dealer-registration");
         return;
       }
 
@@ -369,6 +379,15 @@ const SellYourCar = () => {
     );
   }
 
+  // Show loading state while checking dealer status
+  if (dealerLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -376,6 +395,13 @@ const SellYourCar = () => {
           <h1 className="text-4xl font-bold mb-4">Sell Your Car</h1>
           <p className="text-gray-600 text-lg">List your car and reach thousands of potential buyers</p>
         </div>
+
+        {/* Show registration banner if dealer is not verified */}
+        {user && (!isDealer || dealerInfo?.status !== 'verified') && (
+          <DealerRegistrationBanner 
+            dealerStatus={dealerInfo?.status || null} 
+          />
+        )}
 
         <div className={`grid grid-cols-1 ${listingPlansEnabled ? 'lg:grid-cols-3' : ''} gap-8`}>
           {/* Pricing Plans - only show if enabled */}

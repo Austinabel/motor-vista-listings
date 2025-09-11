@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { DealerProvider, useDealer } from "@/contexts/DealerContext";
 import Index from "./pages/Index";
 import CarListings from "./pages/CarListings";
 import CarDetail from "./pages/CarDetail";
@@ -45,9 +46,10 @@ const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, lastAuthEvent, clearLastAuthEvent, loading: authLoading } = useAuth();
+  const { dealerInfo, loading: dealerLoading } = useDealer();
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading || dealerLoading || !user) return;
 
     const onAuthPage = ['/login', '/register'].includes(location.pathname);
     const justSignedIn = lastAuthEvent === 'SIGNED_IN';
@@ -57,19 +59,16 @@ const AppContent = () => {
 
       const userType = user.user_metadata?.user_type;
       if (userType === 'dealer') {
-        supabase.from('dealers').select('id').eq('user_id', user.id).maybeSingle()
-          .then(({ data: dealerProfile }) => {
-            if (dealerProfile) {
-              navigate('/dealer/dashboard', { replace: true });
-            } else {
-              navigate('/dealer-registration', { replace: true });
-            }
-          });
+        if (dealerInfo) {
+          navigate('/dealer/dashboard', { replace: true });
+        } else {
+          navigate('/dealer-registration', { replace: true });
+        }
       } else if (onAuthPage) {
         navigate('/', { replace: true });
       }
     }
-  }, [user, lastAuthEvent, authLoading, location.pathname, navigate, clearLastAuthEvent]);
+  }, [user, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, navigate, clearLastAuthEvent]);
 
   const isHomepage = location.pathname === "/";
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/forgot-password";
@@ -123,7 +122,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppContent />
+          <DealerProvider>
+            <AppContent />
+          </DealerProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

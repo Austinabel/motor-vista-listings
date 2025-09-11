@@ -9,11 +9,13 @@ import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDealer } from "@/contexts/DealerContext";
+import { DealerRegistrationBanner } from "@/components/DealerRegistrationBanner";
 import { toast } from "sonner";
 
 const DealerDashboard = () => {
   const { user } = useAuth();
-  const [dealerInfo, setDealerInfo] = useState(null);
+  const { dealerInfo, isDealer, loading: dealerLoading } = useDealer();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,20 +27,6 @@ const DealerDashboard = () => {
 
   const fetchDealerData = async () => {
     try {
-      // Fetch dealer profile
-      const { data: dealer, error: dealerError } = await supabase
-        .from('dealers')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (dealerError) {
-        console.error('Error fetching dealer:', dealerError);
-        toast.error('Failed to load dealer information');
-      } else {
-        setDealerInfo(dealer);
-      }
-
       // Fetch dealer's listings
       const { data: listingsData, error: listingsError } = await supabase
         .from('car_listings')
@@ -79,7 +67,7 @@ const DealerDashboard = () => {
     }
   };
 
-  if (loading) {
+  if (loading || dealerLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div>Loading dashboard...</div>
@@ -95,6 +83,13 @@ const DealerDashboard = () => {
     <>
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
+          {/* Show registration banner if dealer is not verified */}
+          {user && (!isDealer || dealerInfo?.status !== 'verified') && (
+            <DealerRegistrationBanner 
+              dealerStatus={dealerInfo?.status || null} 
+            />
+          )}
+          
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold">Dealer Dashboard</h1>
