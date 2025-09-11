@@ -25,7 +25,7 @@ const Register = () => {
     userType: "buyer"
   });
 
-  const { signUp, signInWithGoogle, user } = useAuth();
+  const { signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -92,20 +92,6 @@ const Register = () => {
     setLoading(false);
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    const { error } = await signInWithGoogle();
-
-    if (error) {
-      toast({
-        title: "Google Sign In Failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-
-    setLoading(false);
-  };
 
   return (
     <>
@@ -279,30 +265,6 @@ const Register = () => {
                 </Button>
               </form>
 
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-gray-500">Or continue with</span>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleGoogleSignIn}
-                  variant="outline"
-                  className="w-full mt-4"
-                  disabled={loading}
-                >
-                  <img
-                    src="/lovable-uploads/8ed7331e-9e69-40c7-956c-21e5c5e7050a.png"
-                    alt="Google"
-                    className="w-5 h-5 mr-2"
-                  />
-                  Sign up with Google
-                </Button>
-              </div>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
