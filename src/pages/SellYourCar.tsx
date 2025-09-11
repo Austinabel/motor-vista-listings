@@ -140,7 +140,7 @@ const SellYourCar = () => {
       listingPrice: 7500,
       features: [
         "Enhanced visibility",
-        "Up to 15 photos",
+        "Up to 20 photos",
         "Priority support",
         "Advanced contact options",
         "Social media promotion"
@@ -156,7 +156,7 @@ const SellYourCar = () => {
       listingPrice: 35000,
       features: [
         "Premium placement",
-        "Unlimited photos",
+        "Up to 20 photos",
         "24/7 priority support",
         "Featured badge",
         "Homepage visibility",
@@ -211,7 +211,7 @@ const SellYourCar = () => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const maxImages = listingPlansEnabled ? (selectedPlan === "free" ? 5 : selectedPlan === "standard" ? 15 : 50) : 15;
+    const maxImages = 20;
     
     if (files.length > maxImages) {
       toast.error(`Maximum ${maxImages} images allowed`);

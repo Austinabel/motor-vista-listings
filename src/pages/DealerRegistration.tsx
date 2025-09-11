@@ -276,6 +276,11 @@ const DealerRegistration = () => {
       return false;
     }
 
+    if (!imageFile) {
+      toast.error("Please upload your business image");
+      return false;
+    }
+
     if (!paymentReference.trim()) {
       toast.error("Please enter your payment reference/transaction ID");
       return false;
@@ -467,9 +472,9 @@ const DealerRegistration = () => {
 
                 
                 <div className="mb-6 p-6 bg-purple-50 rounded-lg border border-purple-200">
-                  <h3 className="text-lg font-bold text-purple-700 mb-4">Business Image (Optional)</h3>
+                  <h3 className="text-lg font-bold text-purple-700 mb-4">Business Image *</h3>
                   <div>
-                    <Label htmlFor="businessImage">Upload Business Logo or Photo</Label>
+                    <Label htmlFor="businessImage">Upload Business Logo or Photo *</Label>
                     <div className="relative">
                       <Input 
                         id="businessImage" 
@@ -477,6 +482,7 @@ const DealerRegistration = () => {
                         accept=".jpg,.jpeg,.png" 
                         onChange={handleImageUpload}
                         className="cursor-pointer"
+                        required
                       />
                       <Upload className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>

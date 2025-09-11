@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, MapPin, Phone, Star, Mail, Globe, Calendar } from "lucide-react";
+import { Shield, MapPin, Phone, Star, Globe, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Dealers = () => {
+  const navigate = useNavigate();
   const [dealers, setDealers] = useState([]);
   const [filteredDealers, setFilteredDealers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +68,10 @@ const Dealers = () => {
     }
 
     setFilteredDealers(filtered);
+  };
+
+  const handleViewDealer = (dealerId: string) => {
+    navigate(`/dealer/${dealerId}`);
   };
 
   if (loading) {
@@ -132,7 +138,11 @@ const Dealers = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredDealers.map((dealer: any) => (
-                <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <Card 
+                  key={dealer.id} 
+                  className="hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+                  onClick={() => handleViewDealer(dealer.id)}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <h3 className="text-xl font-bold text-gray-900">{dealer.business_name}</h3>
@@ -151,10 +161,6 @@ const Dealers = () => {
                         <Phone className="w-4 h-4 mr-2" />
                         <span className="text-sm">{dealer.phone}</span>
                       </div>
-                      <div className="flex items-center text-gray-600">
-                        <Mail className="w-4 h-4 mr-2" />
-                        <span className="text-sm">{dealer.email}</span>
-                      </div>
                       {dealer.website && (
                         <div className="flex items-center text-gray-600">
                           <Globe className="w-4 h-4 mr-2" />
@@ -163,6 +169,7 @@ const Dealers = () => {
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-sm text-red-600 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             Visit Website
                           </a>
@@ -184,8 +191,14 @@ const Dealers = () => {
                           ~{dealer.monthly_inventory} cars/month
                         </span>
                       </div>
-                      <Button className="bg-red-600 hover:bg-red-700">
-                        View Inventory
+                      <Button 
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDealer(dealer.id);
+                        }}
+                      >
+                        View Details
                       </Button>
                     </div>
 
