@@ -373,6 +373,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_seller_info_for_listing: {
+        Args: { listing_user_id: string }
+        Returns: {
+          first_name: string
+          id: string
+          last_name: string
+          user_type: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

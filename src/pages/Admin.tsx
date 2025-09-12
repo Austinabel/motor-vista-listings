@@ -118,45 +118,35 @@ const Admin = () => {
         return;
       }
 
-      // Get unique user IDs from listings
-      const userIds = [...new Set(listings?.map(listing => listing.user_id).filter(Boolean))];
-      
-      // Fetch profiles for these users
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, user_type')
-        .in('id', userIds);
+      // For admin access, use secure function to get seller info
+      const enrichedListings = await Promise.all(
+        (listings || []).map(async (listing) => {
+          // Get seller info using secure function (works for active listings)
+          const { data: sellerInfo, error: sellerError } = await supabase
+            .rpc('get_seller_info_for_listing', { listing_user_id: listing.user_id });
 
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-      }
+          let dealerInfo = null;
+          
+          // If seller is a dealer, fetch dealer information
+          if (sellerInfo && sellerInfo.length > 0 && sellerInfo[0]?.user_type === 'dealer') {
+            const { data: dealersData, error: dealersError } = await supabase
+              .from('dealers')
+              .select('user_id, business_name, contact_name')
+              .eq('user_id', listing.user_id)
+              .single();
 
-      // Fetch dealers for dealer users (fix: use user_id not id)
-      const dealerUserIds = profiles?.filter(p => p.user_type === 'dealer').map(p => p.id) || [];
-      let dealersData = [];
-      
-      if (dealerUserIds.length > 0) {
-        const { data: dealers, error: dealersError } = await supabase
-          .from('dealers')
-          .select('business_name, contact_name, user_id')
-          .in('user_id', dealerUserIds);
+            if (!dealersError) {
+              dealerInfo = dealersData;
+            }
+          }
 
-        if (!dealersError) {
-          dealersData = dealers || [];
-        }
-      }
-
-      // Combine the data
-      const enrichedListings = listings?.map(listing => {
-        const profile = profiles?.find(p => p.id === listing.user_id);
-        const dealer = dealersData?.find(d => d.user_id === listing.user_id);
-        
-        return {
-          ...listing,
-          profiles: profile,
-          dealers: dealer ? [dealer] : []
-        };
-      }) || [];
+          return {
+            ...listing,
+            profiles: sellerInfo && sellerInfo.length > 0 ? sellerInfo[0] : null,
+            dealers: dealerInfo ? [dealerInfo] : []
+          };
+        })
+      );
 
       setCarListings(enrichedListings);
     } catch (error) {
