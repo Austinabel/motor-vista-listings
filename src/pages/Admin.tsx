@@ -103,10 +103,13 @@ const Admin = () => {
 
   const fetchCarListings = async () => {
     try {
-      // First fetch car listings
+      // First fetch car listings with images
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
-        .select('*')
+        .select(`
+          *,
+          car_listing_images(id, image_url, is_primary)
+        `)
         .order('created_at', { ascending: false });
 
       if (listingsError) {
@@ -128,15 +131,15 @@ const Admin = () => {
         console.error('Error fetching profiles:', profilesError);
       }
 
-      // Fetch dealers for dealer users
+      // Fetch dealers for dealer users (fix: use user_id not id)
       const dealerUserIds = profiles?.filter(p => p.user_type === 'dealer').map(p => p.id) || [];
       let dealersData = [];
       
       if (dealerUserIds.length > 0) {
         const { data: dealers, error: dealersError } = await supabase
           .from('dealers')
-          .select('business_name, contact_name')
-          .in('id', dealerUserIds);
+          .select('business_name, contact_name, user_id')
+          .in('user_id', dealerUserIds);
 
         if (!dealersError) {
           dealersData = dealers || [];
@@ -146,7 +149,7 @@ const Admin = () => {
       // Combine the data
       const enrichedListings = listings?.map(listing => {
         const profile = profiles?.find(p => p.id === listing.user_id);
-        const dealer = dealersData?.find(d => d.id === listing.user_id);
+        const dealer = dealersData?.find(d => d.user_id === listing.user_id);
         
         return {
           ...listing,
