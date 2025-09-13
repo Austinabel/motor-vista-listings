@@ -177,8 +177,8 @@ const CarListings = () => {
     const primaryImage = images.find(img => img.is_primary)?.image_url;
     const imageUrl = primaryImage || images[0]?.image_url;
     
-    // Check if it's a real URL or placeholder
-    if (imageUrl && imageUrl.startsWith('http')) {
+    // Check if it's a real Supabase Storage URL or placeholder
+    if (imageUrl && (imageUrl.startsWith('http') || imageUrl.includes('supabase'))) {
       return imageUrl;
     }
     

@@ -230,24 +230,45 @@ const SellYourCar = () => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const uploadImages = async (listingId: string) => {
+  const uploadImages = async (listingId: string, userId: string) => {
     if (selectedImages.length === 0) return;
 
     const uploadPromises = selectedImages.map(async (file, index) => {
-      // For now, we'll just store a placeholder URL since we don't have storage bucket set up
-      // In a real implementation, you'd upload to Supabase Storage first
-      const imageUrl = `placeholder-image-${index + 1}.jpg`;
-      
-      const { error } = await supabase
-        .from('car_listing_images')
-        .insert({
-          listing_id: listingId,
-          image_url: imageUrl,
-          is_primary: index === 0
-        });
+      try {
+        // Create a unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${listingId}/${Date.now()}-${index}.${fileExt}`;
+        
+        // Upload file to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('car-listing-images')
+          .upload(fileName, file);
 
-      if (error) {
-        console.error('Error uploading image:', error);
+        if (uploadError) {
+          console.error('Error uploading file to storage:', uploadError);
+          throw uploadError;
+        }
+
+        // Get the public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('car-listing-images')
+          .getPublicUrl(fileName);
+        
+        // Store the image URL in the database
+        const { error: dbError } = await supabase
+          .from('car_listing_images')
+          .insert({
+            listing_id: listingId,
+            image_url: publicUrl,
+            is_primary: index === 0
+          });
+
+        if (dbError) {
+          console.error('Error storing image URL in database:', dbError);
+          throw dbError;
+        }
+      } catch (error) {
+        console.error('Error in uploadImages:', error);
         throw error;
       }
     });
@@ -326,7 +347,7 @@ const SellYourCar = () => {
 
       // Upload images
       if (selectedImages.length > 0) {
-        await uploadImages(listing.id);
+        await uploadImages(listing.id, user?.id || '');
       }
 
       if (!listingPlansEnabled || selectedPlan === "free") {
