@@ -90,7 +90,7 @@ const CarListings = () => {
           *,
           car_listing_images(image_url, is_primary)
         `)
-        .eq('status', 'approved')
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (listingsError) {
@@ -122,8 +122,8 @@ const CarListings = () => {
       if (dealerUserIds.length > 0) {
         const { data: dealersData, error: dealersError } = await supabase
           .from('dealers')
-          .select('id, business_name, contact_name')
-          .in('id', dealerUserIds);
+          .select('id, business_name, contact_name, user_id')
+          .in('user_id', dealerUserIds);
 
         if (!dealersError) {
           dealers = dealersData || [];
@@ -133,7 +133,7 @@ const CarListings = () => {
       // Combine the data
       const enrichedListings = listings?.map(listing => {
         const profile = profiles?.find(p => p.id === listing.user_id);
-        const dealer = dealers?.find(d => d.id === listing.user_id);
+        const dealer = dealers?.find(d => d.user_id === listing.user_id);
         
         return {
           ...listing,
@@ -175,7 +175,15 @@ const CarListings = () => {
   const getCarImage = (listing) => {
     const images = listing.car_listing_images || [];
     const primaryImage = images.find(img => img.is_primary)?.image_url;
-    return primaryImage || images[0]?.image_url || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
+    const imageUrl = primaryImage || images[0]?.image_url;
+    
+    // Check if it's a real URL or placeholder
+    if (imageUrl && imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    
+    // Return fallback image for placeholders
+    return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
   };
 
   const getConditionLabel = (condition) => {

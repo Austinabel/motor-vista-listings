@@ -41,7 +41,10 @@ export const VerifiedDealers = () => {
 
   const getDealerImage = (dealer: any) => {
     // Use uploaded dealer image if available, otherwise fallback to random image
-    return dealer.image_url || getRandomImage();
+    if (dealer.image_url && dealer.image_url.startsWith('http')) {
+      return dealer.image_url;
+    }
+    return getRandomImage();
   };
 
   const handleLoadMore = () => {

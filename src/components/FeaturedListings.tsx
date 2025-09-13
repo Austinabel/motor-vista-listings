@@ -103,7 +103,15 @@ export const FeaturedListings = () => {
   const getCarImage = (listing) => {
     const images = listing.car_listing_images || [];
     const primaryImage = images.find(img => img.is_primary)?.image_url;
-    return primaryImage || images[0]?.image_url || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
+    const imageUrl = primaryImage || images[0]?.image_url;
+    
+    // Check if it's a real URL or placeholder
+    if (imageUrl && imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    
+    // Return fallback image for placeholders
+    return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
   };
 
   if (loading) {
