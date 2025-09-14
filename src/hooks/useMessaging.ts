@@ -46,13 +46,18 @@ export const useMessaging = () => {
 
   // Set up real-time subscription for messages
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      // Clean up if user logs out
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+      return;
+    }
 
-    // Only create and subscribe ONCE per user
+    // Prevent duplicate subscriptions
     if (channelRef.current) {
-      // Clean up existing channel if any
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+      return;
     }
 
     console.log('Setting up real-time subscription for user:', user.id);
@@ -90,13 +95,13 @@ export const useMessaging = () => {
     channelRef.current = channel;
 
     return () => {
+      console.log('Cleaning up real-time subscription');
       if (channelRef.current) {
-        console.log('Cleaning up real-time subscription');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
     };
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the entire user object
 
   const fetchConversations = async () => {
     if (!user) return;

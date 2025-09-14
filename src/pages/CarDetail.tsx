@@ -284,8 +284,12 @@ const CarDetail = () => {
   const listedBy = getListedBy();
   const images = listing.car_listing_images || [];
   const currentImage = images[currentImageIndex] || {};
-  const displayImage = currentImage.image_url && (currentImage.image_url.startsWith('http') || currentImage.image_url.includes('supabase'))
-    ? currentImage.image_url 
+  const displayImage = currentImage.image_url && (
+    currentImage.image_url.startsWith('http') || 
+    currentImage.image_url.includes('supabase') ||
+    currentImage.image_url.includes('car-listing-images') ||
+    currentImage.image_url.startsWith('/')
+  ) ? currentImage.image_url 
     : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop";
 
   return (
@@ -304,12 +308,16 @@ const CarDetail = () => {
               {images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">
                    {images.slice(0, 4).map((image, index) => (
-                     <img 
-                       key={index}
-                       src={image.image_url && (image.image_url.startsWith('http') || image.image_url.includes('supabase'))
-                         ? image.image_url 
-                         : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop"
-                       } 
+                      <img 
+                        key={index}
+                        src={image.image_url && (
+                          image.image_url.startsWith('http') || 
+                          image.image_url.includes('supabase') ||
+                          image.image_url.includes('car-listing-images') ||
+                          image.image_url.startsWith('/')
+                        ) ? image.image_url 
+                          : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop"
+                        }
                        alt={`${listing.year} ${listing.make} ${listing.model} ${index + 1}`}
                        className={`w-full h-24 object-cover rounded cursor-pointer hover:opacity-80 ${
                          index === currentImageIndex ? 'ring-2 ring-red-600' : ''

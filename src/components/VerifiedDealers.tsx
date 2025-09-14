@@ -41,7 +41,11 @@ export const VerifiedDealers = () => {
 
   const getDealerImage = (dealer: any) => {
     // Use uploaded dealer image if available, otherwise fallback to random image
-    if (dealer.image_url && dealer.image_url.startsWith('http')) {
+    if (dealer.image_url && (
+      dealer.image_url.startsWith('http') || 
+      dealer.image_url.includes('supabase') ||
+      dealer.image_url.includes('car-listing-images')
+    )) {
       return dealer.image_url;
     }
     return getRandomImage();

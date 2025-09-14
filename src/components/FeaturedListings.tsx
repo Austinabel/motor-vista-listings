@@ -105,12 +105,17 @@ export const FeaturedListings = () => {
     const primaryImage = images.find(img => img.is_primary)?.image_url;
     const imageUrl = primaryImage || images[0]?.image_url;
     
-    // Check if it's a real Supabase Storage URL or placeholder
-    if (imageUrl && (imageUrl.startsWith('http') || imageUrl.includes('supabase'))) {
+    // Check if it's a real uploaded image URL
+    if (imageUrl && (
+      imageUrl.startsWith('http') || 
+      imageUrl.includes('supabase') ||
+      imageUrl.includes('car-listing-images') ||
+      imageUrl.startsWith('/')
+    )) {
       return imageUrl;
     }
     
-    // Return fallback image for placeholders
+    // Return fallback image for placeholders or missing images
     return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
   };
 

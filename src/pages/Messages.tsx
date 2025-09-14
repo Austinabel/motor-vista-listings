@@ -100,156 +100,134 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12">
-      <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8">
-        <Card className="shadow-xl border-0">
-          <CardHeader className="bg-white/80 rounded-t-lg backdrop-blur-md">
-            <CardTitle className="flex items-center space-x-3 text-2xl font-bold">
-              <MessageSquare className="h-7 w-7 text-red-600" />
-              <span>Messages</span>
-            </CardTitle>
-            <CardDescription>
-              View and manage your conversations with sellers and buyers.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-2 sm:p-6 pt-0">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-red-50/20 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-8">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Messages</h1>
+                <p className="text-red-100 text-sm">Your conversations with buyers and sellers</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6">
             {loading ? (
-              <div className="text-center py-16">
-                <div className="w-10 h-10 mx-auto rounded-full animate-spin border-4 border-t-red-600 border-gray-200"></div>
-                <div className="mt-4 text-gray-500 font-medium">Loading conversations...</div>
+              <div className="text-center py-20">
+                <div className="w-12 h-12 mx-auto rounded-full animate-spin border-4 border-t-red-500 border-gray-200"></div>
+                <div className="mt-4 text-gray-600 font-medium">Loading conversations...</div>
               </div>
             ) : conversations.length === 0 ? (
-              <div className="flex flex-col items-center py-16">
-                <MessageSquare className="h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No conversations yet</h3>
-                <p className="text-gray-500 mb-6 max-w-xs text-center">
-                  When you contact sellers or buyers about a car listing, your conversations will appear here.
+              <div className="flex flex-col items-center py-20">
+                <div className="p-4 bg-red-50 rounded-full mb-6">
+                  <MessageSquare className="h-12 w-12 text-red-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">No conversations yet</h3>
+                <p className="text-gray-500 mb-8 max-w-sm text-center leading-relaxed">
+                  Start chatting with sellers or buyers about car listings. Your conversations will appear here.
                 </p>
                 <a
                   href="/cars"
-                  className="inline-flex items-center px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors duration-150 text-sm font-medium"
+                  className="inline-flex items-center px-6 py-3 rounded-xl text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
+                  <Car className="w-4 h-4 mr-2" />
                   Browse Cars
                 </a>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 rounded-xl overflow-hidden shadow-inner bg-gray-50">
+              <div className="space-y-3">
                 {conversations.map((conversation, idx) => {
                   const unreadCount = getUnreadCount(conversation.id);
                   const isSelected = selectedConversation?.id === conversation.id;
                   return (
-                    <div key={conversation.id} className="group hover:bg-white/80 transition-all duration-150">
-                      <div
-                        onClick={() => handleOpenChat(conversation)}
-                        tabIndex={0}
-                        className={`flex cursor-pointer px-4 py-4 sm:px-6 items-center space-x-4 transition-shadow hover:shadow-lg rounded-xl border border-transparent hover:border-red-200 hover:ring-1 hover:ring-red-100 focus:ring-2 focus:ring-red-400 outline-none ${
-                          isSelected ? "ring-2 ring-red-500 border-red-500 shadow-xl" : ""
-                        }`}
-                      >
-                        {/* Avatar/Fallback */}
+                    <div 
+                      key={conversation.id} 
+                      className={`group bg-white rounded-xl border border-gray-100 hover:border-red-200 hover:shadow-md transition-all duration-200 cursor-pointer ${
+                        isSelected ? "ring-2 ring-red-500 border-red-500 shadow-lg" : ""
+                      }`}
+                      onClick={() => handleOpenChat(conversation)}
+                    >
+                      <div className="flex items-center space-x-4 p-4">
+                        {/* Avatar */}
                         <div className="flex-shrink-0">
-                          <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center text-2xl font-bold text-red-600 border border-gray-300 shadow-sm">
-                            <span>
-                              {stringAvatar(getOtherUserName(conversation))}
-                            </span>
+                          <div className="h-11 w-11 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                            {stringAvatar(getOtherUserName(conversation))}
                           </div>
                         </div>
-                        {/* Conversation Info */}
+                        
+                        {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-semibold text-gray-900 truncate block">{getCarTitle(conversation)}</span>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h4 className="font-semibold text-gray-900 truncate text-sm">
+                              {getCarTitle(conversation)}
+                            </h4>
                             {unreadCount > 0 && (
-                              <span className="ml-1 inline-flex items-center justify-center min-w-5 h-5 px-2 rounded-full bg-red-500 text-white text-xs font-semibold animate-pulse shadow">
+                              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-bold">
                                 {unreadCount}
                               </span>
                             )}
                           </div>
-                          <span className="block text-sm text-gray-500 truncate">
+                          <p className="text-sm text-gray-500 truncate mb-1">
                             With {getOtherUserName(conversation)}
-                          </span>
+                          </p>
                           {conversation.car_listings?.price && (
-                            <span className="block text-xs font-medium text-red-600 mt-0.5">
+                            <p className="text-xs font-semibold text-red-600">
                               ₦{conversation.car_listings.price.toLocaleString()}
-                            </span>
+                            </p>
                           )}
                         </div>
-                        {/* Time & Open Chat Button */}
-                        <div className="flex flex-col items-end min-w-[70px] flex-shrink-0">
-                          <span className="text-xs text-gray-400 flex items-center mb-2">
-                            <Clock className="h-4 w-4 mr-0.5" />
+                        
+                        {/* Time & Action */}
+                        <div className="flex flex-col items-end space-y-2">
+                          <span className="text-xs text-gray-400 flex items-center">
+                            <Clock className="h-3 w-3 mr-1" />
                             {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
                           </span>
-                          <Button variant="secondary" size="sm" className="opacity-80 hover:opacity-100 flex items-center gap-1 border border-gray-200 shadow">
-                            <MessageSquare className="h-4 w-4" />
-                            <span className="hidden sm:inline">Open</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-7 px-3 text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 opacity-80 group-hover:opacity-100"
+                          >
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            Chat
                           </Button>
                         </div>
                       </div>
-                      {/* ADD DIVIDER unless last item */}
-                      {idx !== conversations.length - 1 && (
-                        <Separator orientation="horizontal" className="my-0 mx-6 bg-gray-200" />
-                      )}
                     </div>
                   );
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Chat Dialog */}
         <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-          <DialogContent 
-            className="
-              w-full 
-              max-w-[95vw] 
-              sm:max-w-2xl 
-              border-0 
-              rounded-none sm:rounded-2xl 
-              shadow-2xl 
-              px-0 py-0 
-              bg-white 
-              overflow-hidden 
-              sm:my-8
-              h-[95vh] 
-              max-h-[95vh] 
-              flex flex-col
-              animate-fade-in
-            "
-            style={{
-              padding: 0,
-              borderRadius: '0.75rem',
-              margin: 0,
-              top: '2.5vh', // better alignment if needed
-              left: '50%',
-              transform: 'translate(-50%, 0)'
-            }}
-          >
-            {/* Header Callout */}
-            <div className="bg-gradient-to-r from-red-600/80 to-red-400/80 px-4 sm:px-6 pt-6 pb-2 rounded-t-none sm:rounded-t-2xl shadow-inner">
+          <DialogContent className="w-full max-w-4xl border-0 rounded-2xl shadow-2xl px-0 py-0 bg-white overflow-hidden h-[85vh] max-h-[85vh] flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex-shrink-0">
               <DialogHeader className="p-0">
-                <DialogTitle className="text-white font-bold text-xl tracking-tight flex items-center gap-2">
-                  <MessageSquare className="h-6 w-6" />
-                  {selectedConversation && `Chat about ${getCarTitle(selectedConversation)}`}
+                <DialogTitle className="text-white font-bold text-lg flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  {selectedConversation && `${getCarTitle(selectedConversation)}`}
                 </DialogTitle>
-                <div className="text-sm text-red-50">
-                  {selectedConversation && <>With {getOtherUserName(selectedConversation)}</>}
-                </div>
+                <p className="text-red-100 text-sm">
+                  {selectedConversation && `Chatting with ${getOtherUserName(selectedConversation)}`}
+                </p>
               </DialogHeader>
             </div>
-            {/* Divider between header and chat */}
-            <Separator orientation="horizontal" className="bg-gray-200" />
-            {/* Main chat callout area, scrollable but keeps header and input always visible */}
-            <div className="bg-gray-50 px-1 sm:px-4 py-4 sm:py-6 min-h-0 flex-1 rounded-b-none sm:rounded-b-2xl shadow-inner flex flex-col overflow-y-auto">
+            
+            {/* Chat Interface */}
+            <div className="flex-1 min-h-0 bg-gray-50">
               {selectedConversation && (
-                <div className="bg-white border border-gray-100 rounded-none sm:rounded-xl shadow p-0 overflow-hidden flex flex-col flex-1 min-h-0">
-                  {/* ChatInterface is JUST the messages and input, no internal title/subtitle */}
-                  <ChatInterface
-                    conversationId={selectedConversation.id}
-                    carTitle={getCarTitle(selectedConversation)}
-                    otherUserName={getOtherUserName(selectedConversation)}
-                  />
-                </div>
+                <ChatInterface
+                  conversationId={selectedConversation.id}
+                  carTitle={getCarTitle(selectedConversation)}
+                  otherUserName={getOtherUserName(selectedConversation)}
+                />
               )}
             </div>
           </DialogContent>
