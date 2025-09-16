@@ -48,7 +48,7 @@ const CarDetail = () => {
 
       // Fetch images separately
       const { data: images, error: imagesError } = await supabase
-        .from('car_listings.images')
+        .from('car_listing.images')
         .select('*')
         .eq('listing_id', id)
         .order('is_primary', { ascending: false });
