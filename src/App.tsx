@@ -54,8 +54,8 @@ const AppContent = () => {
     const onAuthPage = ['/login', '/register'].includes(location.pathname);
     const justSignedIn = lastAuthEvent === 'SIGNED_IN';
 
-    if (justSignedIn || onAuthPage) {
-      if (justSignedIn) clearLastAuthEvent();
+    if (justSignedIn) {
+      clearLastAuthEvent();
 
       const userType = user.user_metadata?.user_type;
       if (userType === 'dealer') {
@@ -64,9 +64,13 @@ const AppContent = () => {
         } else {
           navigate('/dealer-registration', { replace: true });
         }
-      } else if (onAuthPage) {
+      } else {
+        // Redirect regular users to homepage after login
         navigate('/', { replace: true });
       }
+    } else if (onAuthPage) {
+      // Redirect to homepage if user is already logged in but on auth page
+      navigate('/', { replace: true });
     }
   }, [user, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, navigate, clearLastAuthEvent]);
 
