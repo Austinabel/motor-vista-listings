@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Eye, Star, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 interface CarListing {
   id: string;
@@ -100,33 +101,34 @@ export const MobileCarGrid = () => {
                               listing.car_listing_images?.[0]?.image_url;
 
           return (
-            <Card key={listing.id} className="overflow-hidden border border-gray-200">
-              {/* Image */}
-              <div className="relative">
-                {primaryImage ? (
-                  <img
-                    src={primaryImage}
-                    alt={`${listing.make} ${listing.model}`}
-                    className="w-full h-32 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-xs">No Image</span>
+            <Link key={listing.id} to={`/cars/${listing.id}`}>
+              <Card className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
+                {/* Image */}
+                <div className="relative">
+                  {primaryImage ? (
+                    <img
+                      src={primaryImage}
+                      alt={`${listing.make} ${listing.model}`}
+                      className="w-full h-32 object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-400 text-xs">No Image</span>
+                    </div>
+                  )}
+                  
+                  {/* Fixed badge positioning to prevent overlap */}
+                  <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    <Badge className="bg-green-600 text-white text-xs px-1.5 py-0.5 flex items-center">
+                      <CheckCircle className="w-2.5 h-2.5 mr-1" />
+                      Verified
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5 flex items-center bg-yellow-500 text-white">
+                      <Star className="w-2.5 h-2.5 mr-1" />
+                      POPULAR
+                    </Badge>
                   </div>
-                )}
-                <div className="absolute top-2 left-2">
-                  <Badge className="bg-green-600 text-white text-xs px-2 py-1">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Verified ID
-                  </Badge>
                 </div>
-                <div className="absolute top-2 right-2">
-                  <Badge variant="secondary" className="text-xs px-2 py-1">
-                    <Star className="w-3 h-3 mr-1" />
-                    POPULAR
-                  </Badge>
-                </div>
-              </div>
 
               {/* Content */}
               <div className="p-2">
@@ -168,6 +170,7 @@ export const MobileCarGrid = () => {
                 </div>
               </div>
             </Card>
+            </Link>
           );
         })}
       </div>
