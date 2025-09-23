@@ -102,7 +102,7 @@ export const MobileCarGrid = () => {
 
           return (
             <Link key={listing.id} to={`/cars/${listing.id}`}>
-              <Card className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className="overflow-hidden border-0 shadow-sm hover:shadow-lg transition-shadow cursor-pointer bg-white rounded-lg">
                 {/* Image */}
                 <div className="relative">
                   {primaryImage ? (

@@ -6,21 +6,10 @@ import {
   Plus, 
   TrendingUp, 
   Car, 
-  Home, 
-  Smartphone, 
-  Monitor, 
-  Sofa, 
-  Sparkles, 
-  Shirt, 
-  Gamepad2, 
-  FileText, 
-  Wrench, 
-  Briefcase, 
-  Baby, 
-  PawPrint, 
-  Wheat, 
-  HardHat, 
-  Construction,
+  Truck, 
+  Zap, 
+  Bike,
+  Bus,
   ChevronDown
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -32,11 +21,11 @@ const categories = [
   { id: 'brand-new', name: 'Brand New', icon: Car, color: 'bg-red-400', link: '/cars?type=brand-new' },
   { id: 'foreign-used', name: 'Foreign Used', icon: Car, color: 'bg-red-500', link: '/cars?type=foreign-used' },
   { id: 'local-used', name: 'Local Used', icon: Car, color: 'bg-red-600', link: '/cars?type=local-used' },
-  { id: 'electric-cars', name: 'Electric Cars', icon: Car, color: 'bg-red-400', link: '/cars?category=electric' },
-  { id: 'tricycles', name: 'Tricycles', icon: Car, color: 'bg-red-500', link: '/cars?category=tricycles' },
-  { id: 'trucks', name: 'Trucks', icon: Car, color: 'bg-red-600', link: '/cars?category=trucks' },
-  { id: 'motorbikes', name: 'Motorbikes', icon: Car, color: 'bg-red-400', link: '/cars?category=motorbikes' },
-  { id: 'buses', name: 'Buses', icon: Car, color: 'bg-red-500', link: '/cars?category=buses' },
+  { id: 'electric-cars', name: 'Electric Cars', icon: Zap, color: 'bg-red-400', link: '/cars?category=electric' },
+  { id: 'tricycles', name: 'Tricycles', icon: Bike, color: 'bg-red-500', link: '/cars?category=tricycles' },
+  { id: 'trucks', name: 'Trucks', icon: Truck, color: 'bg-red-600', link: '/cars?category=trucks' },
+  { id: 'motorbikes', name: 'Motorbikes', icon: Bike, color: 'bg-red-400', link: '/cars?category=motorbikes' },
+  { id: 'buses', name: 'Buses', icon: Bus, color: 'bg-red-500', link: '/cars?category=buses' },
 ];
 
 export const MobileHero = () => {
