@@ -23,13 +23,10 @@ export const FeaturedListings = () => {
 
   const fetchCarListings = async () => {
     try {
-      // Fetch car listings with images - include pending_review for own listings
+      // Fetch car listings first - include pending_review for own listings
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
-        .select(`
-          *,
-          car_listing_images(image_url, is_primary)
-        `)
+        .select('*')
         .or(`status.eq.active${user ? `,and(status.eq.pending_review,user_id.eq.${user.id})` : ''}`)
         .order('created_at', { ascending: false })
         .limit(108); // 6 rows * 6 cars * 3 pages
@@ -40,9 +37,22 @@ export const FeaturedListings = () => {
         return;
       }
 
+      // Fetch images for all listings
+      const { data: allImages, error: imagesError } = await supabase
+        .from('car_listing_images')
+        .select('listing_id, image_url, is_primary')
+        .in('listing_id', (listings || []).map(l => l.id));
+
+      if (imagesError) {
+        console.error('Error fetching images:', imagesError);
+      }
+
       // Use secure function to get seller info for each listing
       const enrichedListings = await Promise.all(
         (listings || []).map(async (listing) => {
+          // Get images for this listing
+          const listingImages = allImages?.filter(img => img.listing_id === listing.id) || [];
+          
           // Get seller info using secure function
           const { data: sellerInfo, error: sellerError } = await supabase
             .rpc('get_seller_info_for_listing', { listing_user_id: listing.user_id });
@@ -70,6 +80,7 @@ export const FeaturedListings = () => {
 
           return {
             ...listing,
+            car_listing_images: listingImages,
             profiles: sellerInfo && sellerInfo.length > 0 ? sellerInfo[0] : null,
             dealers: dealerInfo ? [dealerInfo] : []
           };
@@ -107,9 +118,12 @@ export const FeaturedListings = () => {
   };
 
   const getCarImage = (listing) => {
+    console.log('Getting car image for listing:', listing.id, 'Images:', listing.car_listing_images);
     const images = listing.car_listing_images || [];
     const primaryImage = images.find(img => img.is_primary)?.image_url;
     const imageUrl = primaryImage || images[0]?.image_url;
+    
+    console.log('Primary image:', primaryImage, 'First image:', images[0]?.image_url, 'Final URL:', imageUrl);
     
     // Check if it's a real uploaded image URL
     if (imageUrl && (
@@ -122,6 +136,7 @@ export const FeaturedListings = () => {
     }
     
     // Return fallback image for placeholders or missing images
+    console.log('Using fallback image for listing:', listing.id);
     return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
   };
 

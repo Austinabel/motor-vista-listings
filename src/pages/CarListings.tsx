@@ -85,13 +85,10 @@ const CarListings = () => {
     try {
       setLoading(true);
       
-      // Fetch car listings with images - include pending_review for own listings
+      // Fetch car listings first - include pending_review for own listings
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
-        .select(`
-          *,
-          car_listing_images(image_url, is_primary)
-        `)
+        .select('*')
         .or(`status.eq.active${user ? `,and(status.eq.pending_review,user_id.eq.${user.id})` : ''}`)
         .order('created_at', { ascending: false });
 
@@ -100,6 +97,19 @@ const CarListings = () => {
         toast.error('Failed to load car listings');
         return;
       }
+
+      // Fetch images for all listings
+      const { data: allImages, error: imagesError } = await supabase
+        .from('car_listing_images')
+        .select('listing_id, image_url, is_primary')
+        .in('listing_id', (listings || []).map(l => l.id));
+
+      if (imagesError) {
+        console.error('Error fetching images:', imagesError);
+      }
+
+      console.log('Raw listings data:', listings);
+      console.log('Images data:', allImages);
 
       // Get unique user IDs from listings
       const userIds = [...new Set(listings?.map(listing => listing.user_id).filter(Boolean))];
@@ -140,14 +150,17 @@ const CarListings = () => {
       const enrichedListings = listings?.map(listing => {
         const profile = profiles?.find(p => p.id === listing.user_id);
         const dealer = dealers?.find(d => d.user_id === listing.user_id);
+        const listingImages = allImages?.filter(img => img.listing_id === listing.id) || [];
         
         return {
           ...listing,
+          car_listing_images: listingImages,
           profiles: profile,
           dealers: dealer ? [dealer] : []
         };
       }) || [];
 
+      console.log('Enriched listings:', enrichedListings);
       setCarListings(enrichedListings);
     } catch (error) {
       console.error('Error in fetchCarListings:', error);
@@ -179,9 +192,12 @@ const CarListings = () => {
   };
 
   const getCarImage = (listing) => {
+    console.log('Getting car image for listing:', listing.id, 'Images:', listing.car_listing_images);
     const images = listing.car_listing_images || [];
     const primaryImage = images.find(img => img.is_primary)?.image_url;
     const imageUrl = primaryImage || images[0]?.image_url;
+    
+    console.log('Primary image:', primaryImage, 'First image:', images[0]?.image_url, 'Final URL:', imageUrl);
     
     // Check if it's a real uploaded image URL
     if (imageUrl && (
@@ -194,6 +210,7 @@ const CarListings = () => {
     }
     
     // Return fallback image for placeholders or missing images
+    console.log('Using fallback image for listing:', listing.id);
     return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
   };
 
