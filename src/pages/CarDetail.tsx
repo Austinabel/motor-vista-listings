@@ -36,11 +36,17 @@ const CarDetail = () => {
         .from('car_listings')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (carError) {
         console.error('Error fetching car details:', carError);
         toast.error('Failed to load car details');
+        return;
+      }
+
+      if (!carData) {
+        console.log('No car found with ID:', id);
+        setListing(null);
         return;
       }
 
@@ -59,31 +65,27 @@ const CarDetail = () => {
 
       console.log('Images:', images);
 
-      // Fetch user profile if user_id exists (always fetch for public display)
-      let profileData = null;
+      // Fetch seller info using the RPC function
+      let sellerData = null;
       if (carData.user_id) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, user_type, phone')
-          .eq('id', carData.user_id)
-          .single();
+        const { data: seller, error: sellerError } = await supabase
+          .rpc('get_seller_info_for_listing', { 
+            listing_user_id: carData.user_id 
+          });
 
-        if (!profileError) {
-          profileData = profile;
+        if (!sellerError && seller && seller.length > 0) {
+          sellerData = seller[0]; // Take the first result
         }
       }
 
-      // Fetch dealer info if user is a dealer (always fetch for public display)
+      // Fetch dealer info if seller is a dealer
       let dealerData = null;
-      if (profileData?.user_type === 'dealer' && carData.user_id) {
-        const { data: dealer, error: dealerError } = await supabase
-          .from('dealers')
-          .select('business_name, contact_name, phone, email')
-          .eq('id', carData.user_id)
-          .single();
-
-        if (!dealerError) {
-          dealerData = dealer;
+      if (sellerData?.user_type === 'dealer' && carData.user_id) {
+        const { data: dealers } = await supabase
+          .rpc('get_public_dealers');
+        
+        if (dealers) {
+          dealerData = dealers.find(dealer => dealer.id === carData.user_id);
         }
       }
 
@@ -91,7 +93,7 @@ const CarDetail = () => {
       const enrichedListing = {
         ...carData,
         car_listing_images: images || [],
-        profiles: profileData,
+        profiles: sellerData,
         dealers: dealerData ? [dealerData] : []
       };
 
