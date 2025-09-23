@@ -75,9 +75,16 @@ const CarListings = () => {
     
     // Check URL parameters for initial category selection
     const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
     const typeParam = urlParams.get('type');
-    if (typeParam) {
+    const categoriesParam = urlParams.get('categories');
+    
+    if (categoryParam) {
+      setSelectedCategories([categoryParam]);
+    } else if (typeParam) {
       setSelectedCategories([typeParam]);
+    } else if (categoriesParam) {
+      setSelectedCategories(categoriesParam.split(','));
     }
   }, []);
 
@@ -241,37 +248,54 @@ const CarListings = () => {
       const model = car.model?.toLowerCase();
       
       switch(categoryId) {
-        // Vehicle types
+        // Vehicle types - More comprehensive matching
         case 'electric-cars':
-          return fuelType === 'electric';
+          return fuelType === 'electric' || fuelType === 'hybrid' || model?.includes('electric') || model?.includes('tesla');
         case 'tricycles':
-          return make?.includes('bajaj') || model?.includes('tricycle');
+          return make?.includes('bajaj') || make?.includes('tvs') || make?.includes('piaggio') || 
+                 model?.includes('tricycle') || model?.includes('keke') || model?.includes('tuk');
         case 'trucks':
-          return make?.includes('man') || model?.includes('truck');
+          return make?.includes('man') || make?.includes('daf') || make?.includes('volvo') || 
+                 make?.includes('mercedes') || make?.includes('scania') || make?.includes('iveco') ||
+                 model?.includes('truck') || model?.includes('tipper') || model?.includes('trailer') ||
+                 model?.includes('lorry') || model?.includes('pickup') || model?.includes('hilux');
         case 'motorbikes':
-          return make?.includes('honda') && model?.includes('cbr');
+          return make?.includes('honda') || make?.includes('yamaha') || make?.includes('suzuki') ||
+                 make?.includes('kawasaki') || make?.includes('bajaj') || make?.includes('tvs') ||
+                 model?.includes('bike') || model?.includes('motorcycle') || model?.includes('cbr') ||
+                 model?.includes('ninja') || model?.includes('pulsar');
         case 'buses-shuttles':
-          return model?.includes('bus') || model?.includes('hiace');
+          return model?.includes('bus') || model?.includes('hiace') || model?.includes('coaster') ||
+                 model?.includes('shuttle') || model?.includes('transit') || make?.includes('iveco') ||
+                 (make?.includes('toyota') && model?.includes('hiace'));
           
         // Conditions
         case 'brand-new':
-          return condition === 'brand_new';
+          return condition === 'brand_new' || condition === 'new';
         case 'foreign-used':
-          return condition === 'foreign_used';
+          return condition === 'foreign_used' || condition === 'tokunbo';
         case 'local-used':
-          return condition === 'local_used';
+          return condition === 'local_used' || condition === 'nigerian_used';
           
-        // Brands
+        // Brands - More flexible matching
         case 'toyota':
+          return make?.includes('toyota');
         case 'ford':
+          return make?.includes('ford');
         case 'honda':
+          return make?.includes('honda');
         case 'lexus':
+          return make?.includes('lexus');
         case 'mercedes-benz':
+          return make?.includes('mercedes') || make?.includes('benz');
         case 'bmw':
+          return make?.includes('bmw');
         case 'acura':
+          return make?.includes('acura');
         case 'innoson':
+          return make?.includes('innoson');
         case 'nissan':
-          return make === categoryId || make?.includes(categoryId.replace('-', ' '));
+          return make?.includes('nissan');
           
         default:
           return false;
@@ -315,9 +339,16 @@ const CarListings = () => {
       // Update URL to reflect selected categories
       const params = new URLSearchParams(window.location.search);
       if (newCategories.length > 0) {
-        params.set('categories', newCategories.join(','));
+        if (newCategories.length === 1) {
+          params.set('category', newCategories[0]);
+          params.delete('categories');
+        } else {
+          params.set('categories', newCategories.join(','));
+          params.delete('category');
+        }
       } else {
         params.delete('categories');
+        params.delete('category');
       }
       window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
       
