@@ -35,7 +35,7 @@ const Dealers = () => {
     try {
       const { data, error } = await supabase
         .from('dealers')
-        .select('*')
+        .select('id, business_name, state, image_url, description, monthly_inventory, year_established, website')
         .eq('status', 'verified')
         .order('created_at', { ascending: false });
 
@@ -157,10 +157,6 @@ const Dealers = () => {
                         <MapPin className="w-4 h-4 mr-2" />
                         <span className="text-sm">{dealer.state}</span>
                       </div>
-                      <div className="flex items-center text-gray-600">
-                        <Phone className="w-4 h-4 mr-2" />
-                        <span className="text-sm">{dealer.phone}</span>
-                      </div>
                       {dealer.website && (
                         <div className="flex items-center text-gray-600">
                           <Globe className="w-4 h-4 mr-2" />
@@ -204,7 +200,7 @@ const Dealers = () => {
 
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <p className="text-xs text-gray-500">
-                        Contact: {dealer.contact_name}
+                        Verified dealer since {new Date(dealer.created_at || Date.now()).getFullYear()}
                       </p>
                     </div>
                   </CardContent>

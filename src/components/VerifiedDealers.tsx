@@ -21,7 +21,7 @@ export const VerifiedDealers = () => {
     try {
       const { data, error } = await supabase
         .from('dealers')
-        .select('*')
+        .select('id, business_name, state, image_url, description, monthly_inventory, year_established, website')
         .eq('status', 'verified')
         .order('created_at', { ascending: false })
         .limit(20);
@@ -110,10 +110,6 @@ export const VerifiedDealers = () => {
                   <div className="flex items-center">
                     <MapPin className="w-3 h-3 mr-1" />
                     <span className="truncate">{dealer.state}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Phone className="w-3 h-3 mr-1" />
-                    <span className="truncate">{dealer.phone}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
