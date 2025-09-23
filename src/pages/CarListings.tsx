@@ -81,6 +81,12 @@ const CarListings = () => {
     }
   }, []);
 
+  // Add live filtering effect
+  useEffect(() => {
+    setDisplayedCars(CARS_PER_PAGE);
+    setCurrentPage(1);
+  }, [filters, selectedCategories]);
+
   const fetchCarListings = async () => {
     try {
       setLoading(true);

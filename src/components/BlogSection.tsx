@@ -33,7 +33,7 @@ export const BlogSection = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-3xl font-bold">Latest Articles</h2>
-          <Button variant="outline">View All Articles</Button>
+          <Button variant="outline" className="bg-background text-primary border-primary hover:bg-primary hover:text-primary-foreground">View All Articles</Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {articles.map((article, index) => (

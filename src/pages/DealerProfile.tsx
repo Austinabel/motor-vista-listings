@@ -185,7 +185,7 @@ const DealerProfile = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Available Cars ({listings?.length || 0})</h2>
-              <Button variant="outline">View All</Button>
+              <Button variant="outline" className="bg-background text-primary border-primary hover:bg-primary hover:text-primary-foreground">View All</Button>
             </div>
             
             {isLoadingListings ? (

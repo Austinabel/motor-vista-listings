@@ -154,7 +154,7 @@ export const VerifiedDealers = () => {
           <Button 
             onClick={() => navigate('/dealers')}
             variant="outline"
-            className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+            className="bg-background text-primary border-primary hover:bg-primary hover:text-primary-foreground"
           >
             View All Dealers
           </Button>

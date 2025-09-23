@@ -166,7 +166,7 @@ export const FeaturedListings = () => {
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-3xl font-bold text-white">Featured Listings</h2>
           <Link to="/cars">
-            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-red-600">
+            <Button variant="outline" className="bg-white/10 border-white text-white hover:bg-white hover:text-primary backdrop-blur-sm">
               View All
             </Button>
           </Link>
@@ -229,7 +229,7 @@ export const FeaturedListings = () => {
             <Link to="/cars">
               <Button 
                 variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-red-600 px-8 py-3"
+                className="bg-white/10 border-white text-white hover:bg-white hover:text-primary backdrop-blur-sm px-8 py-3"
               >
                 View All Listings
               </Button>

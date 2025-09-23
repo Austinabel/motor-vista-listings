@@ -6,7 +6,7 @@ import { MobileCarGrid } from "@/components/MobileCarGrid";
 import { SearchFilters } from "@/components/SearchFilters";
 import { BrandCarousel } from "@/components/BrandCarousel";
 import { FeaturedListings } from "@/components/FeaturedListings";
-import { TrustedPartners } from "@/components/TrustedPartners";
+
 import { HelpIcons } from "@/components/HelpIcons";
 import { Testimonials } from "@/components/Testimonials";
 import { ToolsSection } from "@/components/ToolsSection";
@@ -36,7 +36,6 @@ const Index = () => {
             <BrandCarousel />
             <FeaturedListings />
             <VerifiedDealers />
-            <TrustedPartners />
             <HelpIcons />
             <Testimonials />
             <ToolsSection />
