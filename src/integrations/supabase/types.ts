@@ -373,38 +373,21 @@ export type Database = {
       }
     }
     Views: {
-      public_dealers: {
-        Row: {
-          business_name: string | null
-          created_at: string | null
-          description: string | null
-          id: string | null
-          state: string | null
-          website: string | null
-          year_established: string | null
-        }
-        Insert: {
-          business_name?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          state?: string | null
-          website?: string | null
-          year_established?: string | null
-        }
-        Update: {
-          business_name?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          state?: string | null
-          website?: string | null
-          year_established?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_public_dealers: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          business_name: string
+          created_at: string
+          description: string
+          id: string
+          state: string
+          website: string
+          year_established: string
+        }[]
+      }
       get_seller_info_for_listing: {
         Args: { listing_user_id: string }
         Returns: {
