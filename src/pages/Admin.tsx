@@ -383,7 +383,11 @@ const Admin = () => {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setSelectedListing(listing)}
+                                  onClick={() => {
+                                    console.log('Opening modal for listing:', listing);
+                                    console.log('Listing images:', listing.car_listing_images);
+                                    setSelectedListing(listing);
+                                  }}
                                 >
                                   <Eye className="w-4 h-4 mr-1" />
                                   View

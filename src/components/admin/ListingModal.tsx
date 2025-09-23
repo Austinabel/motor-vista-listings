@@ -47,6 +47,55 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
           </DialogTitle>
         </DialogHeader>
 
+        {/* Image Gallery Section */}
+        {listing.car_listing_images && listing.car_listing_images.length > 0 ? (
+          <div className="space-y-4">
+            <h4 className="font-semibold text-lg border-b pb-2">Uploaded Images ({listing.car_listing_images.length})</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {listing.car_listing_images.map((image: any, index: number) => (
+                <div key={image.id || index} className="relative group">
+                  <div className="relative aspect-square overflow-hidden rounded-lg border border-gray-200">
+                    <img 
+                      src={image.image_url} 
+                      alt={`Car image ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      onError={(e) => {
+                        console.log('Image failed to load:', image.image_url);
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400&h=300&fit=crop&crop=center';
+                      }}
+                    />
+                    {image.is_primary && (
+                      <div className="absolute top-2 left-2">
+                        <Badge className="bg-green-500 hover:bg-green-600 text-xs">
+                          Primary
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => window.open(image.image_url, '_blank')}
+                    className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100"
+                  >
+                    <Eye className="w-6 h-6 text-white" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <h4 className="font-semibold text-lg border-b pb-2">Images</h4>
+            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <div className="text-gray-400 mb-2">
+                <Eye className="w-12 h-12 mx-auto" />
+              </div>
+              <p className="text-gray-600 font-medium">No images uploaded</p>
+              <p className="text-sm text-gray-500 mt-1">This listing doesn't have any images yet.</p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Basic Information */}
           <div className="space-y-4">
