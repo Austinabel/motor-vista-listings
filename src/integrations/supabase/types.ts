@@ -376,6 +376,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_admin_role: {
+        Args: { user_email: string }
+        Returns: boolean
+      }
       get_public_dealers: {
         Args: Record<PropertyKey, never>
         Returns: {
