@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Car, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import Squares from "./Squares";
+import modernCarBg from "@/assets/modern-car-bg.png";
 
 export const Hero = () => {
   return (
@@ -19,9 +20,18 @@ export const Hero = () => {
         />
       </div>
       
+      {/* Car background image */}
+      <div className="absolute inset-0 right-0 bg-no-repeat bg-contain bg-right opacity-5">
+        <img 
+          src={modernCarBg}
+          alt=""
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 h-full w-auto object-contain opacity-10"
+        />
+      </div>
+      
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between">
-          <div className="lg:w-1/2 mb-8 lg:mb-0 text-center lg:text-left">
+          <div className="lg:w-full mb-8 lg:mb-0 text-center lg:text-left">
             <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
               Nigeria's Most Trusted Car Marketplace
             </h1>
@@ -42,13 +52,6 @@ export const Hero = () => {
                 </Button>
               </Link>
             </div>
-          </div>
-          <div className="lg:w-1/2 w-full max-w-md lg:max-w-none">
-            <img 
-              src="/lovable-uploads/dcc60f45-82ad-459b-8fb0-d1cd9fc186ea.png" 
-              alt="Car showcase" 
-              className="w-full h-auto rounded-lg"
-            />
           </div>
         </div>
       </div>
