@@ -302,14 +302,14 @@ const CarDetail = () => {
                 className="w-full h-96 object-cover rounded-lg mb-4"
               />
               {images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
-                   {images.slice(0, 4).map((image, index) => (
+                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 max-h-48 overflow-y-auto">
+                   {images.map((image, index) => (
                       <img 
                         key={index}
                         src={image.image_url}
                         alt={`${listing.year} ${listing.make} ${listing.model} ${index + 1}`}
-                        className={`w-full h-24 object-cover rounded cursor-pointer hover:opacity-80 ${
-                          index === currentImageIndex ? 'ring-2 ring-red-600' : ''
+                        className={`w-full h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-all duration-200 ${
+                          index === currentImageIndex ? 'ring-2 ring-primary shadow-lg' : ''
                         }`}
                         onClick={() => setCurrentImageIndex(index)}
                       />
