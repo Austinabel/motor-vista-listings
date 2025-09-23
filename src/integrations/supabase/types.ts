@@ -373,7 +373,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_dealers: {
+        Row: {
+          business_name: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          state: string | null
+          website: string | null
+          year_established: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          state?: string | null
+          website?: string | null
+          year_established?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          state?: string | null
+          website?: string | null
+          year_established?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_seller_info_for_listing: {
