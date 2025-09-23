@@ -306,94 +306,109 @@ const Admin = () => {
           </TabsList>
 
           <TabsContent value="listings">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Car Listings Table */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Car Listings Management</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Car Details</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Listed By</TableHead>
-                        <TableHead>Plan</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {carListings.map((listing: any) => {
-                        const listedBy = getListedBy(listing);
-                        return (
-                          <TableRow 
-                            key={listing.id}
-                            className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
-                          >
-                            <TableCell>
-                              <div>
-                                <div className="font-semibold">
-                                  {listing.year} {listing.make} {listing.model}
-                                </div>
-                                <div className="text-sm text-gray-500 flex items-center">
-                                  <MapPin className="w-3 h-3 mr-1" />
-                                  {listing.location}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                              <div className="text-sm text-gray-500">{listing.condition}</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                {listedBy.type === 'dealer' ? (
-                                  <Building className="w-3 h-3 text-blue-600" />
-                                ) : (
-                                  <User className="w-3 h-3 text-gray-600" />
-                                )}
-                                <div>
-                                  <div className="text-sm font-medium">{listedBy.name}</div>
-                                  {listedBy.contact && (
-                                    <div className="text-xs text-gray-500">{listedBy.contact}</div>
-                                  )}
-                                  <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {getPlanBadge(listing.listing_plan)}
-                              <div className="text-xs text-gray-500 mt-1">
-                                ₦{listing.listing_price.toLocaleString()}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(listing.status)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                {new Date(listing.created_at).toLocaleDateString()}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    console.log('Opening modal for listing:', listing);
-                                    console.log('Listing images:', listing.car_listing_images);
-                                    setSelectedListing(listing);
-                                  }}
-                                >
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  View
-                                </Button>
-                                {listing.status === 'pending_review' && (
-                                  <>
+            <Tabs defaultValue="pending" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="pending" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Pending Review ({carListings.filter((l: any) => l.status === 'pending_review').length})
+                </TabsTrigger>
+                <TabsTrigger value="approved" className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Approved ({carListings.filter((l: any) => l.status === 'active').length})
+                </TabsTrigger>
+                <TabsTrigger value="rejected" className="flex items-center gap-2">
+                  <XCircle className="w-4 h-4" />
+                  Rejected ({carListings.filter((l: any) => l.status === 'rejected').length})
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Pending Listings */}
+              <TabsContent value="pending">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-yellow-600" />
+                      Pending Review Listings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Car Details</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Listed By</TableHead>
+                          <TableHead>Plan</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {carListings
+                          .filter((listing: any) => listing.status === 'pending_review')
+                          .map((listing: any) => {
+                            const listedBy = getListedBy(listing);
+                            return (
+                              <TableRow 
+                                key={listing.id}
+                                className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                              >
+                                <TableCell>
+                                  <div>
+                                    <div className="font-semibold">
+                                      {listing.year} {listing.make} {listing.model}
+                                    </div>
+                                    <div className="text-sm text-gray-500 flex items-center">
+                                      <MapPin className="w-3 h-3 mr-1" />
+                                      {listing.location}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                                  <div className="text-sm text-gray-500">{listing.condition}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    {listedBy.type === 'dealer' ? (
+                                      <Building className="w-3 h-3 text-blue-600" />
+                                    ) : (
+                                      <User className="w-3 h-3 text-gray-600" />
+                                    )}
+                                    <div>
+                                      <div className="text-sm font-medium">{listedBy.name}</div>
+                                      {listedBy.contact && (
+                                        <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                      )}
+                                      <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {getPlanBadge(listing.listing_plan)}
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    ₦{listing.listing_price.toLocaleString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {new Date(listing.created_at).toLocaleDateString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        console.log('Opening modal for listing:', listing);
+                                        console.log('Listing images:', listing.car_listing_images);
+                                        setSelectedListing(listing);
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      Review
+                                    </Button>
                                     <Button
                                       size="sm"
                                       onClick={() => updateListingStatus(listing.id, 'active')}
@@ -410,26 +425,270 @@ const Admin = () => {
                                       <XCircle className="w-4 h-4 mr-1" />
                                       Reject
                                     </Button>
-                                  </>
-                                )}
-                              </div>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        {carListings.filter((l: any) => l.status === 'pending_review').length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                              <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                              <div className="font-medium">No pending listings</div>
+                              <div className="text-sm">All listings have been reviewed</div>
                             </TableCell>
                           </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-              {/* Listing Modal */}
-              <ListingModal
-                listing={selectedListing}
-                isOpen={!!selectedListing}
-                onClose={() => setSelectedListing(null)}
-                onUpdateStatus={updateListingStatus}
-              />
-            </div>
+              {/* Approved Listings */}
+              <TabsContent value="approved">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      Approved Listings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Car Details</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Listed By</TableHead>
+                          <TableHead>Plan</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {carListings
+                          .filter((listing: any) => listing.status === 'active')
+                          .map((listing: any) => {
+                            const listedBy = getListedBy(listing);
+                            return (
+                              <TableRow 
+                                key={listing.id}
+                                className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                              >
+                                <TableCell>
+                                  <div>
+                                    <div className="font-semibold">
+                                      {listing.year} {listing.make} {listing.model}
+                                    </div>
+                                    <div className="text-sm text-gray-500 flex items-center">
+                                      <MapPin className="w-3 h-3 mr-1" />
+                                      {listing.location}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                                  <div className="text-sm text-gray-500">{listing.condition}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    {listedBy.type === 'dealer' ? (
+                                      <Building className="w-3 h-3 text-blue-600" />
+                                    ) : (
+                                      <User className="w-3 h-3 text-gray-600" />
+                                    )}
+                                    <div>
+                                      <div className="text-sm font-medium">{listedBy.name}</div>
+                                      {listedBy.contact && (
+                                        <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                      )}
+                                      <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {getPlanBadge(listing.listing_plan)}
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    ₦{listing.listing_price.toLocaleString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {new Date(listing.created_at).toLocaleDateString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        console.log('Opening modal for listing:', listing);
+                                        console.log('Listing images:', listing.car_listing_images);
+                                        setSelectedListing(listing);
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      View
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => window.open(`/cars/${listing.id}`, '_blank')}
+                                    >
+                                      Public View
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => updateListingStatus(listing.id, 'rejected')}
+                                    >
+                                      Reject
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        {carListings.filter((l: any) => l.status === 'active').length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                              <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                              <div className="font-medium">No approved listings</div>
+                              <div className="text-sm">No active listings found</div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Rejected Listings */}
+              <TabsContent value="rejected">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <XCircle className="w-5 h-5 text-red-600" />
+                      Rejected Listings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Car Details</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Listed By</TableHead>
+                          <TableHead>Plan</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {carListings
+                          .filter((listing: any) => listing.status === 'rejected')
+                          .map((listing: any) => {
+                            const listedBy = getListedBy(listing);
+                            return (
+                              <TableRow 
+                                key={listing.id}
+                                className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                              >
+                                <TableCell>
+                                  <div>
+                                    <div className="font-semibold">
+                                      {listing.year} {listing.make} {listing.model}
+                                    </div>
+                                    <div className="text-sm text-gray-500 flex items-center">
+                                      <MapPin className="w-3 h-3 mr-1" />
+                                      {listing.location}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                                  <div className="text-sm text-gray-500">{listing.condition}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    {listedBy.type === 'dealer' ? (
+                                      <Building className="w-3 h-3 text-blue-600" />
+                                    ) : (
+                                      <User className="w-3 h-3 text-gray-600" />
+                                    )}
+                                    <div>
+                                      <div className="text-sm font-medium">{listedBy.name}</div>
+                                      {listedBy.contact && (
+                                        <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                      )}
+                                      <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {getPlanBadge(listing.listing_plan)}
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    ₦{listing.listing_price.toLocaleString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {new Date(listing.created_at).toLocaleDateString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        console.log('Opening modal for listing:', listing);
+                                        console.log('Listing images:', listing.car_listing_images);
+                                        setSelectedListing(listing);
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      Review
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => updateListingStatus(listing.id, 'active')}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      <CheckCircle className="w-4 h-4 mr-1" />
+                                      Approve
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        {carListings.filter((l: any) => l.status === 'rejected').length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                              <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                              <div className="font-medium">No rejected listings</div>
+                              <div className="text-sm">All listings are in good standing</div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
+            {/* Listing Modal */}
+            <ListingModal
+              listing={selectedListing}
+              isOpen={!!selectedListing}
+              onClose={() => setSelectedListing(null)}
+              onUpdateStatus={updateListingStatus}
+            />
           </TabsContent>
 
           <TabsContent value="dealers">
