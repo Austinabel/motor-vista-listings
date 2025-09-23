@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut, Settings } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut, Settings, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DealerDetails } from "@/components/admin/DealerDetails";
@@ -201,6 +201,55 @@ const Admin = () => {
       }
     } catch (error) {
       console.error('Error in updateListingStatus:', error);
+      toast.error('An unexpected error occurred');
+    }
+  };
+
+  const deleteListing = async (listingId: string) => {
+    try {
+      // First delete related images
+      await supabase
+        .from('car_listing_images')
+        .delete()
+        .eq('listing_id', listingId);
+
+      // Then delete the listing
+      const { error } = await supabase
+        .from('car_listings')
+        .delete()
+        .eq('id', listingId);
+
+      if (error) {
+        console.error('Error deleting listing:', error);
+        toast.error(`Failed to delete listing: ${error.message}`);
+      } else {
+        toast.success('Listing deleted successfully');
+        fetchCarListings();
+        setSelectedListing(null);
+      }
+    } catch (error) {
+      console.error('Error in deleteListing:', error);
+      toast.error('An unexpected error occurred');
+    }
+  };
+
+  const deleteDealer = async (dealerId: string) => {
+    try {
+      const { error } = await supabase
+        .from('dealers')
+        .delete()
+        .eq('id', dealerId);
+
+      if (error) {
+        console.error('Error deleting dealer:', error);
+        toast.error(`Failed to delete dealer: ${error.message}`);
+      } else {
+        toast.success('Dealer deleted successfully');
+        fetchDealers();
+        setSelectedDealer(null);
+      }
+    } catch (error) {
+      console.error('Error in deleteDealer:', error);
       toast.error('An unexpected error occurred');
     }
   };
@@ -653,15 +702,23 @@ const Admin = () => {
                                       <Eye className="w-4 h-4 mr-1" />
                                       Review
                                     </Button>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => updateListingStatus(listing.id, 'active')}
-                                      className="bg-green-600 hover:bg-green-700"
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-1" />
-                                      Approve
-                                    </Button>
-                                  </div>
+                                     <Button
+                                       size="sm"
+                                       onClick={() => updateListingStatus(listing.id, 'active')}
+                                       className="bg-green-600 hover:bg-green-700"
+                                     >
+                                       <CheckCircle className="w-4 h-4 mr-1" />
+                                       Approve
+                                     </Button>
+                                     <Button
+                                       size="sm"
+                                       variant="destructive"
+                                       onClick={() => deleteListing(listing.id)}
+                                     >
+                                       <Trash2 className="w-4 h-4 mr-1" />
+                                       Delete
+                                     </Button>
+                                   </div>
                                 </TableCell>
                               </TableRow>
                             );
@@ -692,62 +749,232 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="dealers">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Dealers List */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Dealer Applications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {dealers.map((dealer: any) => (
-                      <div
-                        key={dealer.id}
-                        className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                          selectedDealer?.id === dealer.id
-                            ? 'border-red-500 bg-red-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setSelectedDealer(dealer)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">
-                              {dealer.business_name}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {dealer.contact_name} • {dealer.state}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Applied: {new Date(dealer.created_at).toLocaleDateString()}
-                            </p>
-                            <div className="flex items-center space-x-2 mt-2">
-                              {getStatusBadge(dealer.status)}
-                              {getPaymentStatusBadge(dealer.payment_status)}
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {getStatusIcon(dealer.status)}
-                            {dealer.id_card_number && (
-                              <IdCard className="w-4 h-4 text-blue-600" />
-                            )}
-                            {dealer.payment_status === 'completed' && (
-                              <CreditCard className="w-4 h-4 text-green-600" />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+            <Tabs defaultValue="pending" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="pending" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Pending ({dealers.filter((d: any) => d.status === 'pending').length})
+                </TabsTrigger>
+                <TabsTrigger value="approved" className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Verified ({dealers.filter((d: any) => d.status === 'verified').length})
+                </TabsTrigger>
+                <TabsTrigger value="rejected" className="flex items-center gap-2">
+                  <XCircle className="w-4 h-4" />
+                  Rejected ({dealers.filter((d: any) => d.status === 'rejected').length})
+                </TabsTrigger>
+              </TabsList>
 
-                {/* Dealer Details */}
-                <DealerDetails 
-                  dealer={selectedDealer} 
-                  onUpdateStatus={updateDealerStatus}
-                />
-            </div>
+              {/* Pending Dealers */}
+              <TabsContent value="pending">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-yellow-600" />
+                        Pending Applications
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {dealers
+                          .filter((dealer: any) => dealer.status === 'pending')
+                          .map((dealer: any) => (
+                            <div
+                              key={dealer.id}
+                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                selectedDealer?.id === dealer.id
+                                  ? 'border-red-500 bg-red-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                              onClick={() => setSelectedDealer(dealer)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    {dealer.business_name}
+                                  </h3>
+                                  <p className="text-sm text-gray-600">
+                                    {dealer.contact_name} • {dealer.state}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Applied: {new Date(dealer.created_at).toLocaleDateString()}
+                                  </p>
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    {getStatusBadge(dealer.status)}
+                                    {getPaymentStatusBadge(dealer.payment_status)}
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  {getStatusIcon(dealer.status)}
+                                  {dealer.id_card_number && (
+                                    <IdCard className="w-4 h-4 text-blue-600" />
+                                  )}
+                                  {dealer.payment_status === 'completed' && (
+                                    <CreditCard className="w-4 h-4 text-green-600" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        {dealers.filter((d: any) => d.status === 'pending').length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                            <div className="font-medium">No pending applications</div>
+                            <div className="text-sm">All applications have been reviewed</div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <DealerDetails 
+                    dealer={selectedDealer} 
+                    onUpdateStatus={updateDealerStatus}
+                    onDelete={deleteDealer}
+                  />
+                </div>
+              </TabsContent>
+
+              {/* Approved Dealers */}
+              <TabsContent value="approved">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        Verified Dealers
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {dealers
+                          .filter((dealer: any) => dealer.status === 'verified')
+                          .map((dealer: any) => (
+                            <div
+                              key={dealer.id}
+                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                selectedDealer?.id === dealer.id
+                                  ? 'border-red-500 bg-red-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                              onClick={() => setSelectedDealer(dealer)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    {dealer.business_name}
+                                  </h3>
+                                  <p className="text-sm text-gray-600">
+                                    {dealer.contact_name} • {dealer.state}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Verified: {new Date(dealer.created_at).toLocaleDateString()}
+                                  </p>
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    {getStatusBadge(dealer.status)}
+                                    {getPaymentStatusBadge(dealer.payment_status)}
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  {getStatusIcon(dealer.status)}
+                                  {dealer.id_card_number && (
+                                    <IdCard className="w-4 h-4 text-blue-600" />
+                                  )}
+                                  {dealer.payment_status === 'completed' && (
+                                    <CreditCard className="w-4 h-4 text-green-600" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        {dealers.filter((d: any) => d.status === 'verified').length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                            <div className="font-medium">No verified dealers</div>
+                            <div className="text-sm">No dealers have been verified yet</div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <DealerDetails 
+                    dealer={selectedDealer} 
+                    onUpdateStatus={updateDealerStatus}
+                    onDelete={deleteDealer}
+                  />
+                </div>
+              </TabsContent>
+
+              {/* Rejected Dealers */}
+              <TabsContent value="rejected">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <XCircle className="w-5 h-5 text-red-600" />
+                        Rejected Applications
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {dealers
+                          .filter((dealer: any) => dealer.status === 'rejected')
+                          .map((dealer: any) => (
+                            <div
+                              key={dealer.id}
+                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                selectedDealer?.id === dealer.id
+                                  ? 'border-red-500 bg-red-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                              onClick={() => setSelectedDealer(dealer)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    {dealer.business_name}
+                                  </h3>
+                                  <p className="text-sm text-gray-600">
+                                    {dealer.contact_name} • {dealer.state}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Rejected: {new Date(dealer.created_at).toLocaleDateString()}
+                                  </p>
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    {getStatusBadge(dealer.status)}
+                                    {getPaymentStatusBadge(dealer.payment_status)}
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  {getStatusIcon(dealer.status)}
+                                  {dealer.id_card_number && (
+                                    <IdCard className="w-4 h-4 text-blue-600" />
+                                  )}
+                                  {dealer.payment_status === 'completed' && (
+                                    <CreditCard className="w-4 h-4 text-green-600" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        {dealers.filter((d: any) => d.status === 'rejected').length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                            <div className="font-medium">No rejected applications</div>
+                            <div className="text-sm">All applications are in good standing</div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <DealerDetails 
+                    dealer={selectedDealer} 
+                    onUpdateStatus={updateDealerStatus}
+                    onDelete={deleteDealer}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="settings">

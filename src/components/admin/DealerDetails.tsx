@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ExternalLink, CheckCircle, XCircle } from 'lucide-react';
+import { ExternalLink, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Dealer = Database['public']['Tables']['dealers']['Row'];
@@ -14,6 +14,7 @@ type Dealer = Database['public']['Tables']['dealers']['Row'];
 interface DealerDetailsProps {
   dealer: Dealer | null;
   onUpdateStatus?: (dealerId: string, status: string) => void;
+  onDelete?: (dealerId: string) => void;
 }
 
 const DetailItem = ({ label, value }: { label: string; value: string | number | null | undefined }) => (
@@ -23,7 +24,7 @@ const DetailItem = ({ label, value }: { label: string; value: string | number | 
   </div>
 );
 
-export const DealerDetails = ({ dealer, onUpdateStatus }: DealerDetailsProps) => {
+export const DealerDetails = ({ dealer, onUpdateStatus, onDelete }: DealerDetailsProps) => {
   const [idCardUrl, setIdCardUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
 
@@ -150,13 +151,22 @@ export const DealerDetails = ({ dealer, onUpdateStatus }: DealerDetailsProps) =>
             </Button>
           )}
           {dealer.status === 'rejected' && (
-            <Button
-              onClick={() => onUpdateStatus?.(dealer.id, 'verified')}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <CheckCircle className="w-4 h-4 mr-1" />
-              Approve
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => onUpdateStatus?.(dealer.id, 'verified')}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Approve
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => onDelete?.(dealer.id)}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Delete
+              </Button>
+            </div>
           )}
         </div>
 
