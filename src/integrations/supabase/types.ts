@@ -83,6 +83,7 @@ export type Database = {
           features: string[] | null
           fuel_type: string | null
           id: string
+          images: string[] | null
           listing_duration: number
           listing_plan: string
           listing_price: number
@@ -107,6 +108,7 @@ export type Database = {
           features?: string[] | null
           fuel_type?: string | null
           id?: string
+          images?: string[] | null
           listing_duration?: number
           listing_plan?: string
           listing_price?: number
@@ -131,6 +133,7 @@ export type Database = {
           features?: string[] | null
           fuel_type?: string | null
           id?: string
+          images?: string[] | null
           listing_duration?: number
           listing_plan?: string
           listing_price?: number

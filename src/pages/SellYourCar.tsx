@@ -320,8 +320,7 @@ const SellYourCar = () => {
           listing_price: listingPlansEnabled ? (selectedPlanDetails?.listingPrice || 0) : 0,
           listing_duration: durationInDays,
           expires_at: expiresAt.toISOString(),
-          status: listingStatus,
-          images: [] // initially empty — will update with URLs after upload
+          status: listingStatus
         })
         .select()
         .single();
@@ -338,14 +337,19 @@ const SellYourCar = () => {
         const uploadedUrls = await uploadImagesToStorage(createdListing.id, user.id);
 
         if (uploadedUrls.length > 0) {
-          // 3) Update the listing row and save images array (first image is primary by position)
-          const { error: updateError } = await supabase
-            .from('car_listings')
-            .update({ images: uploadedUrls })
-            .eq('id', createdListing.id);
+          // 3) Insert images into car_listing_images table
+          const imageRecords = uploadedUrls.map((url, index) => ({
+            listing_id: createdListing.id,
+            image_url: url,
+            is_primary: index === 0 // First image is primary
+          }));
 
-          if (updateError) {
-            console.error('Error writing images to listing:', updateError);
+          const { error: imageInsertError } = await supabase
+            .from('car_listing_images')
+            .insert(imageRecords);
+
+          if (imageInsertError) {
+            console.error('Error saving images to database:', imageInsertError);
             toast.error('Failed to attach images to the listing');
           }
         }
