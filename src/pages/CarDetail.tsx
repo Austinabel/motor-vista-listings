@@ -39,7 +39,12 @@ const CarDetail = () => {
 
       const { data: carData, error: carError } = await supabase
         .from("car_listings")
-        .select("*")
+        .select(`
+          *,
+          car_listing_images(image_url, is_primary),
+          dealers(name, email, phone),
+          profiles(display_name, email, phone)
+        `)
         .eq("id", id)
         .single();
 
@@ -147,7 +152,8 @@ const CarDetail = () => {
   }
 
   const listedBy = getListedBy();
-  const images: string[] = listing.images || [];
+  const imageRecords = listing.car_listing_images || [];
+  const images: string[] = imageRecords.map((img: any) => img.image_url);
   const currentImage = images[currentImageIndex];
 
   return (
@@ -158,12 +164,16 @@ const CarDetail = () => {
           <div className="lg:col-span-2">
             {/* Image Gallery */}
             <div className="mb-8">
-              {currentImage && (
+              {currentImage ? (
                 <img
                   src={currentImage}
                   alt={`${listing.year} ${listing.make} ${listing.model}`}
                   className="w-full h-96 object-cover rounded-lg mb-4"
                 />
+              ) : (
+                <div className="w-full h-96 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
+                  <span className="text-gray-500">No image available</span>
+                </div>
               )}
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-2">
