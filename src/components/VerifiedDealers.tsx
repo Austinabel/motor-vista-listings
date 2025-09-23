@@ -100,37 +100,35 @@ export const VerifiedDealers = () => {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {dealers.slice(0, visibleDealers).map((dealer: any) => (
-            <Card key={dealer.id} className="hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <div className="relative">
-                <img 
-                  src={getDealerImage(dealer)} 
-                  alt={dealer.business_name}
-                  className="w-full h-32 object-cover rounded-t-lg"
-                />
-                <Badge className="absolute top-1 right-1 bg-green-500 hover:bg-green-600 text-xs">
+            <Card key={dealer.id} className="group relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 border-2 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 animate-fade-in hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute top-2 right-2 z-10">
+                <Badge className="bg-green-500/90 hover:bg-green-600 text-xs backdrop-blur-sm border-0 group-hover:scale-110 transition-transform duration-300">
                   <Shield className="w-2 h-2 mr-1" />
                   Verified
                 </Badge>
               </div>
-              <CardContent className="p-3">
-                <h3 className="font-bold text-sm mb-2 truncate">{dealer.business_name}</h3>
-                <div className="space-y-1 text-xs text-gray-600">
-                  <div className="flex items-center">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    <span className="truncate">{dealer.state}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Star className="w-3 h-3 mr-1 text-yellow-400 fill-current" />
-                      <span>4.{Math.floor(Math.random() * 4) + 5}</span>
+              <CardContent className="relative p-4 h-full flex flex-col">
+                <div className="mb-3">
+                  <h3 className="font-bold text-sm mb-2 truncate group-hover:text-primary transition-colors duration-300">{dealer.business_name}</h3>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <div className="flex items-center group-hover:text-foreground transition-colors duration-300">
+                      <MapPin className="w-3 h-3 mr-2 text-primary" />
+                      <span className="truncate">{dealer.state}</span>
                     </div>
-                    <span className="text-xs bg-gray-100 px-1 py-0.5 rounded">
-                      {dealer.monthly_inventory} cars
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center group-hover:scale-105 transition-transform duration-300">
+                        <Star className="w-3 h-3 mr-1 text-yellow-400 fill-current" />
+                        <span>4.{Math.floor(Math.random() * 4) + 5}</span>
+                      </div>
+                      <span className="text-xs bg-muted px-2 py-1 rounded-full group-hover:bg-primary/10 transition-colors duration-300">
+                        {dealer.monthly_inventory} cars
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <Button 
-                  className="w-full mt-3 bg-red-600 hover:bg-red-700 text-xs py-1"
+                  className="w-full mt-auto bg-primary hover:bg-primary/90 text-xs py-2 group-hover:scale-105 transition-all duration-300 hover:shadow-lg"
                   onClick={() => handleViewDealer(dealer)}
                 >
                   View Dealer
