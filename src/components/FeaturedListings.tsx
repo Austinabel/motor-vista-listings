@@ -23,14 +23,14 @@ export const FeaturedListings = () => {
 
   const fetchCarListings = async () => {
     try {
-      // First fetch car listings
+      // Fetch car listings with images - include pending_review for own listings
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
         .select(`
           *,
           car_listing_images(image_url, is_primary)
         `)
-        .eq('status', 'active')
+        .or(`status.eq.active${user ? `,and(status.eq.pending_review,user_id.eq.${user.id})` : ''}`)
         .order('created_at', { ascending: false })
         .limit(108); // 6 rows * 6 cars * 3 pages
 
@@ -164,10 +164,15 @@ export const FeaturedListings = () => {
                 className="overflow-hidden hover:shadow-lg transition-all duration-500 hover:scale-105 animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="relative">
-                  <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
-                  <FavoriteButton listingId={car.id} className="absolute top-1 right-1 p-1" size="sm" />
-                </div>
+                 <div className="relative">
+                   <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
+                   <FavoriteButton listingId={car.id} className="absolute top-1 right-1 p-1" size="sm" />
+                   {user && car.user_id === user.id && car.status === 'pending_review' && (
+                     <div className="absolute top-1 left-1">
+                       <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Pending Review</span>
+                     </div>
+                   )}
+                 </div>
                 <CardContent className="p-3">
                   <h3 className="font-bold text-sm mb-2 truncate">{car.year} {car.make} {car.model}</h3>
                   <p className="text-lg font-bold text-red-600 mb-1">₦{car.price.toLocaleString()}</p>

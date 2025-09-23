@@ -10,6 +10,7 @@ import { Footer } from "@/components/Footer";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const categories = [
   // Vehicle Types
@@ -47,6 +48,7 @@ const nigerianStates = [
 const CARS_PER_PAGE = 8;
 
 const CarListings = () => {
+  const { user } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,14 +85,14 @@ const CarListings = () => {
     try {
       setLoading(true);
       
-      // Fetch car listings with images
+      // Fetch car listings with images - include pending_review for own listings
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
         .select(`
           *,
           car_listing_images(image_url, is_primary)
         `)
-        .eq('status', 'active')
+        .or(`status.eq.active${user ? `,and(status.eq.pending_review,user_id.eq.${user.id})` : ''}`)
         .order('created_at', { ascending: false });
 
       if (listingsError) {
@@ -577,16 +579,21 @@ const CarListings = () => {
                     {paginatedCars.map((car) => {
                       const listedBy = getListedBy(car);
                       return (
-                        <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
-                          <div className="relative">
-                            <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-40 object-cover" />
-                            <FavoriteButton listingId={car.id} className="absolute top-2 right-2" />
-                            <div className="absolute top-2 left-2">
-                              <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
-                                {getConditionLabel(car.condition)}
-                              </span>
-                            </div>
-                          </div>
+                         <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
+                           <div className="relative">
+                             <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-40 object-cover" />
+                             <FavoriteButton listingId={car.id} className="absolute top-2 right-2" />
+                             <div className="absolute top-2 left-2">
+                               <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                 {getConditionLabel(car.condition)}
+                               </span>
+                               {user && car.user_id === user.id && car.status === 'pending_review' && (
+                                 <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs ml-1">
+                                   Pending Review
+                                 </span>
+                               )}
+                             </div>
+                           </div>
                           <CardContent className="p-3">
                             <h3 className="font-bold text-sm mb-1 line-clamp-2">{car.year} {car.make} {car.model}</h3>
                             <p className="text-lg font-bold text-red-600 mb-1">₦{parseFloat(car.price).toLocaleString()}</p>
