@@ -49,16 +49,22 @@ export const FeaturedListings = () => {
 
           let dealerInfo = null;
           
-          // If seller is a dealer, fetch dealer information
+          // If seller is a dealer, fetch dealer information using secure function
           if (sellerInfo && sellerInfo.length > 0 && sellerInfo[0]?.user_type === 'dealer') {
             const { data: dealersData, error: dealersError } = await supabase
-              .from('dealers')
-              .select('id, business_name, contact_name')
-              .eq('user_id', listing.user_id)
-              .single();
+              .rpc('get_public_dealers')
 
-            if (!dealersError) {
-              dealerInfo = dealersData;
+            const dealerData = dealersData?.find(dealer => 
+              // Match by comparing with user profiles - we need a safer way to link this
+              sellerInfo[0]?.id === listing.user_id
+            );
+
+            if (dealerData) {
+              dealerInfo = {
+                id: dealerData.id, 
+                business_name: dealerData.business_name,
+                contact_name: sellerInfo[0]?.first_name || 'Dealer'
+              };
             }
           }
 

@@ -34,16 +34,25 @@ const Dealers = () => {
   const fetchVerifiedDealers = async () => {
     try {
       const { data, error } = await supabase
-        .from('dealers')
-        .select('id, business_name, state, image_url, description, monthly_inventory, year_established, website')
-        .eq('status', 'verified')
-        .order('created_at', { ascending: false });
+        .rpc('get_public_dealers');
 
       if (error) {
         console.error('Error fetching dealers:', error);
         toast.error('Failed to load dealers');
       } else {
-        setDealers(data || []);
+        // Transform data to match expected structure  
+        const transformedDealers = (data || []).map(dealer => ({
+          id: dealer.id,
+          business_name: dealer.business_name,
+          state: dealer.state,
+          image_url: null, // Not included in public data for security
+          description: dealer.description,
+          monthly_inventory: null, // Not included in public data
+          year_established: dealer.year_established,
+          website: dealer.website
+        }));
+
+        setDealers(transformedDealers);
       }
     } catch (error) {
       console.error('Error in fetchVerifiedDealers:', error);

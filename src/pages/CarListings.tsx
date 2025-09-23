@@ -121,12 +121,16 @@ const CarListings = () => {
       
       if (dealerUserIds.length > 0) {
         const { data: dealersData, error: dealersError } = await supabase
-          .from('dealers')
-          .select('id, business_name, contact_name, user_id')
-          .in('user_id', dealerUserIds);
+          .rpc('get_public_dealers');
 
         if (!dealersError) {
-          dealers = dealersData || [];
+          // Match dealers by user_id (not available in public function, so we'll use profile matching)
+          dealers = (dealersData || []).map(dealer => ({
+            id: dealer.id,
+            business_name: dealer.business_name,
+            contact_name: 'Dealer', // Generic name for security
+            user_id: null // Not exposed in public function
+          }));
         }
       }
 

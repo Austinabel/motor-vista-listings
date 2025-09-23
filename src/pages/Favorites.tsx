@@ -78,12 +78,15 @@ const Favorites = () => {
       
       if (dealerUserIds.length > 0) {
         const { data: dealersData, error: dealersError } = await supabase
-          .from('dealers')
-          .select('id, business_name, contact_name')
-          .in('id', dealerUserIds);
+          .rpc('get_public_dealers');
 
         if (!dealersError) {
-          dealers = dealersData || [];
+          // Match dealers with basic public info only
+          dealers = (dealersData || []).map(dealer => ({
+            id: dealer.id,
+            business_name: dealer.business_name,
+            contact_name: 'Dealer' // Generic name for security
+          }));
         }
       }
 
