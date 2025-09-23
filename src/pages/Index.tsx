@@ -1,5 +1,4 @@
 
-import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { MobileHero } from "@/components/MobileHero";
 import { MobileCarGrid } from "@/components/MobileCarGrid";
@@ -21,7 +20,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <Navigation />
       {/* Mobile Hero with conditional content */}
       {isMobile ? (
         <>
