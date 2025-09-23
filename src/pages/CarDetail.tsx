@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Share2, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, User, Building, LogIn } from "lucide-react";
+import { Share2, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, User, Building, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,15 +15,11 @@ const CarDetail = () => {
   const { user } = useAuth();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
       fetchCarDetails();
-      if (user) {
-        checkIfFavorite();
-      }
     }
   }, [id, user]);
 
@@ -107,25 +103,6 @@ const CarDetail = () => {
     }
   };
 
-  const checkIfFavorite = async () => {
-    try {
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('listing_id', id)
-        .single();
-
-      if (!error && data) {
-        setIsFavorite(true);
-      }
-    } catch (error) {
-      console.error('Error checking favorite status:', error);
-    }
-  };
-
   const getListedBy = () => {
     if (!listing) return { type: 'unknown', name: 'Unknown Seller', phone: null, email: null };
     
@@ -152,50 +129,6 @@ const CarDetail = () => {
       phone: null,
       email: null
     };
-  };
-
-  const handleAddToFavorites = async () => {
-    if (!user) {
-      toast.error('Please sign in to add to favorites');
-      return;
-    }
-
-    try {
-      if (isFavorite) {
-        // Remove from favorites
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('listing_id', id);
-
-        if (error) {
-          console.error('Error removing favorite:', error);
-          toast.error('Failed to remove from favorites');
-          return;
-        }
-
-        setIsFavorite(false);
-        toast.success('Removed from favorites');
-      } else {
-        // Add to favorites
-        const { error } = await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, listing_id: id });
-
-        if (error) {
-          console.error('Error adding favorite:', error);
-          toast.error('Failed to add to favorites');
-          return;
-        }
-
-        setIsFavorite(true);
-        toast.success('Added to favorites');
-      }
-    } catch (error) {
-      console.error('Error handling favorites:', error);
-      toast.error('An error occurred');
-    }
   };
 
   const handleShare = async () => {
@@ -327,15 +260,6 @@ const CarDetail = () => {
                     <p className="text-3xl font-bold text-red-600">₦{parseFloat(listing.price).toLocaleString()}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={handleAddToFavorites}
-                      className={isFavorite ? 'text-red-600 border-red-600' : ''}
-                      disabled={!user}
-                    >
-                      <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
-                    </Button>
                     <Button variant="outline" size="sm" onClick={handleShare}>
                       <Share2 className="h-4 w-4" />
                     </Button>
@@ -346,7 +270,7 @@ const CarDetail = () => {
                   <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-blue-700 text-sm flex items-center gap-2">
                       <LogIn className="h-4 w-4" />
-                      Sign in to contact the seller and add to favorites
+                      Sign in to contact the seller
                     </p>
                   </div>
                 )}

@@ -7,7 +7,6 @@ import { Eye, Filter, User, Building } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
-import { FavoriteButton } from "@/components/FavoriteButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -635,10 +634,9 @@ const CarListings = () => {
                       const listedBy = getListedBy(car);
                       return (
                          <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
-                           <div className="relative">
-                             <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-40 object-cover" />
-                             <FavoriteButton listingId={car.id} className="absolute top-2 right-2" />
-                             <div className="absolute top-2 left-2">
+                            <div className="relative">
+                              <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-40 object-cover" />
+                              <div className="absolute top-2 left-2">
                                <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
                                  {getConditionLabel(car.condition)}
                                </span>

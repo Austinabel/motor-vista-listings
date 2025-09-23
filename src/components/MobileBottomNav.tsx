@@ -31,11 +31,6 @@ export const MobileBottomNav = () => {
       path: "/sell",
     },
     {
-      icon: Heart,
-      label: "Favorites",
-      path: user ? "/profile/favorites" : "/login",
-    },
-    {
       icon: isDealer ? LayoutDashboard : User,
       label: isDealer ? "Dashboard" : "Profile",
       path: user ? (isDealer ? "/dealer/dashboard" : "/profile/edit") : "/login",
