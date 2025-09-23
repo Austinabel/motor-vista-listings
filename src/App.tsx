@@ -32,6 +32,7 @@ import Financing from "./pages/Financing";
 import AdminLogin from "./pages/AdminLogin";
 import AdminRegister from "./pages/AdminRegister";
 import EditProfile from "./pages/EditProfile";
+import Favorites from "./pages/Favorites";
 import Messages from "./pages/Messages";
 import BoostSales from "./pages/BoostSales";
 import DealerDashboard from "./pages/DealerDashboard";
@@ -97,6 +98,7 @@ const AppContent = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/profile/edit" element={<EditProfile />} />
+          <Route path="/profile/favorites" element={<Favorites />} />
           <Route path="/profile/messages" element={<Messages />} />
           <Route path="/profile/boost-sales" element={<BoostSales />} />
           <Route path="/about" element={<About />} />

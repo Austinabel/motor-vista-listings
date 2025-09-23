@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, ChevronDown, LogOut, Edit, MessageSquare, Zap, LayoutDashboard } from "lucide-react";
+import { Car, Menu, X, User, ChevronDown, LogOut, Edit, Heart, MessageSquare, Zap, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -236,6 +236,14 @@ export const Navigation = () => {
                         Edit Profile
                       </Link>
                       <Link
+                        to="/profile/favorites"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <Heart className="h-4 w-4 mr-2" />
+                        Favorites
+                      </Link>
+                      <Link
                         to="/profile/messages"
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
                         onClick={() => setIsUserDropdownOpen(false)}
@@ -320,6 +328,14 @@ export const Navigation = () => {
                       >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Profile
+                      </Link>
+                      <Link
+                        to="/profile/favorites"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                        onClick={() => setIsMobileUserDropdownOpen(false)}
+                      >
+                        <Heart className="h-4 w-4 mr-2" />
+                        Favorites
                       </Link>
                       <Link
                         to="/profile/messages"

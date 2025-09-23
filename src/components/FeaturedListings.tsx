@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, User, Building } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -180,8 +181,9 @@ export const FeaturedListings = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                  <div className="relative">
-                    <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
-                    {user && car.user_id === user.id && car.status === 'pending_review' && (
+                   <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
+                   <FavoriteButton listingId={car.id} className="absolute top-1 right-1 p-1" size="sm" />
+                   {user && car.user_id === user.id && car.status === 'pending_review' && (
                      <div className="absolute top-1 left-1">
                        <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Pending Review</span>
                      </div>
