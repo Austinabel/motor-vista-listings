@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut, Settings, Trash2 } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut, Settings, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DealerDetails } from "@/components/admin/DealerDetails";
@@ -20,14 +19,32 @@ import { FeaturedListingsManager } from "@/components/admin/FeaturedListingsMana
 import { ListingEnhancementManager } from "@/components/admin/ListingEnhancementManager";
 
 const Admin = () => {
-  const [dealers, setDealers] = useState([]);
-  const [carListings, setCarListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [selectedDealer, setSelectedDealer] = useState(null);
   const [selectedListing, setSelectedListing] = useState(null);
   const [listingPlansEnabled, setListingPlansEnabled] = useState(false);
+  
+  // Pagination states
+  const [listingsPagination, setListingsPagination] = useState({
+    pending: { page: 1, total: 0, data: [] },
+    approved: { page: 1, total: 0, data: [] },
+    rejected: { page: 1, total: 0, data: [] }
+  });
+  
+  const [dealersPagination, setDealersPagination] = useState({
+    pending: { page: 1, total: 0, data: [] },
+    approved: { page: 1, total: 0, data: [] },
+    rejected: { page: 1, total: 0, data: [] }
+  });
+  
+  const [loadingStates, setLoadingStates] = useState({
+    listings: { pending: false, approved: false, rejected: false },
+    dealers: { pending: false, approved: false, rejected: false }
+  });
+  
+  const itemsPerPage = 10;
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -37,8 +54,15 @@ const Admin = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      fetchDealers();
-      fetchCarListings();
+      // Load initial data for each category
+      fetchCarListingsByStatus('pending_review', 1);
+      fetchCarListingsByStatus('active', 1);
+      fetchCarListingsByStatus('rejected', 1);
+      
+      fetchDealersByStatus('pending', 1);
+      fetchDealersByStatus('verified', 1);
+      fetchDealersByStatus('rejected', 1);
+      
       fetchListingPlansStatus();
     }
   }, [isAdmin]);
@@ -88,23 +112,121 @@ const Admin = () => {
     }
   };
 
-  const fetchDealers = async () => {
+  const fetchCarListingsByStatus = async (status: string, page: number = 1) => {
+    const statusKey = status === 'pending_review' ? 'pending' : status === 'active' ? 'approved' : 'rejected';
+    
+    setLoadingStates(prev => ({
+      ...prev,
+      listings: { ...prev.listings, [statusKey]: true }
+    }));
+    
     try {
-      const { data, error } = await supabase
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      const { data: listings, error: listingsError, count } = await supabase
+        .from('car_listings')
+        .select(`
+          *,
+          car_listing_images(id, image_url, is_primary)
+        `, { count: 'exact' })
+        .eq('status', status)
+        .range(from, to)
+        .order('created_at', { ascending: false });
+
+      if (listingsError) {
+        console.error('Error fetching car listings:', listingsError);
+        toast.error('Failed to load car listings');
+        return;
+      }
+
+      // Enrich with seller info
+      const enrichedListings = await Promise.all(
+        (listings || []).map(async (listing) => {
+          const { data: sellerInfo } = await supabase
+            .rpc('get_seller_info_for_listing', { listing_user_id: listing.user_id });
+
+          let dealerInfo = null;
+          if (sellerInfo && sellerInfo.length > 0 && sellerInfo[0]?.user_type === 'dealer') {
+            const { data: dealersData } = await supabase
+              .from('dealers')
+              .select('user_id, business_name, contact_name')
+              .eq('user_id', listing.user_id)
+              .single();
+
+            if (dealersData) {
+              dealerInfo = dealersData;
+            }
+          }
+
+          return {
+            ...listing,
+            profiles: sellerInfo && sellerInfo.length > 0 ? sellerInfo[0] : null,
+            dealers: dealerInfo ? [dealerInfo] : []
+          };
+        })
+      );
+
+      setListingsPagination(prev => ({
+        ...prev,
+        [statusKey]: {
+          page,
+          total: count || 0,
+          data: enrichedListings
+        }
+      }));
+    } catch (error) {
+      console.error('Error in fetchCarListingsByStatus:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoadingStates(prev => ({
+        ...prev,
+        listings: { ...prev.listings, [statusKey]: false }
+      }));
+      setLoading(false);
+    }
+  };
+
+  const fetchDealersByStatus = async (status: string, page: number = 1) => {
+    const statusKey = status === 'verified' ? 'approved' : status;
+    
+    setLoadingStates(prev => ({
+      ...prev,
+      dealers: { ...prev.dealers, [statusKey]: true }
+    }));
+    
+    try {
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      const { data, error, count } = await supabase
         .from('dealers')
-        .select('*')
+        .select('*', { count: 'exact' })
+        .eq('status', status)
+        .range(from, to)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching dealers:', error);
         toast.error('Failed to load dealers');
       } else {
-        setDealers(data || []);
+        setDealersPagination(prev => ({
+          ...prev,
+          [statusKey]: {
+            page,
+            total: count || 0,
+            data: data || []
+          }
+        }));
       }
     } catch (error) {
-      console.error('Error in fetchDealers:', error);
+      console.error('Error in fetchDealersByStatus:', error);
       toast.error('An unexpected error occurred');
     } finally {
+      setLoadingStates(prev => ({
+        ...prev,
+        dealers: { ...prev.dealers, [statusKey]: false }
+      }));
       setLoading(false);
     }
   };
@@ -149,57 +271,17 @@ const Admin = () => {
   };
 
   const fetchCarListings = async () => {
-    try {
-      // First fetch car listings with images
-      const { data: listings, error: listingsError } = await supabase
-        .from('car_listings')
-        .select(`
-          *,
-          car_listing_images(id, image_url, is_primary)
-        `)
-        .order('created_at', { ascending: false });
+    // Refresh all listing categories
+    fetchCarListingsByStatus('pending_review', listingsPagination.pending.page);
+    fetchCarListingsByStatus('active', listingsPagination.approved.page);
+    fetchCarListingsByStatus('rejected', listingsPagination.rejected.page);
+  };
 
-      if (listingsError) {
-        console.error('Error fetching car listings:', listingsError);
-        toast.error('Failed to load car listings');
-        return;
-      }
-
-      // For admin access, use secure function to get seller info
-      const enrichedListings = await Promise.all(
-        (listings || []).map(async (listing) => {
-          // Get seller info using secure function (works for active listings)
-          const { data: sellerInfo, error: sellerError } = await supabase
-            .rpc('get_seller_info_for_listing', { listing_user_id: listing.user_id });
-
-          let dealerInfo = null;
-          
-          // If seller is a dealer, fetch dealer information
-          if (sellerInfo && sellerInfo.length > 0 && sellerInfo[0]?.user_type === 'dealer') {
-            const { data: dealersData, error: dealersError } = await supabase
-              .from('dealers')
-              .select('user_id, business_name, contact_name')
-              .eq('user_id', listing.user_id)
-              .single();
-
-            if (!dealersError) {
-              dealerInfo = dealersData;
-            }
-          }
-
-          return {
-            ...listing,
-            profiles: sellerInfo && sellerInfo.length > 0 ? sellerInfo[0] : null,
-            dealers: dealerInfo ? [dealerInfo] : []
-          };
-        })
-      );
-
-      setCarListings(enrichedListings);
-    } catch (error) {
-      console.error('Error in fetchCarListings:', error);
-      toast.error('An unexpected error occurred');
-    }
+  const fetchDealers = async () => {
+    // Refresh all dealer categories
+    fetchDealersByStatus('pending', dealersPagination.pending.page);
+    fetchDealersByStatus('verified', dealersPagination.approved.page);
+    fetchDealersByStatus('rejected', dealersPagination.rejected.page);
   };
 
   const updateDealerStatus = async (dealerId: string, newStatus: string) => {
@@ -301,6 +383,103 @@ const Admin = () => {
     }
   };
 
+  // Pagination helper functions
+  const handleListingPageChange = (status: 'pending' | 'approved' | 'rejected', page: number) => {
+    const statusMap = {
+      pending: 'pending_review',
+      approved: 'active',
+      rejected: 'rejected'
+    };
+    fetchCarListingsByStatus(statusMap[status], page);
+  };
+
+  const handleDealerPageChange = (status: 'pending' | 'approved' | 'rejected', page: number) => {
+    const statusMap = {
+      pending: 'pending',
+      approved: 'verified',
+      rejected: 'rejected'
+    };
+    fetchDealersByStatus(statusMap[status], page);
+  };
+
+  const ListingPagination = ({ status }: { status: 'pending' | 'approved' | 'rejected' }) => {
+    const pagination = listingsPagination[status];
+    const totalPages = Math.ceil(pagination.total / itemsPerPage);
+    const loading = loadingStates.listings[status];
+    
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between py-4">
+        <p className="text-sm text-muted-foreground">
+          Showing {((pagination.page - 1) * itemsPerPage) + 1} to {Math.min(pagination.page * itemsPerPage, pagination.total)} of {pagination.total} results
+        </p>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleListingPageChange(status, pagination.page - 1)}
+            disabled={pagination.page <= 1 || loading}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+          <span className="text-sm">
+            Page {pagination.page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleListingPageChange(status, pagination.page + 1)}
+            disabled={pagination.page >= totalPages || loading}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const DealerPagination = ({ status }: { status: 'pending' | 'approved' | 'rejected' }) => {
+    const pagination = dealersPagination[status];
+    const totalPages = Math.ceil(pagination.total / itemsPerPage);
+    const loading = loadingStates.dealers[status];
+    
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between py-4">
+        <p className="text-sm text-muted-foreground">
+          Showing {((pagination.page - 1) * itemsPerPage) + 1} to {Math.min(pagination.page * itemsPerPage, pagination.total)} of {pagination.total} results
+        </p>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleDealerPageChange(status, pagination.page - 1)}
+            disabled={pagination.page <= 1 || loading}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+          <span className="text-sm">
+            Page {pagination.page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleDealerPageChange(status, pagination.page + 1)}
+            disabled={pagination.page >= totalPages || loading}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   const getListedBy = (listing: any) => {
     if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
       return {
@@ -396,7 +575,8 @@ const Admin = () => {
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">
-              Total Dealers: {dealers.length} | Car Listings: {carListings.length}
+              Total Dealers: {dealersPagination.pending.total + dealersPagination.approved.total + dealersPagination.rejected.total} | 
+              Car Listings: {listingsPagination.pending.total + listingsPagination.approved.total + listingsPagination.rejected.total}
             </div>
             <Button onClick={() => { fetchDealers(); fetchCarListings(); }} variant="outline">
               Refresh
@@ -425,15 +605,15 @@ const Admin = () => {
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="pending" className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Pending Review ({carListings.filter((l: any) => l.status === 'pending_review').length})
+                  Pending Review ({listingsPagination.pending.total})
                 </TabsTrigger>
                 <TabsTrigger value="approved" className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
-                  Approved ({carListings.filter((l: any) => l.status === 'active').length})
+                  Approved ({listingsPagination.approved.total})
                 </TabsTrigger>
                 <TabsTrigger value="rejected" className="flex items-center gap-2">
                   <XCircle className="w-4 h-4" />
-                  Rejected ({carListings.filter((l: any) => l.status === 'rejected').length})
+                  Rejected ({listingsPagination.rejected.total})
                 </TabsTrigger>
               </TabsList>
 
@@ -459,103 +639,110 @@ const Admin = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {carListings
-                          .filter((listing: any) => listing.status === 'pending_review')
-                          .map((listing: any) => {
-                            const listedBy = getListedBy(listing);
-                            return (
-                              <TableRow 
-                                key={listing.id}
-                                className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
-                              >
-                                <TableCell>
-                                  <div>
-                                    <div className="font-semibold">
-                                      {listing.year} {listing.make} {listing.model}
-                                    </div>
-                                    <div className="text-sm text-gray-500 flex items-center">
-                                      <MapPin className="w-3 h-3 mr-1" />
-                                      {listing.location}
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                                  <div className="text-sm text-gray-500">{listing.condition}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-1">
-                                    {listedBy.type === 'dealer' ? (
-                                      <Building className="w-3 h-3 text-blue-600" />
-                                    ) : (
-                                      <User className="w-3 h-3 text-gray-600" />
-                                    )}
-                                    <div>
-                                      <div className="text-sm font-medium">{listedBy.name}</div>
-                                      {listedBy.contact && (
-                                        <div className="text-xs text-gray-500">{listedBy.contact}</div>
-                                      )}
-                                      <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {getPlanBadge(listing.listing_plan)}
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    ₦{listing.listing_price.toLocaleString()}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="text-sm">
-                                    {new Date(listing.created_at).toLocaleDateString()}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        console.log('Opening modal for listing:', listing);
-                                        console.log('Listing images:', listing.car_listing_images);
-                                        setSelectedListing(listing);
-                                      }}
-                                    >
-                                      <Eye className="w-4 h-4 mr-1" />
-                                      Review
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => updateListingStatus(listing.id, 'active')}
-                                      className="bg-green-600 hover:bg-green-700"
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-1" />
-                                      Approve
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      onClick={() => updateListingStatus(listing.id, 'rejected')}
-                                    >
-                                      <XCircle className="w-4 h-4 mr-1" />
-                                      Reject
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        {carListings.filter((l: any) => l.status === 'pending_review').length === 0 && (
+                        {loadingStates.listings.pending ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                              <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                              <div className="font-medium">No pending listings</div>
-                              <div className="text-sm">All listings have been reviewed</div>
+                            <TableCell colSpan={6} className="text-center py-8">
+                              Loading pending listings...
                             </TableCell>
                           </TableRow>
+                        ) : (
+                          <>
+                            {listingsPagination.pending.data.map((listing: any) => {
+                              const listedBy = getListedBy(listing);
+                              return (
+                                <TableRow 
+                                  key={listing.id}
+                                  className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                                >
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-semibold">
+                                        {listing.year} {listing.make} {listing.model}
+                                      </div>
+                                      <div className="text-sm text-gray-500 flex items-center">
+                                        <MapPin className="w-3 h-3 mr-1" />
+                                        {listing.location}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                                    <div className="text-sm text-gray-500">{listing.condition}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-1">
+                                      {listedBy.type === 'dealer' ? (
+                                        <Building className="w-3 h-3 text-blue-600" />
+                                      ) : (
+                                        <User className="w-3 h-3 text-gray-600" />
+                                      )}
+                                      <div>
+                                        <div className="text-sm font-medium">{listedBy.name}</div>
+                                        {listedBy.contact && (
+                                          <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                        )}
+                                        <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {getPlanBadge(listing.listing_plan)}
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      ₦{listing.listing_price.toLocaleString()}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">
+                                      {new Date(listing.created_at).toLocaleDateString()}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          setSelectedListing(listing);
+                                        }}
+                                      >
+                                        <Eye className="w-4 h-4 mr-1" />
+                                        Review
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => updateListingStatus(listing.id, 'active')}
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Approve
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => updateListingStatus(listing.id, 'rejected')}
+                                      >
+                                        <XCircle className="w-4 h-4 mr-1" />
+                                        Reject
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                            {listingsPagination.pending.data.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                                  <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                  <div className="font-medium">No pending listings</div>
+                                  <div className="text-sm">All listings have been reviewed</div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </>
                         )}
                       </TableBody>
                     </Table>
+                    <ListingPagination status="pending" />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -582,101 +769,108 @@ const Admin = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {carListings
-                          .filter((listing: any) => listing.status === 'active')
-                          .map((listing: any) => {
-                            const listedBy = getListedBy(listing);
-                            return (
-                              <TableRow 
-                                key={listing.id}
-                                className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
-                              >
-                                <TableCell>
-                                  <div>
-                                    <div className="font-semibold">
-                                      {listing.year} {listing.make} {listing.model}
-                                    </div>
-                                    <div className="text-sm text-gray-500 flex items-center">
-                                      <MapPin className="w-3 h-3 mr-1" />
-                                      {listing.location}
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                                  <div className="text-sm text-gray-500">{listing.condition}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-1">
-                                    {listedBy.type === 'dealer' ? (
-                                      <Building className="w-3 h-3 text-blue-600" />
-                                    ) : (
-                                      <User className="w-3 h-3 text-gray-600" />
-                                    )}
-                                    <div>
-                                      <div className="text-sm font-medium">{listedBy.name}</div>
-                                      {listedBy.contact && (
-                                        <div className="text-xs text-gray-500">{listedBy.contact}</div>
-                                      )}
-                                      <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {getPlanBadge(listing.listing_plan)}
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    ₦{listing.listing_price.toLocaleString()}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="text-sm">
-                                    {new Date(listing.created_at).toLocaleDateString()}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        console.log('Opening modal for listing:', listing);
-                                        console.log('Listing images:', listing.car_listing_images);
-                                        setSelectedListing(listing);
-                                      }}
-                                    >
-                                      <Eye className="w-4 h-4 mr-1" />
-                                      View
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => window.open(`/cars/${listing.id}`, '_blank')}
-                                    >
-                                      Public View
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      onClick={() => updateListingStatus(listing.id, 'rejected')}
-                                    >
-                                      Reject
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        {carListings.filter((l: any) => l.status === 'active').length === 0 && (
+                        {loadingStates.listings.approved ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                              <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                              <div className="font-medium">No approved listings</div>
-                              <div className="text-sm">No active listings found</div>
+                            <TableCell colSpan={6} className="text-center py-8">
+                              Loading approved listings...
                             </TableCell>
                           </TableRow>
+                        ) : (
+                          <>
+                            {listingsPagination.approved.data.map((listing: any) => {
+                              const listedBy = getListedBy(listing);
+                              return (
+                                <TableRow 
+                                  key={listing.id}
+                                  className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                                >
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-semibold">
+                                        {listing.year} {listing.make} {listing.model}
+                                      </div>
+                                      <div className="text-sm text-gray-500 flex items-center">
+                                        <MapPin className="w-3 h-3 mr-1" />
+                                        {listing.location}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                                    <div className="text-sm text-gray-500">{listing.condition}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-1">
+                                      {listedBy.type === 'dealer' ? (
+                                        <Building className="w-3 h-3 text-blue-600" />
+                                      ) : (
+                                        <User className="w-3 h-3 text-gray-600" />
+                                      )}
+                                      <div>
+                                        <div className="text-sm font-medium">{listedBy.name}</div>
+                                        {listedBy.contact && (
+                                          <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                        )}
+                                        <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {getPlanBadge(listing.listing_plan)}
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      ₦{listing.listing_price.toLocaleString()}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">
+                                      {new Date(listing.created_at).toLocaleDateString()}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          setSelectedListing(listing);
+                                        }}
+                                      >
+                                        <Eye className="w-4 h-4 mr-1" />
+                                        View
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => window.open(`/cars/${listing.id}`, '_blank')}
+                                      >
+                                        Public View
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => updateListingStatus(listing.id, 'rejected')}
+                                      >
+                                        Reject
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                            {listingsPagination.approved.data.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                                  <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                  <div className="font-medium">No approved listings</div>
+                                  <div className="text-sm">No active listings found</div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </>
                         )}
                       </TableBody>
                     </Table>
+                    <ListingPagination status="approved" />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -703,103 +897,110 @@ const Admin = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {carListings
-                          .filter((listing: any) => listing.status === 'rejected')
-                          .map((listing: any) => {
-                            const listedBy = getListedBy(listing);
-                            return (
-                              <TableRow 
-                                key={listing.id}
-                                className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
-                              >
-                                <TableCell>
-                                  <div>
-                                    <div className="font-semibold">
-                                      {listing.year} {listing.make} {listing.model}
-                                    </div>
-                                    <div className="text-sm text-gray-500 flex items-center">
-                                      <MapPin className="w-3 h-3 mr-1" />
-                                      {listing.location}
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                                  <div className="text-sm text-gray-500">{listing.condition}</div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-1">
-                                    {listedBy.type === 'dealer' ? (
-                                      <Building className="w-3 h-3 text-blue-600" />
-                                    ) : (
-                                      <User className="w-3 h-3 text-gray-600" />
-                                    )}
-                                    <div>
-                                      <div className="text-sm font-medium">{listedBy.name}</div>
-                                      {listedBy.contact && (
-                                        <div className="text-xs text-gray-500">{listedBy.contact}</div>
-                                      )}
-                                      <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {getPlanBadge(listing.listing_plan)}
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    ₦{listing.listing_price.toLocaleString()}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="text-sm">
-                                    {new Date(listing.created_at).toLocaleDateString()}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        console.log('Opening modal for listing:', listing);
-                                        console.log('Listing images:', listing.car_listing_images);
-                                        setSelectedListing(listing);
-                                      }}
-                                    >
-                                      <Eye className="w-4 h-4 mr-1" />
-                                      Review
-                                    </Button>
-                                     <Button
-                                       size="sm"
-                                       onClick={() => updateListingStatus(listing.id, 'active')}
-                                       className="bg-green-600 hover:bg-green-700"
-                                     >
-                                       <CheckCircle className="w-4 h-4 mr-1" />
-                                       Approve
-                                     </Button>
-                                     <Button
-                                       size="sm"
-                                       variant="destructive"
-                                       onClick={() => deleteListing(listing.id)}
-                                     >
-                                       <Trash2 className="w-4 h-4 mr-1" />
-                                       Delete
-                                     </Button>
-                                   </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        {carListings.filter((l: any) => l.status === 'rejected').length === 0 && (
+                        {loadingStates.listings.rejected ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                              <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                              <div className="font-medium">No rejected listings</div>
-                              <div className="text-sm">All listings are in good standing</div>
+                            <TableCell colSpan={6} className="text-center py-8">
+                              Loading rejected listings...
                             </TableCell>
                           </TableRow>
+                        ) : (
+                          <>
+                            {listingsPagination.rejected.data.map((listing: any) => {
+                              const listedBy = getListedBy(listing);
+                              return (
+                                <TableRow 
+                                  key={listing.id}
+                                  className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                                >
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-semibold">
+                                        {listing.year} {listing.make} {listing.model}
+                                      </div>
+                                      <div className="text-sm text-gray-500 flex items-center">
+                                        <MapPin className="w-3 h-3 mr-1" />
+                                        {listing.location}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
+                                    <div className="text-sm text-gray-500">{listing.condition}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-1">
+                                      {listedBy.type === 'dealer' ? (
+                                        <Building className="w-3 h-3 text-blue-600" />
+                                      ) : (
+                                        <User className="w-3 h-3 text-gray-600" />
+                                      )}
+                                      <div>
+                                        <div className="text-sm font-medium">{listedBy.name}</div>
+                                        {listedBy.contact && (
+                                          <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                        )}
+                                        <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {getPlanBadge(listing.listing_plan)}
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      ₦{listing.listing_price.toLocaleString()}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">
+                                      {new Date(listing.created_at).toLocaleDateString()}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          setSelectedListing(listing);
+                                        }}
+                                      >
+                                        <Eye className="w-4 h-4 mr-1" />
+                                        Review
+                                      </Button>
+                                       <Button
+                                         size="sm"
+                                         onClick={() => updateListingStatus(listing.id, 'active')}
+                                         className="bg-green-600 hover:bg-green-700"
+                                       >
+                                         <CheckCircle className="w-4 h-4 mr-1" />
+                                         Approve
+                                       </Button>
+                                       <Button
+                                         size="sm"
+                                         variant="destructive"
+                                         onClick={() => deleteListing(listing.id)}
+                                       >
+                                         <Trash2 className="w-4 h-4 mr-1" />
+                                         Delete
+                                       </Button>
+                                     </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                            {listingsPagination.rejected.data.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                                  <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                  <div className="font-medium">No rejected listings</div>
+                                  <div className="text-sm">All listings are in good standing</div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </>
                         )}
                       </TableBody>
                     </Table>
+                    <ListingPagination status="rejected" />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -819,15 +1020,15 @@ const Admin = () => {
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="pending" className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Pending ({dealers.filter((d: any) => d.status === 'pending').length})
+                  Pending ({dealersPagination.pending.total})
                 </TabsTrigger>
                 <TabsTrigger value="approved" className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
-                  Verified ({dealers.filter((d: any) => d.status === 'verified').length})
+                  Verified ({dealersPagination.approved.total})
                 </TabsTrigger>
                 <TabsTrigger value="rejected" className="flex items-center gap-2">
                   <XCircle className="w-4 h-4" />
-                  Rejected ({dealers.filter((d: any) => d.status === 'rejected').length})
+                  Rejected ({dealersPagination.rejected.total})
                 </TabsTrigger>
               </TabsList>
 
@@ -843,54 +1044,59 @@ const Admin = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {dealers
-                          .filter((dealer: any) => dealer.status === 'pending')
-                          .map((dealer: any) => (
-                            <div
-                              key={dealer.id}
-                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                                selectedDealer?.id === dealer.id
-                                  ? 'border-red-500 bg-red-50'
-                                  : 'border-gray-200 hover:border-gray-300'
-                              }`}
-                              onClick={() => setSelectedDealer(dealer)}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900">
-                                    {dealer.business_name}
-                                  </h3>
-                                  <p className="text-sm text-gray-600">
-                                    {dealer.contact_name} • {dealer.state}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Applied: {new Date(dealer.created_at).toLocaleDateString()}
-                                  </p>
-                                  <div className="flex items-center space-x-2 mt-2">
-                                    {getStatusBadge(dealer.status)}
-                                    {getPaymentStatusBadge(dealer.payment_status)}
+                        {loadingStates.dealers.pending ? (
+                          <div className="text-center py-8">Loading pending dealers...</div>
+                        ) : (
+                          <>
+                            {dealersPagination.pending.data.map((dealer: any) => (
+                              <div
+                                key={dealer.id}
+                                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                  selectedDealer?.id === dealer.id
+                                    ? 'border-red-500 bg-red-50'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                                onClick={() => setSelectedDealer(dealer)}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {dealer.business_name}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                      {dealer.contact_name} • {dealer.state}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Applied: {new Date(dealer.created_at).toLocaleDateString()}
+                                    </p>
+                                    <div className="flex items-center space-x-2 mt-2">
+                                      {getStatusBadge(dealer.status)}
+                                      {getPaymentStatusBadge(dealer.payment_status)}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    {getStatusIcon(dealer.status)}
+                                    {dealer.id_card_number && (
+                                      <IdCard className="w-4 h-4 text-blue-600" />
+                                    )}
+                                    {dealer.payment_status === 'completed' && (
+                                      <CreditCard className="w-4 h-4 text-green-600" />
+                                    )}
                                   </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  {getStatusIcon(dealer.status)}
-                                  {dealer.id_card_number && (
-                                    <IdCard className="w-4 h-4 text-blue-600" />
-                                  )}
-                                  {dealer.payment_status === 'completed' && (
-                                    <CreditCard className="w-4 h-4 text-green-600" />
-                                  )}
-                                </div>
                               </div>
-                            </div>
-                          ))}
-                        {dealers.filter((d: any) => d.status === 'pending').length === 0 && (
-                          <div className="text-center py-8 text-gray-500">
-                            <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                            <div className="font-medium">No pending applications</div>
-                            <div className="text-sm">All applications have been reviewed</div>
-                          </div>
+                            ))}
+                            {dealersPagination.pending.data.length === 0 && (
+                              <div className="text-center py-8 text-gray-500">
+                                <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                <div className="font-medium">No pending applications</div>
+                                <div className="text-sm">All applications have been reviewed</div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
+                      <DealerPagination status="pending" />
                     </CardContent>
                   </Card>
                   <DealerDetails 
@@ -913,54 +1119,59 @@ const Admin = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {dealers
-                          .filter((dealer: any) => dealer.status === 'verified')
-                          .map((dealer: any) => (
-                            <div
-                              key={dealer.id}
-                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                                selectedDealer?.id === dealer.id
-                                  ? 'border-red-500 bg-red-50'
-                                  : 'border-gray-200 hover:border-gray-300'
-                              }`}
-                              onClick={() => setSelectedDealer(dealer)}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900">
-                                    {dealer.business_name}
-                                  </h3>
-                                  <p className="text-sm text-gray-600">
-                                    {dealer.contact_name} • {dealer.state}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Verified: {new Date(dealer.created_at).toLocaleDateString()}
-                                  </p>
-                                  <div className="flex items-center space-x-2 mt-2">
-                                    {getStatusBadge(dealer.status)}
-                                    {getPaymentStatusBadge(dealer.payment_status)}
+                        {loadingStates.dealers.approved ? (
+                          <div className="text-center py-8">Loading verified dealers...</div>
+                        ) : (
+                          <>
+                            {dealersPagination.approved.data.map((dealer: any) => (
+                              <div
+                                key={dealer.id}
+                                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                  selectedDealer?.id === dealer.id
+                                    ? 'border-red-500 bg-red-50'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                                onClick={() => setSelectedDealer(dealer)}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {dealer.business_name}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                      {dealer.contact_name} • {dealer.state}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Verified: {new Date(dealer.created_at).toLocaleDateString()}
+                                    </p>
+                                    <div className="flex items-center space-x-2 mt-2">
+                                      {getStatusBadge(dealer.status)}
+                                      {getPaymentStatusBadge(dealer.payment_status)}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    {getStatusIcon(dealer.status)}
+                                    {dealer.id_card_number && (
+                                      <IdCard className="w-4 h-4 text-blue-600" />
+                                    )}
+                                    {dealer.payment_status === 'completed' && (
+                                      <CreditCard className="w-4 h-4 text-green-600" />
+                                    )}
                                   </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  {getStatusIcon(dealer.status)}
-                                  {dealer.id_card_number && (
-                                    <IdCard className="w-4 h-4 text-blue-600" />
-                                  )}
-                                  {dealer.payment_status === 'completed' && (
-                                    <CreditCard className="w-4 h-4 text-green-600" />
-                                  )}
-                                </div>
                               </div>
-                            </div>
-                          ))}
-                        {dealers.filter((d: any) => d.status === 'verified').length === 0 && (
-                          <div className="text-center py-8 text-gray-500">
-                            <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                            <div className="font-medium">No verified dealers</div>
-                            <div className="text-sm">No dealers have been verified yet</div>
-                          </div>
+                            ))}
+                            {dealersPagination.approved.data.length === 0 && (
+                              <div className="text-center py-8 text-gray-500">
+                                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                <div className="font-medium">No verified dealers</div>
+                                <div className="text-sm">No dealers have been verified yet</div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
+                      <DealerPagination status="approved" />
                     </CardContent>
                   </Card>
                   <DealerDetails 
@@ -983,54 +1194,59 @@ const Admin = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {dealers
-                          .filter((dealer: any) => dealer.status === 'rejected')
-                          .map((dealer: any) => (
-                            <div
-                              key={dealer.id}
-                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                                selectedDealer?.id === dealer.id
-                                  ? 'border-red-500 bg-red-50'
-                                  : 'border-gray-200 hover:border-gray-300'
-                              }`}
-                              onClick={() => setSelectedDealer(dealer)}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900">
-                                    {dealer.business_name}
-                                  </h3>
-                                  <p className="text-sm text-gray-600">
-                                    {dealer.contact_name} • {dealer.state}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Rejected: {new Date(dealer.created_at).toLocaleDateString()}
-                                  </p>
-                                  <div className="flex items-center space-x-2 mt-2">
-                                    {getStatusBadge(dealer.status)}
-                                    {getPaymentStatusBadge(dealer.payment_status)}
+                        {loadingStates.dealers.rejected ? (
+                          <div className="text-center py-8">Loading rejected dealers...</div>
+                        ) : (
+                          <>
+                            {dealersPagination.rejected.data.map((dealer: any) => (
+                              <div
+                                key={dealer.id}
+                                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                  selectedDealer?.id === dealer.id
+                                    ? 'border-red-500 bg-red-50'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                                onClick={() => setSelectedDealer(dealer)}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {dealer.business_name}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                      {dealer.contact_name} • {dealer.state}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Rejected: {new Date(dealer.created_at).toLocaleDateString()}
+                                    </p>
+                                    <div className="flex items-center space-x-2 mt-2">
+                                      {getStatusBadge(dealer.status)}
+                                      {getPaymentStatusBadge(dealer.payment_status)}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    {getStatusIcon(dealer.status)}
+                                    {dealer.id_card_number && (
+                                      <IdCard className="w-4 h-4 text-blue-600" />
+                                    )}
+                                    {dealer.payment_status === 'completed' && (
+                                      <CreditCard className="w-4 h-4 text-green-600" />
+                                    )}
                                   </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  {getStatusIcon(dealer.status)}
-                                  {dealer.id_card_number && (
-                                    <IdCard className="w-4 h-4 text-blue-600" />
-                                  )}
-                                  {dealer.payment_status === 'completed' && (
-                                    <CreditCard className="w-4 h-4 text-green-600" />
-                                  )}
-                                </div>
                               </div>
-                            </div>
-                          ))}
-                        {dealers.filter((d: any) => d.status === 'rejected').length === 0 && (
-                          <div className="text-center py-8 text-gray-500">
-                            <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                            <div className="font-medium">No rejected applications</div>
-                            <div className="text-sm">All applications are in good standing</div>
-                          </div>
+                            ))}
+                            {dealersPagination.rejected.data.length === 0 && (
+                              <div className="text-center py-8 text-gray-500">
+                                <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                <div className="font-medium">No rejected applications</div>
+                                <div className="text-sm">All applications are in good standing</div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
+                      <DealerPagination status="rejected" />
                     </CardContent>
                   </Card>
                   <DealerDetails 
@@ -1110,7 +1326,7 @@ const Admin = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Pending Dealers</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {dealers.filter(d => d.status === 'pending').length}
+                        {dealersPagination.pending.total}
                       </p>
                     </div>
                   </div>
@@ -1124,7 +1340,7 @@ const Admin = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Verified Dealers</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {dealers.filter(d => d.status === 'verified').length}
+                        {dealersPagination.approved.total}
                       </p>
                     </div>
                   </div>
@@ -1138,7 +1354,7 @@ const Admin = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Pending Listings</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {carListings.filter(l => l.status === 'pending').length}
+                        {listingsPagination.pending.total}
                       </p>
                     </div>
                   </div>
@@ -1152,7 +1368,7 @@ const Admin = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Approved Listings</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {carListings.filter(l => l.status === 'approved').length}
+                        {listingsPagination.approved.total}
                       </p>
                     </div>
                   </div>
