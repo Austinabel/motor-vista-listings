@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Star, TrendingUp, Users, Car, Search } from "lucide-react";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Crown, Star, TrendingUp, Users, Car, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,61 +21,82 @@ export const FeaturedListingsManager = () => {
   const [dealerSearchTerm, setDealerSearchTerm] = useState("");
   const [carSearching, setCarSearching] = useState(false);
   const [dealerSearching, setDealerSearching] = useState(false);
+  
+  // Pagination states
+  const [carPage, setCarPage] = useState(1);
+  const [dealerPage, setDealerPage] = useState(1);
+  const [carTotal, setCarTotal] = useState(0);
+  const [dealerTotal, setDealerTotal] = useState(0);
+  const itemsPerPage = 10;
 
-  const searchCarListings = async () => {
+  const searchCarListings = useCallback(async (page = 1) => {
     if (!carSearchTerm.trim()) {
       setCarSearchResults([]);
+      setCarTotal(0);
       return;
     }
     
     setCarSearching(true);
     try {
-      const { data: listings, error } = await supabase
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      const { data: listings, error, count } = await supabase
         .from('car_listings')
         .select(`
           id, make, model, year, price, location, status, created_at,
           is_featured, is_top_listing, is_boosted, featured_until, boosted_until,
           boost_approved_by, boost_approved_at
-        `)
-        .or(`make.ilike.%${carSearchTerm}%,model.ilike.%${carSearchTerm}%,year.ilike.%${carSearchTerm}%,id.ilike.%${carSearchTerm}%`)
+        `, { count: 'exact' })
+        .or(`make.ilike.%${carSearchTerm}%,model.ilike.%${carSearchTerm}%,year.ilike.%${carSearchTerm}%,id::text.ilike.%${carSearchTerm}%`)
+        .range(from, to)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setCarSearchResults(listings || []);
+      setCarTotal(count || 0);
+      setCarPage(page);
     } catch (error) {
       console.error('Error searching car listings:', error);
       toast.error('Failed to search car listings');
     } finally {
       setCarSearching(false);
     }
-  };
+  }, [carSearchTerm]);
 
-  const searchDealers = async () => {
+  const searchDealers = useCallback(async (page = 1) => {
     if (!dealerSearchTerm.trim()) {
       setDealerSearchResults([]);
+      setDealerTotal(0);
       return;
     }
     
     setDealerSearching(true);
     try {
-      const { data: dealers, error } = await supabase
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      const { data: dealers, error, count } = await supabase
         .from('dealers')
         .select(`
           id, business_name, contact_name, email, state, status, created_at,
           is_featured, featured_until
-        `)
-        .or(`business_name.ilike.%${dealerSearchTerm}%,contact_name.ilike.%${dealerSearchTerm}%,email.ilike.%${dealerSearchTerm}%,id.ilike.%${dealerSearchTerm}%`)
+        `, { count: 'exact' })
+        .or(`business_name.ilike.%${dealerSearchTerm}%,contact_name.ilike.%${dealerSearchTerm}%,email.ilike.%${dealerSearchTerm}%,id::text.ilike.%${dealerSearchTerm}%`)
+        .range(from, to)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setDealerSearchResults(dealers || []);
+      setDealerTotal(count || 0);
+      setDealerPage(page);
     } catch (error) {
       console.error('Error searching dealers:', error);
       toast.error('Failed to search dealers');
     } finally {
       setDealerSearching(false);
     }
-  };
+  }, [dealerSearchTerm]);
 
   const updateCarListing = async (id: string, updates: any) => {
     if (!user) return;
@@ -96,7 +118,7 @@ export const FeaturedListingsManager = () => {
 
       toast.success('Car listing updated successfully');
       // Refresh search results
-      searchCarListings();
+      searchCarListings(carPage);
     } catch (error) {
       console.error('Error updating car listing:', error);
       toast.error('Failed to update car listing');
@@ -117,7 +139,7 @@ export const FeaturedListingsManager = () => {
 
       toast.success('Dealer updated successfully');
       // Refresh search results
-      searchDealers();
+      searchDealers(dealerPage);
     } catch (error) {
       console.error('Error updating dealer:', error);
       toast.error('Failed to update dealer');
@@ -137,16 +159,157 @@ export const FeaturedListingsManager = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Debounced search effect for live search
+  useEffect(() => {
+    if (!carSearchTerm.trim()) {
+      setCarSearchResults([]);
+      setCarTotal(0);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      searchCarListings(1);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [carSearchTerm, searchCarListings]);
+
+  useEffect(() => {
+    if (!dealerSearchTerm.trim()) {
+      setDealerSearchResults([]);
+      setDealerTotal(0);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      searchDealers(1);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [dealerSearchTerm, searchDealers]);
+
   const handleCarSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      searchCarListings();
+      searchCarListings(1);
     }
   };
 
   const handleDealerSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      searchDealers();
+      searchDealers(1);
     }
+  };
+
+  const CarPagination = () => {
+    const totalPages = Math.ceil(carTotal / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Showing {((carPage - 1) * itemsPerPage) + 1} to {Math.min(carPage * itemsPerPage, carTotal)} of {carTotal} results
+        </p>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => searchCarListings(carPage - 1)}
+                disabled={carPage <= 1 || carSearching}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+            </PaginationItem>
+            
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <PaginationItem key={pageNum}>
+                  <Button
+                    variant={carPage === pageNum ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => searchCarListings(pageNum)}
+                    disabled={carSearching}
+                  >
+                    {pageNum}
+                  </Button>
+                </PaginationItem>
+              );
+            })}
+            
+            <PaginationItem>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => searchCarListings(carPage + 1)}
+                disabled={carPage >= totalPages || carSearching}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    );
+  };
+
+  const DealerPagination = () => {
+    const totalPages = Math.ceil(dealerTotal / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Showing {((dealerPage - 1) * itemsPerPage) + 1} to {Math.min(dealerPage * itemsPerPage, dealerTotal)} of {dealerTotal} results
+        </p>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => searchDealers(dealerPage - 1)}
+                disabled={dealerPage <= 1 || dealerSearching}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+            </PaginationItem>
+            
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <PaginationItem key={pageNum}>
+                  <Button
+                    variant={dealerPage === pageNum ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => searchDealers(pageNum)}
+                    disabled={dealerSearching}
+                  >
+                    {pageNum}
+                  </Button>
+                </PaginationItem>
+              );
+            })}
+            
+            <PaginationItem>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => searchDealers(dealerPage + 1)}
+                disabled={dealerPage >= totalPages || dealerSearching}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    );
   };
 
   return (
@@ -188,7 +351,7 @@ export const FeaturedListingsManager = () => {
                     />
                   </div>
                   <Button 
-                    onClick={searchCarListings} 
+                    onClick={() => searchCarListings(1)} 
                     disabled={carSearching || !carSearchTerm.trim()}
                   >
                     {carSearching ? "Searching..." : "Search"}
@@ -199,9 +362,12 @@ export const FeaturedListingsManager = () => {
               {/* Car Search Results */}
               {carSearchResults.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">
-                    Search Results ({carSearchResults.length})
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">
+                      Search Results
+                    </h3>
+                  </div>
+                  <CarPagination />
                   {carSearchResults.map((listing) => (
                     <Card key={listing.id} className="border">
                       <CardContent className="p-4">
@@ -286,6 +452,7 @@ export const FeaturedListingsManager = () => {
                       </CardContent>
                     </Card>
                   ))}
+                  <CarPagination />
                 </div>
               )}
 
@@ -315,7 +482,7 @@ export const FeaturedListingsManager = () => {
                     />
                   </div>
                   <Button 
-                    onClick={searchDealers} 
+                    onClick={() => searchDealers(1)} 
                     disabled={dealerSearching || !dealerSearchTerm.trim()}
                   >
                     {dealerSearching ? "Searching..." : "Search"}
@@ -326,9 +493,12 @@ export const FeaturedListingsManager = () => {
               {/* Dealer Search Results */}
               {dealerSearchResults.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">
-                    Search Results ({dealerSearchResults.length})
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">
+                      Search Results
+                    </h3>
+                  </div>
+                  <DealerPagination />
                   {dealerSearchResults.map((dealer) => (
                     <Card key={dealer.id} className="border">
                       <CardContent className="p-4">
@@ -368,6 +538,7 @@ export const FeaturedListingsManager = () => {
                       </CardContent>
                     </Card>
                   ))}
+                  <DealerPagination />
                 </div>
               )}
 
