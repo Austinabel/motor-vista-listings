@@ -45,17 +45,24 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, lastAuthEvent, clearLastAuthEvent, loading: authLoading } = useAuth();
+  const { user, isAdmin, lastAuthEvent, clearLastAuthEvent, loading: authLoading } = useAuth();
   const { dealerInfo, loading: dealerLoading } = useDealer();
 
   useEffect(() => {
-    if (authLoading || dealerLoading || !user) return;
+    if (authLoading || dealerLoading || !user || isAdmin === null) return;
 
     const onAuthPage = ['/login', '/register'].includes(location.pathname);
+    const onAdminAuthPage = ['/admin/login', '/admin/register'].includes(location.pathname);
     const justSignedIn = lastAuthEvent === 'SIGNED_IN';
 
     if (justSignedIn) {
       clearLastAuthEvent();
+
+      // Check if user came from admin login and is admin
+      if (isAdmin && onAdminAuthPage) {
+        navigate('/admin', { replace: true });
+        return;
+      }
 
       const userType = user.user_metadata?.user_type;
       if (userType === 'dealer') {
@@ -68,11 +75,11 @@ const AppContent = () => {
         // Redirect regular users to homepage after login
         navigate('/', { replace: true });
       }
-    } else if (onAuthPage) {
-      // Redirect to homepage if user is already logged in but on auth page
+    } else if (onAuthPage && !onAdminAuthPage) {
+      // Redirect to homepage if user is already logged in but on regular auth page
       navigate('/', { replace: true });
     }
-  }, [user, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, navigate, clearLastAuthEvent]);
+  }, [user, isAdmin, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, navigate, clearLastAuthEvent]);
 
   const isHomepage = location.pathname === "/";
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/forgot-password";

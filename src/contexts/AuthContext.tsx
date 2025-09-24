@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAdmin: boolean | null;
   lastAuthEvent: AuthChangeEvent | null;
   clearLastAuthEvent: () => void;
   signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>;
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [lastAuthEvent, setLastAuthEvent] = useState<AuthChangeEvent | null>(null);
 
   useEffect(() => {
@@ -41,6 +43,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         if (event === 'SIGNED_IN') {
           setLastAuthEvent(event);
+          // Check admin status after sign in
+          if (session?.user) {
+            checkAdminStatus(session.user.id);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setIsAdmin(null);
         }
       }
     );
@@ -50,10 +58,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      // Check admin status for existing session
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data: isUserAdmin, error } = await supabase
+        .rpc('is_admin', { user_id: userId });
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+        return;
+      }
+      
+      setIsAdmin(isUserAdmin || false);
+    } catch (error) {
+      console.error('Error in checkAdminStatus:', error);
+      setIsAdmin(false);
+    }
+  };
 
   const clearLastAuthEvent = () => setLastAuthEvent(null);
 
@@ -113,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     loading,
+    isAdmin,
     lastAuthEvent,
     clearLastAuthEvent,
     signUp,
