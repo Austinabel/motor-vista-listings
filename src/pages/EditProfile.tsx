@@ -52,7 +52,7 @@ const EditProfile = () => {
       setLastName(profile.last_name || "");
       setPhone(profile.phone || "");
       setUserType(profile.user_type || "buyer");
-      setAvatarUrl(profile.avatar_url || "");
+      setAvatarUrl(profile?.avatar_url || "");
     }
   }, [profile]);
 

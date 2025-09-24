@@ -37,6 +37,8 @@ import Favorites from "./pages/Favorites";
 import Messages from "./pages/Messages";
 import BoostSales from "./pages/BoostSales";
 import DealerDashboard from "./pages/DealerDashboard";
+import AccountSettings from "./pages/AccountSettings";
+import Feedback from "./pages/Feedback";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -107,8 +109,10 @@ const AppContent = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/profile/favorites" element={<Favorites />} />
-          <Route path="/profile/messages" element={<Messages />} />
+          <Route path="/messages" element={<Messages />} />
           <Route path="/profile/boost-sales" element={<BoostSales />} />
+          <Route path="/account/settings" element={<AccountSettings />} />
+          <Route path="/feedback" element={<Feedback />} />
           <Route path="/about" element={<About />} />
           <Route path="/help" element={<Help />} />
           <Route path="/contact" element={<Contact />} />

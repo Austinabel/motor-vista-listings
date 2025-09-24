@@ -471,14 +471,15 @@ const CarDetail = () => {
                         {listedBy.phone ? 'Call Seller' : 'No Phone Available'}
                       </Button>
                       
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={handleScheduleTestDrive}
-                        disabled={!listedBy.email && !listedBy.phone}
-                      >
-                        Schedule Test Drive
-                      </Button>
+                       <Button 
+                         variant="outline" 
+                         className="w-full"
+                         onClick={handleScheduleTestDrive}
+                         disabled={!listedBy.email && !listedBy.phone}
+                       >
+                         <Calendar className="mr-2 h-4 w-4" />
+                         Schedule Test Drive
+                       </Button>
                     </>
                   ) : (
                     <div className="space-y-2">
