@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { validatePassword } from "@/lib/password-validation";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -66,13 +67,28 @@ const AdminRegister = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        // Handle specific error cases with clearer messages
+        if (error.message.toLowerCase().includes('already registered') || 
+            error.message.toLowerCase().includes('already been registered') ||
+            error.message.toLowerCase().includes('user already registered') ||
+            error.message.toLowerCase().includes('email address already in use')) {
+          toast.error("This email address is already registered. Please use the admin login page or contact support if you need access to an existing account.");
+        } else if (error.message.toLowerCase().includes('email rate limit exceeded')) {
+          toast.error("Too many registration attempts. Please wait a few minutes before trying again.");
+        } else if (error.message.toLowerCase().includes('invalid email')) {
+          toast.error("Please enter a valid email address.");
+        } else if (error.message.toLowerCase().includes('weak password')) {
+          toast.error("Password does not meet security requirements. Please choose a stronger password.");
+        } else {
+          toast.error(`Registration failed: ${error.message}`);
+        }
       } else {
-        toast.success("Admin registration request submitted! Please check your email for verification.");
+        toast.success("Admin registration request submitted! Please check your email for verification and contact support to activate admin privileges.");
         navigate("/admin/login");
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      console.error('Registration error:', error);
+      toast.error("An unexpected error occurred during registration. Please try again.");
     } finally {
       setLoading(false);
     }
