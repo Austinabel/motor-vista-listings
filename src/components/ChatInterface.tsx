@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 // import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Remove header/title imports
 import { Send, MessageCircle } from 'lucide-react';
-import { useMessaging, Message } from '@/hooks/useMessaging';
+import { useMessaging, Message } from '@/contexts/MessagingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 

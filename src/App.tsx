@@ -8,6 +8,7 @@ import { Navigation } from "@/components/Navigation";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { DealerProvider, useDealer } from "@/contexts/DealerContext";
+import { MessagingProvider } from "@/contexts/MessagingContext";
 import Index from "./pages/Index";
 import CarListings from "./pages/CarListings";
 import CarDetail from "./pages/CarDetail";
@@ -133,9 +134,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <DealerProvider>
-            <AppContent />
-          </DealerProvider>
+          <MessagingProvider>
+            <DealerProvider>
+              <AppContent />
+            </DealerProvider>
+          </MessagingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

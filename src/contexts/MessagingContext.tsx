@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -35,7 +35,31 @@ export interface Conversation {
   };
 }
 
+interface MessagingContextType {
+  conversations: Conversation[];
+  messages: Message[];
+  loading: boolean;
+  fetchConversations: () => Promise<void>;
+  fetchMessages: (conversationId: string) => Promise<void>;
+  startConversation: (listingId: string, sellerId: string) => Promise<string | null>;
+  sendMessage: (conversationId: string, content: string) => Promise<boolean>;
+}
+
+const MessagingContext = createContext<MessagingContextType | undefined>(undefined);
+
 export const useMessaging = () => {
+  const context = useContext(MessagingContext);
+  if (!context) {
+    throw new Error('useMessaging must be used within a MessagingProvider');
+  }
+  return context;
+};
+
+interface MessagingProviderProps {
+  children: React.ReactNode;
+}
+
+export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }) => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -43,8 +67,6 @@ export const useMessaging = () => {
 
   // Store channel in a ref so it's not recreated/subscribed repeatedly
   const channelRef = useRef<any>(null);
-
-  // Store user ID to prevent subscription re-runs on user object changes
   const userId = user?.id;
 
   // Set up real-time subscription for messages
@@ -104,7 +126,7 @@ export const useMessaging = () => {
         channelRef.current = null;
       }
     };
-  }, [userId]); // Only depend on userId, not the entire user object
+  }, [userId]);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -337,7 +359,7 @@ export const useMessaging = () => {
     }
   };
 
-  return {
+  const value: MessagingContextType = {
     conversations,
     messages,
     loading,
@@ -346,4 +368,10 @@ export const useMessaging = () => {
     startConversation,
     sendMessage
   };
+
+  return (
+    <MessagingContext.Provider value={value}>
+      {children}
+    </MessagingContext.Provider>
+  );
 };

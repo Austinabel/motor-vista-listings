@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { MessageCircle } from 'lucide-react';
-import { useMessaging } from '@/hooks/useMessaging';
+import { useMessaging } from '@/contexts/MessagingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ChatInterface from './ChatInterface';
 import { toast } from 'sonner';

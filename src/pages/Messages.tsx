@@ -3,7 +3,7 @@ import { MessageSquare, Car, Clock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useMessaging, Conversation } from "@/hooks/useMessaging";
+import { useMessaging, Conversation } from "@/contexts/MessagingContext";
 import { useAuth } from "@/contexts/AuthContext";
 import ChatInterface from "@/components/ChatInterface";
 import { formatDistanceToNow } from "date-fns";
