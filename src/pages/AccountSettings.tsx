@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,9 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Settings, Bell, Shield, Eye, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const AccountSettings = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState({
     email: true,
     sms: false,
@@ -26,14 +29,71 @@ const AccountSettings = () => {
   const [language, setLanguage] = useState("en");
   const [currency, setCurrency] = useState("NGN");
 
+  // Fetch user profile with privacy settings
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  useEffect(() => {
+    if (profile) {
+      setPrivacy({
+        showProfile: profile.show_profile ?? true,
+        showPhoneNumber: profile.show_phone_number ?? false,
+        allowMessages: profile.allow_messages ?? true
+      });
+    }
+  }, [profile]);
+
+  // Update privacy settings mutation
+  const updatePrivacyMutation = useMutation({
+    mutationFn: async (privacyData: typeof privacy) => {
+      if (!user?.id) throw new Error("No user found");
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          show_profile: privacyData.showProfile,
+          show_phone_number: privacyData.showPhoneNumber,
+          allow_messages: privacyData.allowMessages,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      toast.success("Privacy settings updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update privacy settings: ${error.message}`);
+    }
+  });
+
   const handleNotificationChange = (type: string, value: boolean) => {
     setNotifications(prev => ({ ...prev, [type]: value }));
     toast.success("Notification settings updated");
   };
 
   const handlePrivacyChange = (type: string, value: boolean) => {
-    setPrivacy(prev => ({ ...prev, [type]: value }));
-    toast.success("Privacy settings updated");
+    const newPrivacy = { ...privacy, [type]: value };
+    setPrivacy(newPrivacy);
+    updatePrivacyMutation.mutate(newPrivacy);
   };
 
   const handleDeleteAccount = () => {

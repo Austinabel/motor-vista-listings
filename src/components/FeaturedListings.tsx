@@ -53,27 +53,32 @@ export const FeaturedListings = () => {
           // Get images for this listing
           const listingImages = allImages?.filter(img => img.listing_id === listing.id) || [];
           
-          // Get seller info using secure function
+          // Get seller info with privacy settings
           const { data: sellerInfo, error: sellerError } = await supabase
-            .rpc('get_seller_info_for_listing', { listing_user_id: listing.user_id });
+            .from('profiles')
+            .select('id, first_name, last_name, user_type, show_profile, show_phone_number')
+            .eq('id', listing.user_id)
+            .maybeSingle();
+
+          const sellerArray = sellerInfo ? [sellerInfo] : [];
 
           let dealerInfo = null;
           
           // If seller is a dealer, fetch dealer information using secure function
-          if (sellerInfo && sellerInfo.length > 0 && sellerInfo[0]?.user_type === 'dealer') {
+          if (sellerInfo && sellerInfo.user_type === 'dealer') {
             const { data: dealersData, error: dealersError } = await supabase
               .rpc('get_public_dealers')
 
             const dealerData = dealersData?.find(dealer => 
               // Match by comparing with user profiles - we need a safer way to link this
-              sellerInfo[0]?.id === listing.user_id
+              sellerInfo?.id === listing.user_id
             );
 
             if (dealerData) {
               dealerInfo = {
                 id: dealerData.id, 
                 business_name: dealerData.business_name,
-                contact_name: sellerInfo[0]?.first_name || 'Dealer'
+                contact_name: sellerInfo?.first_name || 'Dealer'
               };
             }
           }
@@ -81,7 +86,7 @@ export const FeaturedListings = () => {
           return {
             ...listing,
             car_listing_images: listingImages,
-            profiles: sellerInfo && sellerInfo.length > 0 ? sellerInfo[0] : null,
+            profiles: sellerInfo ? sellerInfo : null,
             dealers: dealerInfo ? [dealerInfo] : []
           };
         })
@@ -104,6 +109,17 @@ export const FeaturedListings = () => {
         icon: <Building className="w-3 h-3 text-blue-600" />
       };
     } else if (listing.profiles) {
+      // Check privacy settings
+      const showProfile = listing.profiles.show_profile ?? true;
+      
+      if (!showProfile) {
+        return {
+          type: 'user',
+          name: 'Private Seller',
+          icon: <User className="w-3 h-3 text-gray-600" />
+        };
+      }
+      
       const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
       return {
         type: 'user',

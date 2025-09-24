@@ -322,32 +322,41 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allow_messages: boolean | null
           avatar_url: string | null
           created_at: string | null
           first_name: string | null
           id: string
           last_name: string | null
           phone: string | null
+          show_phone_number: boolean | null
+          show_profile: boolean | null
           updated_at: string | null
           user_type: string | null
         }
         Insert: {
+          allow_messages?: boolean | null
           avatar_url?: string | null
           created_at?: string | null
           first_name?: string | null
           id: string
           last_name?: string | null
           phone?: string | null
+          show_phone_number?: boolean | null
+          show_profile?: boolean | null
           updated_at?: string | null
           user_type?: string | null
         }
         Update: {
+          allow_messages?: boolean | null
           avatar_url?: string | null
           created_at?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+          show_phone_number?: boolean | null
+          show_profile?: boolean | null
           updated_at?: string | null
           user_type?: string | null
         }

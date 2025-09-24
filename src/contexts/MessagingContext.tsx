@@ -254,6 +254,22 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
       return null;
     }
 
+    // Check if the seller allows messages
+    try {
+      const { data: sellerProfile } = await supabase
+        .from('profiles')
+        .select('allow_messages')
+        .eq('id', sellerId)
+        .maybeSingle();
+
+      if (sellerProfile && sellerProfile.allow_messages === false) {
+        toast.error('This seller has disabled messaging');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error checking seller message settings:', error);
+    }
+
     try {
       const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')

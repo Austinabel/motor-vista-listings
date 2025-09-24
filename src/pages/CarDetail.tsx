@@ -65,16 +65,17 @@ const CarDetail = () => {
 
       console.log('Images:', images);
 
-      // Fetch seller info using the RPC function
+      // Fetch seller info using the RPC function with privacy settings
       let sellerData = null;
       if (carData.user_id) {
         const { data: seller, error: sellerError } = await supabase
-          .rpc('get_seller_info_for_listing', { 
-            listing_user_id: carData.user_id 
-          });
+          .from('profiles')
+          .select('id, first_name, last_name, phone, user_type, show_profile, show_phone_number')
+          .eq('id', carData.user_id)
+          .maybeSingle();
 
-        if (!sellerError && seller && seller.length > 0) {
-          sellerData = seller[0]; // Take the first result
+        if (!sellerError && seller) {
+          sellerData = seller;
         }
       }
 
@@ -138,11 +139,24 @@ const CarDetail = () => {
         email: listing.dealers[0].email
       };
     } else if (listing.profiles) {
+      // Check privacy settings
+      const showProfile = listing.profiles.show_profile ?? true;
+      const showPhone = listing.profiles.show_phone_number ?? false;
+      
+      if (!showProfile) {
+        return {
+          type: 'user',
+          name: 'Private Seller',
+          phone: null,
+          email: null
+        };
+      }
+      
       const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
       return {
         type: 'user',
         name: fullName || 'Private Seller',
-        phone: listing.profiles.phone,
+        phone: showPhone ? listing.profiles.phone : null,
         email: null // Private sellers don't expose email directly
       };
     }
