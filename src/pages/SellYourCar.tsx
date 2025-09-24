@@ -30,6 +30,8 @@ const SellYourCar = () => {
   const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
   const [newListing, setNewListing] = useState<any>(null);
   const [listingPlansEnabled, setListingPlansEnabled] = useState(false);
+  const [canCreateFreeListing, setCanCreateFreeListing] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const [formData, setFormData] = useState({
     make: "",
@@ -174,8 +176,37 @@ const SellYourCar = () => {
         setListingPlansEnabled(data.value === 'true' || data.value === true);
       }
     };
+
+    const checkUserLimits = async () => {
+      if (!user) return;
+
+      // Check if user can create free listing
+      const { data: canCreate, error: canCreateError } = await supabase
+        .rpc('can_create_free_listing', { user_id: user.id });
+
+      if (!canCreateError) {
+        setCanCreateFreeListing(canCreate);
+      }
+
+      // Get user profile for regular users
+      if (!isDealer) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('monthly_listings_used, monthly_listings_reset_date')
+          .eq('id', user.id)
+          .single();
+
+        if (!profileError && profile) {
+          setUserProfile(profile);
+        }
+      }
+    };
+
     checkListingPlansStatus();
-  }, []);
+    if (user) {
+      checkUserLimits();
+    }
+  }, [user, isDealer]);
 
   const handleMakeChange = (value: string) => {
     setFormData(prev => ({ ...prev, make: value, model: "" }));
@@ -268,25 +299,25 @@ const SellYourCar = () => {
     setLoading(true);
 
     try {
-      // Auth & dealer checks
+      // Auth check
       if (!user) {
         toast.error("Please log in to list your car");
         navigate("/login");
         setLoading(false);
         return;
       }
-      if (!isDealer || !dealerInfo || dealerInfo.status !== 'verified') {
-        toast.error("You must be a verified dealer to list cars. Please complete your registration.");
-        navigate("/dealer-registration");
-        setLoading(false);
-        return;
-      }
 
-      // Check if dealer has used all free listings (20 free listings allowed)
-      if (dealerInfo.free_listings_used >= 20 && (!listingPlansEnabled || selectedPlan === 'free')) {
-        toast.error("You have used all 20 free listings. Please select a paid listing plan to continue.");
-        setLoading(false);
-        return;
+      // Check free listing limits
+      if (!listingPlansEnabled || selectedPlan === 'free') {
+        if (!canCreateFreeListing) {
+          if (isDealer && dealerInfo) {
+            toast.error("You have used all 20 free listings. Please select a paid listing plan to continue.");
+          } else {
+            toast.error("You have used all 5 free listings this month. Please wait until next month or select a paid listing plan.");
+          }
+          setLoading(false);
+          return;
+        }
       }
 
       // Basic validation
@@ -306,8 +337,8 @@ const SellYourCar = () => {
 
       const listingStatus = (!listingPlansEnabled || selectedPlan === 'free') ? 'pending_review' : 'pending_payment';
 
-      // Check if this is a free listing for a dealer to increment count
-      const isFreeListing = (!listingPlansEnabled || selectedPlan === 'free') && dealerInfo;
+      // Check if this is a free listing to increment count
+      const isFreeListing = (!listingPlansEnabled || selectedPlan === 'free');
 
       // 1) Insert the car listing WITHOUT images (we need listing.id for file paths)
       const { data: createdListing, error: listingError } = await supabase
@@ -365,27 +396,48 @@ const SellYourCar = () => {
         }
       }
 
-      // 4) If this is a free listing by a dealer, increment their free listings counter
-      if (isFreeListing && dealerInfo) {
-        const { error: updateError } = await supabase
-          .from('dealers')
-          .update({ 
-            free_listings_used: dealerInfo.free_listings_used + 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', dealerInfo.id);
+      // 4) If this is a free listing, increment the appropriate counter
+      if (isFreeListing) {
+        if (dealerInfo && isDealer) {
+          // Update dealer free listings counter
+          const { error: updateError } = await supabase
+            .from('dealers')
+            .update({ 
+              free_listings_used: dealerInfo.free_listings_used + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', dealerInfo.id);
 
-        if (updateError) {
-          console.error('Error updating dealer free listings count:', updateError);
-          // Don't fail the entire process for this
+          if (updateError) {
+            console.error('Error updating dealer free listings count:', updateError);
+          }
+        } else {
+          // Update regular user monthly listings counter
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              monthly_listings_used: (userProfile?.monthly_listings_used || 0) + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.error('Error updating user monthly listings count:', updateError);
+          }
         }
       }
 
       // Success: either go to payment or finish
       if (!listingPlansEnabled || selectedPlan === "free") {
-        // Refetch dealer info to update free listings count
+        // Refetch info to update listing counts
         if (isFreeListing) {
-          await refetchDealerInfo();
+          if (dealerInfo && isDealer) {
+            await refetchDealerInfo();
+          }
+          // Refresh user limits check
+          const { data: canCreate } = await supabase
+            .rpc('can_create_free_listing', { user_id: user.id });
+          setCanCreateFreeListing(canCreate);
         }
         toast.success("Your car listing has been submitted for review!");
         navigate("/");
@@ -439,11 +491,32 @@ const SellYourCar = () => {
   // Show loading state while checking dealer status
   if (dealerLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div>Loading...</div>
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
+
+  // Show monthly limit info for regular users
+  const renderUserLimitInfo = () => {
+    if (isDealer || !user) return null;
+
+    const usedListings = userProfile?.monthly_listings_used || 0;
+    const remainingListings = 5 - usedListings;
+
+    return (
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 className="font-semibold text-blue-900 mb-2">Monthly Free Listings</h3>
+        <p className="text-blue-700 text-sm">
+          You have <span className="font-semibold">{remainingListings} free listings</span> remaining this month.
+          {remainingListings === 0 && " You can select a paid plan to list more cars."}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -456,6 +529,9 @@ const SellYourCar = () => {
         {user && (!isDealer || dealerInfo?.status !== 'verified') && (
           <DealerRegistrationBanner dealerStatus={dealerInfo?.status || null} />
         )}
+
+        {/* Show monthly limit info for regular users */}
+        {user && !isDealer && renderUserLimitInfo()}
 
         {/* Show remaining free listings for verified dealers */}
         {user && isDealer && dealerInfo?.status === 'verified' && (
@@ -480,13 +556,28 @@ const SellYourCar = () => {
                 </CardHeader>
                 <CardContent>
                   <RadioGroup value={selectedPlan} onValueChange={setSelectedPlan}>
-                    {pricingPlans.map((plan) => (
-                      <div key={plan.id} className={`p-4 rounded-lg border-2 ${plan.color} ${selectedPlan === plan.id ? 'ring-2 ring-red-500' : ''}`}>
-                        <div className="flex items-center space-x-2 mb-3">
-                          <RadioGroupItem value={plan.id} id={plan.id} />
-                          <plan.icon className="h-5 w-5" />
-                          <Label htmlFor={plan.id} className="font-semibold">{plan.name}</Label>
-                        </div>
+                    {pricingPlans.map((plan) => {
+                      // Disable free plan if user has reached their limit
+                      const isFreeDisabled = plan.id === 'free' && !canCreateFreeListing;
+                      
+                      return (
+                        <div key={plan.id} className={`p-4 rounded-lg border-2 ${plan.color} ${selectedPlan === plan.id ? 'ring-2 ring-red-500' : ''} ${isFreeDisabled ? 'opacity-50' : ''}`}>
+                          <div className="flex items-center space-x-2 mb-3">
+                            <RadioGroupItem 
+                              value={plan.id} 
+                              id={plan.id} 
+                              disabled={isFreeDisabled}
+                            />
+                            <plan.icon className="h-5 w-5" />
+                            <Label htmlFor={plan.id} className="font-semibold">
+                              {plan.name}
+                              {isFreeDisabled && (
+                                <span className="text-red-500 text-sm ml-2">
+                                  ({isDealer ? 'All 20 free listings used' : 'Monthly limit reached'})
+                                </span>
+                              )}
+                            </Label>
+                          </div>
                         <div className="ml-6">
                           <div className="text-2xl font-bold text-red-600 mb-1">{plan.price}</div>
                           <div className="text-sm text-gray-500 mb-3">Valid for {plan.duration}</div>
@@ -499,8 +590,9 @@ const SellYourCar = () => {
                             ))}
                           </ul>
                         </div>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </RadioGroup>
                 </CardContent>
               </Card>

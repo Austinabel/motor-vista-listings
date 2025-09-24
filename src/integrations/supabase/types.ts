@@ -337,6 +337,8 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          monthly_listings_reset_date: string | null
+          monthly_listings_used: number | null
           phone: string | null
           show_phone_number: boolean | null
           show_profile: boolean | null
@@ -350,6 +352,8 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          monthly_listings_reset_date?: string | null
+          monthly_listings_used?: number | null
           phone?: string | null
           show_phone_number?: boolean | null
           show_profile?: boolean | null
@@ -363,6 +367,8 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          monthly_listings_reset_date?: string | null
+          monthly_listings_used?: number | null
           phone?: string | null
           show_phone_number?: boolean | null
           show_profile?: boolean | null
@@ -399,6 +405,10 @@ export type Database = {
     Functions: {
       assign_admin_role: {
         Args: { user_email: string }
+        Returns: boolean
+      }
+      can_create_free_listing: {
+        Args: { user_id: string }
         Returns: boolean
       }
       get_public_dealers: {
