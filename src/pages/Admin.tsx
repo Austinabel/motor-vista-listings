@@ -16,6 +16,7 @@ import { DealerDetails } from "@/components/admin/DealerDetails";
 import { ListingModal } from "@/components/admin/ListingModal";
 import { AdminDealerForm } from "@/components/admin/AdminDealerForm";
 import { AdminCarListingForm } from "@/components/admin/AdminCarListingForm";
+import { FeaturedListingsManager } from "@/components/admin/FeaturedListingsManager";
 
 const Admin = () => {
   const [dealers, setDealers] = useState([]);
@@ -410,6 +411,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="listings">Car Listings</TabsTrigger>
             <TabsTrigger value="dealers">Dealers</TabsTrigger>
+            <TabsTrigger value="featured">Featured Manager</TabsTrigger>
             <TabsTrigger value="add-dealer">Add Dealer</TabsTrigger>
             <TabsTrigger value="add-listing">Add Listing</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -1037,6 +1039,11 @@ const Admin = () => {
                 </div>
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          {/* Featured Listings Manager Tab */}
+          <TabsContent value="featured">
+            <FeaturedListingsManager />
           </TabsContent>
 
           {/* Add Dealer Tab */}

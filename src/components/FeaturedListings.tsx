@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, User, Building } from "lucide-react";
+import { ChevronLeft, ChevronRight, Car, MapPin, Calendar, Heart, Crown, Star, TrendingUp, Eye, User, Building } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import MessageSellerButton from "@/components/MessageSellerButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -23,11 +24,23 @@ export const FeaturedListings = () => {
 
   const fetchCarListings = async () => {
     try {
+      // First expire any expired featured/boosted listings
+      await supabase.rpc('expire_featured_listings');
+
       // Fetch car listings first - include pending_review for own listings
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
-        .select('*')
+        .select(`
+          *,
+          car_listing_images (
+            image_url,
+            is_primary
+          )
+        `)
         .or(`status.eq.active${user ? `,and(status.eq.pending_review,user_id.eq.${user.id})` : ''}`)
+        .order('is_top_listing', { ascending: false })
+        .order('is_featured', { ascending: false })
+        .order('is_boosted', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(108); // 6 rows * 6 cars * 3 pages
 
@@ -37,7 +50,7 @@ export const FeaturedListings = () => {
         return;
       }
 
-      // Fetch images for all listings
+      // Fetch images for all listings (if not already included)
       const { data: allImages, error: imagesError } = await supabase
         .from('car_listing_images')
         .select('listing_id, image_url, is_primary')
@@ -50,8 +63,10 @@ export const FeaturedListings = () => {
       // Use secure function to get seller info for each listing
       const enrichedListings = await Promise.all(
         (listings || []).map(async (listing) => {
-          // Get images for this listing
-          const listingImages = allImages?.filter(img => img.listing_id === listing.id) || [];
+          // Get images for this listing from car_listing_images relation or fallback
+          const listingImages = listing.car_listing_images?.length > 0 
+            ? listing.car_listing_images 
+            : allImages?.filter(img => img.listing_id === listing.id) || [];
           
           // Get seller info with privacy settings
           const { data: sellerInfo, error: sellerError } = await supabase
@@ -194,15 +209,41 @@ export const FeaturedListings = () => {
             return (
               <Card 
                 key={car.id} 
-                className="overflow-hidden hover:shadow-lg transition-all duration-500 hover:scale-105 animate-fade-in"
+                className={`overflow-hidden hover:shadow-lg transition-all duration-500 hover:scale-105 animate-fade-in ${
+                  car.is_top_listing ? 'ring-2 ring-yellow-500 shadow-lg' : 
+                  car.is_featured ? 'ring-2 ring-blue-500 shadow-md' : 
+                  car.is_boosted ? 'ring-2 ring-green-500 shadow-md' : ''
+                }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                  <div className="relative">
-                   <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
-                   <FavoriteButton listingId={car.id} className="absolute top-1 right-1 p-1" size="sm" />
-                   {user && car.user_id === user.id && car.status === 'pending_review' && (
-                     <div className="absolute top-1 left-1">
-                       <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Pending Review</span>
+                   {/* Priority Badges */}
+                   <div className="absolute top-1 left-1 z-10 flex flex-col gap-1">
+                     {car.is_top_listing && (
+                       <Badge className="bg-yellow-500 text-white text-xs px-1 py-0">
+                         <Star className="h-2 w-2 mr-1" />
+                         Top
+                       </Badge>
+                     )}
+                     {car.is_featured && (
+                       <Badge className="bg-blue-500 text-white text-xs px-1 py-0">
+                         <Crown className="h-2 w-2 mr-1" />
+                         Featured
+                       </Badge>
+                     )}
+                     {car.is_boosted && (
+                       <Badge className="bg-green-500 text-white text-xs px-1 py-0">
+                         <TrendingUp className="h-2 w-2 mr-1" />
+                         Boosted
+                       </Badge>
+                     )}
+                   </div>
+
+                    <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-32 object-cover" />
+                    <FavoriteButton listingId={car.id} className="absolute top-1 right-1 p-1" size="sm" />
+                    {user && car.user_id === user.id && car.status === 'pending_review' && (
+                      <div className="absolute top-1 left-1">
+                        <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Pending Review</span>
                      </div>
                    )}
                  </div>

@@ -76,15 +76,22 @@ export type Database = {
       car_listings: {
         Row: {
           admin_created: boolean
+          boost_approved_at: string | null
+          boost_approved_by: string | null
+          boosted_until: string | null
           color: string | null
           condition: string
           created_at: string
           description: string | null
           expires_at: string | null
+          featured_until: string | null
           features: string[] | null
           fuel_type: string | null
           id: string
           images: string[] | null
+          is_boosted: boolean | null
+          is_featured: boolean | null
+          is_top_listing: boolean | null
           listing_duration: number
           listing_plan: string
           listing_price: number
@@ -102,15 +109,22 @@ export type Database = {
         }
         Insert: {
           admin_created?: boolean
+          boost_approved_at?: string | null
+          boost_approved_by?: string | null
+          boosted_until?: string | null
           color?: string | null
           condition: string
           created_at?: string
           description?: string | null
           expires_at?: string | null
+          featured_until?: string | null
           features?: string[] | null
           fuel_type?: string | null
           id?: string
           images?: string[] | null
+          is_boosted?: boolean | null
+          is_featured?: boolean | null
+          is_top_listing?: boolean | null
           listing_duration?: number
           listing_plan?: string
           listing_price?: number
@@ -128,15 +142,22 @@ export type Database = {
         }
         Update: {
           admin_created?: boolean
+          boost_approved_at?: string | null
+          boost_approved_by?: string | null
+          boosted_until?: string | null
           color?: string | null
           condition?: string
           created_at?: string
           description?: string | null
           expires_at?: string | null
+          featured_until?: string | null
           features?: string[] | null
           fuel_type?: string | null
           id?: string
           images?: string[] | null
+          is_boosted?: boolean | null
+          is_featured?: boolean | null
+          is_top_listing?: boolean | null
           listing_duration?: number
           listing_plan?: string
           listing_price?: number
@@ -191,12 +212,14 @@ export type Database = {
           created_at: string
           description: string
           email: string
+          featured_until: string | null
           free_listings_used: number
           id: string
           id_card_number: string | null
           id_card_path: string | null
           id_card_type: string | null
           image_url: string | null
+          is_featured: boolean | null
           monthly_inventory: string
           payment_reference: string | null
           payment_status: string | null
@@ -218,12 +241,14 @@ export type Database = {
           created_at?: string
           description: string
           email: string
+          featured_until?: string | null
           free_listings_used?: number
           id?: string
           id_card_number?: string | null
           id_card_path?: string | null
           id_card_type?: string | null
           image_url?: string | null
+          is_featured?: boolean | null
           monthly_inventory: string
           payment_reference?: string | null
           payment_status?: string | null
@@ -245,12 +270,14 @@ export type Database = {
           created_at?: string
           description?: string
           email?: string
+          featured_until?: string | null
           free_listings_used?: number
           id?: string
           id_card_number?: string | null
           id_card_path?: string | null
           id_card_type?: string | null
           image_url?: string | null
+          is_featured?: boolean | null
           monthly_inventory?: string
           payment_reference?: string | null
           payment_status?: string | null
@@ -410,6 +437,10 @@ export type Database = {
       can_create_free_listing: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      expire_featured_listings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_public_dealers: {
         Args: Record<PropertyKey, never>

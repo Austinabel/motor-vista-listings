@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, MapPin, Phone, Star } from "lucide-react";
+import { Shield, MapPin, Phone, Star, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -19,8 +19,15 @@ export const VerifiedDealers = () => {
 
   const fetchVerifiedDealers = async () => {
     try {
+      // First expire any expired featured dealers
+      await supabase.rpc('expire_featured_listings');
+      
       const { data, error } = await supabase
-        .rpc('get_public_dealers');
+        .from('dealers')
+        .select('id, business_name, state, year_established, description, website, created_at, is_featured')
+        .eq('status', 'verified')
+        .order('is_featured', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching dealers:', error);
@@ -34,7 +41,8 @@ export const VerifiedDealers = () => {
           description: dealer.description,
           monthly_inventory: null, // Not included in public data
           year_established: dealer.year_established,
-          website: dealer.website
+          website: dealer.website,
+          is_featured: dealer.is_featured
         }));
 
         setDealers(transformedDealers);
@@ -100,11 +108,21 @@ export const VerifiedDealers = () => {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {dealers.slice(0, visibleDealers).map((dealer: any) => (
-            <Card key={dealer.id} className="group relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 border-2 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 animate-fade-in hover:-translate-y-2">
+            <Card key={dealer.id} className={`group relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 border-2 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 animate-fade-in hover:-translate-y-2 ${
+              dealer.is_featured ? 'ring-2 ring-yellow-500 shadow-md' : ''
+            }`}>
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <CardContent className="relative p-4 h-full flex flex-col">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors duration-300 flex-1 mr-2">{dealer.business_name}</h3>
+                  <div className="flex-1 mr-2">
+                    <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors duration-300">{dealer.business_name}</h3>
+                    {dealer.is_featured && (
+                      <Badge className="bg-yellow-500 text-white text-xs mt-1">
+                        <Crown className="h-2 w-2 mr-1" />
+                        Featured
+                      </Badge>
+                    )}
+                  </div>
                   <Badge className="bg-green-500/90 hover:bg-green-600 text-xs backdrop-blur-sm border-0 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                     <Shield className="w-2 h-2 mr-1" />
                     Verified
