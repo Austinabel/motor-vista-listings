@@ -77,16 +77,48 @@ const Register = () => {
     const { error } = await signUp(formData.email, formData.password, userData);
 
     if (error) {
-      toast({
-        title: "Registration Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      // Handle specific error cases with clearer messages
+      if (error.message.toLowerCase().includes('already registered') || 
+          error.message.toLowerCase().includes('already been registered') ||
+          error.message.toLowerCase().includes('user already registered') ||
+          error.message.toLowerCase().includes('email address already in use')) {
+        toast({
+          title: "Account Already Exists",
+          description: "This email address is already registered. Please sign in instead or use a different email address.",
+          variant: "destructive"
+        });
+      } else if (error.message.toLowerCase().includes('email rate limit exceeded')) {
+        toast({
+          title: "Too Many Attempts",
+          description: "Too many registration attempts. Please wait a few minutes before trying again.",
+          variant: "destructive"
+        });
+      } else if (error.message.toLowerCase().includes('invalid email')) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive"
+        });
+      } else if (error.message.toLowerCase().includes('weak password')) {
+        toast({
+          title: "Password Too Weak",
+          description: "Password does not meet security requirements. Please choose a stronger password.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     } else {
       toast({
         title: "Registration Successful!",
-        description: "Please check your email to verify your account."
+        description: "Please check your email to verify your account and complete registration."
       });
+      // Optionally redirect to login page after successful registration
+      // navigate("/login");
     }
 
     setLoading(false);
