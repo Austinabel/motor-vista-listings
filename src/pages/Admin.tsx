@@ -20,6 +20,7 @@ import { FeaturedListingsManager } from "@/components/admin/FeaturedListingsMana
 import { ListingEnhancementManager } from "@/components/admin/ListingEnhancementManager";
 
 const Admin = () => {
+  // All hooks must be called first, before any conditional logic
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
@@ -49,30 +50,6 @@ const Admin = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-
-  // Restrict access on mobile devices
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md mx-auto text-center">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-center gap-2">
-              <Shield className="h-6 w-6" />
-              Desktop Only
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              The Admin panel is only accessible on desktop devices for better management experience.
-            </p>
-            <Button onClick={() => navigate("/")} className="w-full">
-              Back to Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   useEffect(() => {
     checkAdminAccess();
