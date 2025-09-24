@@ -41,6 +41,21 @@ export const FeaturedListingsManager = () => {
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
+      console.log('Searching car listings with term:', carSearchTerm);
+      
+      // Build search conditions
+      const searchConditions = [];
+      const term = carSearchTerm.toLowerCase();
+      
+      searchConditions.push(`make.ilike.%${term}%`);
+      searchConditions.push(`model.ilike.%${term}%`);
+      searchConditions.push(`year.ilike.%${term}%`);
+      
+      // Only add ID search if the term looks like a UUID (starts with valid chars)
+      if (/^[a-f0-9-]+$/i.test(term)) {
+        searchConditions.push(`id::text.ilike.%${term}%`);
+      }
+
       const { data: listings, error, count } = await supabase
         .from('car_listings')
         .select(`
@@ -48,17 +63,18 @@ export const FeaturedListingsManager = () => {
           is_featured, is_top_listing, is_boosted, featured_until, boosted_until,
           boost_approved_by, boost_approved_at
         `, { count: 'exact' })
-        .or(`make.ilike.%${carSearchTerm}%,model.ilike.%${carSearchTerm}%,year.ilike.%${carSearchTerm}%,id::text.ilike.%${carSearchTerm}%`)
+        .or(searchConditions.join(','))
         .range(from, to)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Car search results:', listings?.length, 'total:', count);
       setCarSearchResults(listings || []);
       setCarTotal(count || 0);
       setCarPage(page);
     } catch (error) {
       console.error('Error searching car listings:', error);
-      toast.error('Failed to search car listings');
+      toast.error(`Failed to search car listings: ${error.message}`);
     } finally {
       setCarSearching(false);
     }
@@ -76,23 +92,39 @@ export const FeaturedListingsManager = () => {
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
+      console.log('Searching dealers with term:', dealerSearchTerm);
+      
+      // Build search conditions
+      const searchConditions = [];
+      const term = dealerSearchTerm.toLowerCase();
+      
+      searchConditions.push(`business_name.ilike.%${term}%`);
+      searchConditions.push(`contact_name.ilike.%${term}%`);
+      searchConditions.push(`email.ilike.%${term}%`);
+      
+      // Only add ID search if the term looks like a UUID (starts with valid chars)
+      if (/^[a-f0-9-]+$/i.test(term)) {
+        searchConditions.push(`id::text.ilike.%${term}%`);
+      }
+
       const { data: dealers, error, count } = await supabase
         .from('dealers')
         .select(`
           id, business_name, contact_name, email, state, status, created_at,
           is_featured, featured_until
         `, { count: 'exact' })
-        .or(`business_name.ilike.%${dealerSearchTerm}%,contact_name.ilike.%${dealerSearchTerm}%,email.ilike.%${dealerSearchTerm}%,id::text.ilike.%${dealerSearchTerm}%`)
+        .or(searchConditions.join(','))
         .range(from, to)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Dealer search results:', dealers?.length, 'total:', count);
       setDealerSearchResults(dealers || []);
       setDealerTotal(count || 0);
       setDealerPage(page);
     } catch (error) {
       console.error('Error searching dealers:', error);
-      toast.error('Failed to search dealers');
+      toast.error(`Failed to search dealers: ${error.message}`);
     } finally {
       setDealerSearching(false);
     }
