@@ -250,7 +250,7 @@ export const FeaturedListings = () => {
                 <CardContent className="p-3">
                   <h3 className="font-bold text-sm mb-2 truncate">{car.year} {car.make} {car.model}</h3>
                   <p className="text-lg font-bold text-red-600 mb-1">₦{car.price.toLocaleString()}</p>
-                  <p className="text-xs text-gray-600 mb-2 truncate">{car.location}</p>
+                  <p className="text-xs text-gray-600 mb-2 truncate">ID: {car.id.slice(0, 8)}... • {car.location}</p>
                   <div className="grid grid-cols-1 gap-1 text-xs">
                     {car.mileage && <span className="truncate">{car.mileage}</span>}
                     <span className="truncate">{car.fuel_type || 'Petrol'} • {car.transmission || 'Automatic'}</span>

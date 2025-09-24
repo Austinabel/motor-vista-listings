@@ -321,6 +321,54 @@ export type Database = {
           },
         ]
       }
+      listing_enhancement_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          duration_days: number
+          enhancement_type: string
+          id: string
+          listing_id: string
+          payment_reference: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          duration_days?: number
+          enhancement_type: string
+          id?: string
+          listing_id: string
+          payment_reference?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          duration_days?: number
+          enhancement_type?: string
+          id?: string
+          listing_id?: string
+          payment_reference?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string

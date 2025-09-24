@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Crown, Star, TrendingUp, Calendar, Users, Car } from "lucide-react";
+import { Crown, Star, TrendingUp, Calendar, Users, Car, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +18,8 @@ export const FeaturedListingsManager = () => {
   const [dealers, setDealers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [carSearchTerm, setCarSearchTerm] = useState("");
+  const [dealerSearchTerm, setDealerSearchTerm] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -182,8 +184,30 @@ export const FeaturedListingsManager = () => {
                 </Card>
               </div>
 
+              {/* Car Search */}
+              <div className="mb-4">
+                <Label htmlFor="car-search">Search Car Listings</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="car-search"
+                    placeholder="Search by make, model, year, or listing ID..."
+                    value={carSearchTerm}
+                    onChange={(e) => setCarSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-4">
-                {carListings.map((listing) => (
+                {carListings
+                  .filter(listing => 
+                    listing.make?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
+                    listing.model?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
+                    listing.year?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
+                    listing.id.toLowerCase().includes(carSearchTerm.toLowerCase())
+                  )
+                  .map((listing) => (
                   <Card key={listing.id} className="border">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
@@ -192,7 +216,7 @@ export const FeaturedListingsManager = () => {
                             {listing.year} {listing.make} {listing.model}
                           </h3>
                           <p className="text-sm text-muted-foreground">
-                            ₦{listing.price?.toLocaleString()} • {listing.location}
+                            <strong>ID:</strong> {listing.id.slice(0, 8)}... • ₦{listing.price?.toLocaleString()} • {listing.location}
                           </p>
                           <div className="flex gap-2 mt-2">
                             {listing.is_featured && (
@@ -267,6 +291,18 @@ export const FeaturedListingsManager = () => {
                     </CardContent>
                   </Card>
                 ))}
+
+                {carListings
+                  .filter(listing => 
+                    listing.make?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
+                    listing.model?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
+                    listing.year?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
+                    listing.id.toLowerCase().includes(carSearchTerm.toLowerCase())
+                  ).length === 0 && carSearchTerm && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No car listings match your search criteria.
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -283,15 +319,36 @@ export const FeaturedListingsManager = () => {
                 </CardContent>
               </Card>
 
+              {/* Dealer Search */}
+              <div className="mb-4">
+                <Label htmlFor="dealer-search">Search Dealers</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="dealer-search"
+                    placeholder="Search by business name, contact name, or dealer ID..."
+                    value={dealerSearchTerm}
+                    onChange={(e) => setDealerSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-4">
-                {dealers.map((dealer) => (
+                {dealers
+                  .filter(dealer => 
+                    dealer.business_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
+                    dealer.contact_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
+                    dealer.id.toLowerCase().includes(dealerSearchTerm.toLowerCase())
+                  )
+                  .map((dealer) => (
                   <Card key={dealer.id} className="border">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <h3 className="font-semibold">{dealer.business_name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {dealer.contact_name} • {dealer.state}
+                            <strong>ID:</strong> {dealer.id.slice(0, 8)}... • {dealer.contact_name} • {dealer.state}
                           </p>
                           <div className="flex gap-2 mt-2">
                             <Badge variant={dealer.status === 'verified' ? 'default' : 'secondary'}>
@@ -323,6 +380,17 @@ export const FeaturedListingsManager = () => {
                     </CardContent>
                   </Card>
                 ))}
+
+                {dealers
+                  .filter(dealer => 
+                    dealer.business_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
+                    dealer.contact_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
+                    dealer.id.toLowerCase().includes(dealerSearchTerm.toLowerCase())
+                  ).length === 0 && dealerSearchTerm && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No dealers match your search criteria.
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
