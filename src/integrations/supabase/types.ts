@@ -75,6 +75,7 @@ export type Database = {
       }
       car_listings: {
         Row: {
+          admin_created: boolean
           color: string | null
           condition: string
           created_at: string
@@ -100,6 +101,7 @@ export type Database = {
           year: string
         }
         Insert: {
+          admin_created?: boolean
           color?: string | null
           condition: string
           created_at?: string
@@ -125,6 +127,7 @@ export type Database = {
           year: string
         }
         Update: {
+          admin_created?: boolean
           color?: string | null
           condition?: string
           created_at?: string
@@ -181,12 +184,14 @@ export type Database = {
       dealers: {
         Row: {
           address: string
+          admin_created: boolean
           business_name: string
           cac_number: string
           contact_name: string
           created_at: string
           description: string
           email: string
+          free_listings_used: number
           id: string
           id_card_number: string | null
           id_card_path: string | null
@@ -206,12 +211,14 @@ export type Database = {
         }
         Insert: {
           address: string
+          admin_created?: boolean
           business_name: string
           cac_number: string
           contact_name: string
           created_at?: string
           description: string
           email: string
+          free_listings_used?: number
           id?: string
           id_card_number?: string | null
           id_card_path?: string | null
@@ -231,12 +238,14 @@ export type Database = {
         }
         Update: {
           address?: string
+          admin_created?: boolean
           business_name?: string
           cac_number?: string
           contact_name?: string
           created_at?: string
           description?: string
           email?: string
+          free_listings_used?: number
           id?: string
           id_card_number?: string | null
           id_card_path?: string | null

@@ -14,6 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DealerDetails } from "@/components/admin/DealerDetails";
 import { ListingModal } from "@/components/admin/ListingModal";
+import { AdminDealerForm } from "@/components/admin/AdminDealerForm";
+import { AdminCarListingForm } from "@/components/admin/AdminCarListingForm";
 
 const Admin = () => {
   const [dealers, setDealers] = useState([]);
@@ -408,6 +410,8 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="listings">Car Listings</TabsTrigger>
             <TabsTrigger value="dealers">Dealers</TabsTrigger>
+            <TabsTrigger value="add-dealer">Add Dealer</TabsTrigger>
+            <TabsTrigger value="add-listing">Add Listing</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="stats">Statistics</TabsTrigger>
           </TabsList>
@@ -1033,6 +1037,16 @@ const Admin = () => {
                 </div>
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          {/* Add Dealer Tab */}
+          <TabsContent value="add-dealer">
+            <AdminDealerForm onDealerCreated={fetchDealers} />
+          </TabsContent>
+
+          {/* Add Listing Tab */}
+          <TabsContent value="add-listing">
+            <AdminCarListingForm onListingCreated={fetchCarListings} />
           </TabsContent>
 
           <TabsContent value="settings">

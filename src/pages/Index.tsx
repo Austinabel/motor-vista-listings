@@ -14,6 +14,7 @@ import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 import { VerifiedDealers } from "@/components/VerifiedDealers";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { DealershipUpdateBanner } from "@/components/DealershipUpdateBanner";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -29,6 +30,9 @@ const Index = () => {
       ) : (
         <>
           <Hero />
+          <div className="container mx-auto px-4">
+            <DealershipUpdateBanner />
+          </div>
           <div className="px-2 md:px-0">
             <SearchFilters />
             <BrandCarousel />

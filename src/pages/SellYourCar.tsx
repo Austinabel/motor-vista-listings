@@ -20,7 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const SellYourCar = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { dealerInfo, isDealer, loading: dealerLoading } = useDealer();
+  const { dealerInfo, isDealer, loading: dealerLoading, refetchDealerInfo } = useDealer();
 
   // UI / form state
   const [selectedPlan, setSelectedPlan] = useState("free");
@@ -282,6 +282,13 @@ const SellYourCar = () => {
         return;
       }
 
+      // Check if dealer has used all free listings (20 free listings allowed)
+      if (dealerInfo.free_listings_used >= 20 && (!listingPlansEnabled || selectedPlan === 'free')) {
+        toast.error("You have used all 20 free listings. Please select a paid listing plan to continue.");
+        setLoading(false);
+        return;
+      }
+
       // Basic validation
       if (!formData.make || !formData.model || !formData.year || !formData.price || !formData.condition || !formData.state || !formData.area) {
         toast.error("Please fill in all required fields");
@@ -298,6 +305,9 @@ const SellYourCar = () => {
       expiresAt.setDate(expiresAt.getDate() + durationInDays);
 
       const listingStatus = (!listingPlansEnabled || selectedPlan === 'free') ? 'pending_review' : 'pending_payment';
+
+      // Check if this is a free listing for a dealer to increment count
+      const isFreeListing = (!listingPlansEnabled || selectedPlan === 'free') && dealerInfo;
 
       // 1) Insert the car listing WITHOUT images (we need listing.id for file paths)
       const { data: createdListing, error: listingError } = await supabase
@@ -355,8 +365,28 @@ const SellYourCar = () => {
         }
       }
 
+      // 4) If this is a free listing by a dealer, increment their free listings counter
+      if (isFreeListing && dealerInfo) {
+        const { error: updateError } = await supabase
+          .from('dealers')
+          .update({ 
+            free_listings_used: dealerInfo.free_listings_used + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', dealerInfo.id);
+
+        if (updateError) {
+          console.error('Error updating dealer free listings count:', updateError);
+          // Don't fail the entire process for this
+        }
+      }
+
       // Success: either go to payment or finish
       if (!listingPlansEnabled || selectedPlan === "free") {
+        // Refetch dealer info to update free listings count
+        if (isFreeListing) {
+          await refetchDealerInfo();
+        }
         toast.success("Your car listing has been submitted for review!");
         navigate("/");
       } else {
@@ -425,6 +455,20 @@ const SellYourCar = () => {
 
         {user && (!isDealer || dealerInfo?.status !== 'verified') && (
           <DealerRegistrationBanner dealerStatus={dealerInfo?.status || null} />
+        )}
+
+        {/* Show remaining free listings for verified dealers */}
+        {user && isDealer && dealerInfo?.status === 'verified' && (
+          <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="text-lg font-semibold text-blue-700 mb-2">Free Listings Status</h3>
+            <p className="text-blue-600">
+              You have used {dealerInfo.free_listings_used || 0} out of 20 free listings.
+              {(20 - (dealerInfo.free_listings_used || 0)) > 0 ? 
+                ` ${20 - (dealerInfo.free_listings_used || 0)} free listings remaining.` :
+                ' You have used all free listings. Please select a paid plan for new listings.'
+              }
+            </p>
+          </div>
         )}
 
         <div className={`grid grid-cols-1 ${listingPlansEnabled ? 'lg:grid-cols-3' : ''} gap-8`}>

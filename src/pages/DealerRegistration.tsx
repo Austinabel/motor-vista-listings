@@ -313,15 +313,16 @@ const DealerRegistration = () => {
             <CardContent className="p-8">
               
               <div className="mb-8 p-6 bg-red-50 rounded-lg border border-red-200">
-                <h3 className="text-xl font-bold text-red-700 mb-2">Dealer Subscription</h3>
-                <p className="text-3xl font-bold text-red-600">₦35,000 <span className="text-lg font-normal text-gray-600">per year</span></p>
+                <h3 className="text-xl font-bold text-red-700 mb-2">Dealer Registration Fee</h3>
+                <p className="text-3xl font-bold text-red-600">₦45,000 <span className="text-lg font-normal text-gray-600">one-time payment</span></p>
                 <ul className="mt-4 space-y-2 text-sm">
                   <li>✓ Verified dealer badge</li>
-                  <li>✓ Unlimited car listings</li>
+                  <li>✓ 20 free car listings included</li>
                   <li>✓ Featured dealer placement</li>
                   <li>✓ Direct customer contact</li>
                   <li>✓ Analytics dashboard</li>
                   <li>✓ 24/7 customer support</li>
+                  <li>✓ Pay per listing after 20 free listings</li>
                 </ul>
               </div>
 
@@ -332,7 +333,7 @@ const DealerRegistration = () => {
                   Payment Instructions
                 </h3>
                 <p className="text-sm text-gray-700 mb-4">
-                  Please transfer ₦35,000 to the account below and enter the transaction reference in the form:
+                  Please transfer ₦45,000 to the account below and enter the transaction reference in the form:
                 </p>
                 <div className="bg-white p-4 rounded-lg border space-y-3">
                   <div className="flex justify-between items-center">
@@ -377,11 +378,11 @@ const DealerRegistration = () => {
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Amount:</span>
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-red-600">₦35,000</span>
+                      <span className="font-bold text-red-600">₦45,000</span>
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        onClick={() => copyToClipboard("35000", "Amount")}
+                        onClick={() => copyToClipboard("45000", "Amount")}
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
