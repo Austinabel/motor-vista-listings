@@ -19,17 +19,60 @@ const Admin = () => {
   const [dealers, setDealers] = useState([]);
   const [carListings, setCarListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [selectedDealer, setSelectedDealer] = useState(null);
   const [selectedListing, setSelectedListing] = useState(null);
   const [listingPlansEnabled, setListingPlansEnabled] = useState(false);
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchDealers();
-    fetchCarListings();
-    fetchListingPlansStatus();
-  }, []);
+    checkAdminAccess();
+  }, [user]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchDealers();
+      fetchCarListings();
+      fetchListingPlansStatus();
+    }
+  }, [isAdmin]);
+
+  const checkAdminAccess = async () => {
+    try {
+      // Check if user is logged in
+      if (!user) {
+        navigate("/admin/login");
+        return;
+      }
+
+      // Check if user has admin role
+      const { data: isUserAdmin, error } = await supabase
+        .rpc('is_admin', { user_id: user.id });
+
+      if (error) {
+        console.error('Error checking admin status:', error);
+        toast.error('Access verification failed');
+        navigate("/");
+        return;
+      }
+
+      if (!isUserAdmin) {
+        toast.error('Access denied. Admin privileges required.');
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+    } catch (error) {
+      console.error('Error in checkAdminAccess:', error);
+      toast.error('Access verification failed');
+      navigate("/");
+    } finally {
+      setCheckingAccess(false);
+    }
+  };
 
   const handleLogout = async () => {
     const { error } = await signOut();
@@ -318,6 +361,21 @@ const Admin = () => {
         return <Badge className="bg-gray-500 hover:bg-gray-600">Free</Badge>;
     }
   };
+
+  if (checkingAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <div>Verifying admin access...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null; // Will redirect in useEffect
+  }
 
   if (loading) {
     return (
