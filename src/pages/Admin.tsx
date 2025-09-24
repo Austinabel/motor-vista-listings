@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Shield, CheckCircle, XCircle, Clock, IdCard, CreditCard, Car, Eye, Calendar, MapPin, Fuel, User, Building, LogOut, Settings, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { DealerDetails } from "@/components/admin/DealerDetails";
 import { ListingModal } from "@/components/admin/ListingModal";
 import { AdminDealerForm } from "@/components/admin/AdminDealerForm";
@@ -47,6 +48,31 @@ const Admin = () => {
   const itemsPerPage = 10;
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  // Restrict access on mobile devices
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md mx-auto text-center">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center gap-2">
+              <Shield className="h-6 w-6" />
+              Desktop Only
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              The Admin panel is only accessible on desktop devices for better management experience.
+            </p>
+            <Button onClick={() => navigate("/")} className="w-full">
+              Back to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   useEffect(() => {
     checkAdminAccess();
