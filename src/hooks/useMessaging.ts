@@ -44,26 +44,26 @@ export const useMessaging = () => {
   // Store channel in a ref so it's not recreated/subscribed repeatedly
   const channelRef = useRef<any>(null);
 
+  // Store user ID to prevent subscription re-runs on user object changes
+  const userId = user?.id;
+
   // Set up real-time subscription for messages
   useEffect(() => {
-    if (!user) {
-      // Clean up if user logs out
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      return;
-    }
-
-    // Prevent duplicate subscriptions
+    // Clean up previous subscription if it exists
     if (channelRef.current) {
+      console.log('Cleaning up existing subscription');
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    if (!userId) {
       return;
     }
 
-    console.log('Setting up real-time subscription for user:', user.id);
+    console.log('Setting up real-time subscription for user:', userId);
 
     const channel = supabase
-      .channel(`messages-channel-${user.id}`)
+      .channel(`messages-channel-${userId}`)
       .on(
         'postgres_changes',
         {
@@ -90,6 +90,9 @@ export const useMessaging = () => {
       )
       .subscribe((status: any) => {
         console.log('Real-time subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to messages channel');
+        }
       });
 
     channelRef.current = channel;
@@ -101,7 +104,7 @@ export const useMessaging = () => {
         channelRef.current = null;
       }
     };
-  }, [user?.id]); // Only depend on user.id, not the entire user object
+  }, [userId]); // Only depend on userId, not the entire user object
 
   const fetchConversations = async () => {
     if (!user) return;
