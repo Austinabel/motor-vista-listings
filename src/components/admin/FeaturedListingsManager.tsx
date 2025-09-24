@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -6,58 +6,73 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Crown, Star, TrendingUp, Calendar, Users, Car, Search } from "lucide-react";
+import { Crown, Star, TrendingUp, Users, Car, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const FeaturedListingsManager = () => {
   const { user } = useAuth();
-  const [carListings, setCarListings] = useState<any[]>([]);
-  const [dealers, setDealers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [carSearchResults, setCarSearchResults] = useState<any[]>([]);
+  const [dealerSearchResults, setDealerSearchResults] = useState<any[]>([]);
   const [updating, setUpdating] = useState<string | null>(null);
   const [carSearchTerm, setCarSearchTerm] = useState("");
   const [dealerSearchTerm, setDealerSearchTerm] = useState("");
+  const [carSearching, setCarSearching] = useState(false);
+  const [dealerSearching, setDealerSearching] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
+  const searchCarListings = async () => {
+    if (!carSearchTerm.trim()) {
+      setCarSearchResults([]);
+      return;
+    }
+    
+    setCarSearching(true);
     try {
-      // Fetch car listings
-      const { data: listings, error: listingsError } = await supabase
+      const { data: listings, error } = await supabase
         .from('car_listings')
         .select(`
           id, make, model, year, price, location, status, created_at,
           is_featured, is_top_listing, is_boosted, featured_until, boosted_until,
           boost_approved_by, boost_approved_at
         `)
+        .or(`make.ilike.%${carSearchTerm}%,model.ilike.%${carSearchTerm}%,year.ilike.%${carSearchTerm}%,id.ilike.%${carSearchTerm}%`)
         .order('created_at', { ascending: false });
 
-      if (listingsError) throw listingsError;
+      if (error) throw error;
+      setCarSearchResults(listings || []);
+    } catch (error) {
+      console.error('Error searching car listings:', error);
+      toast.error('Failed to search car listings');
+    } finally {
+      setCarSearching(false);
+    }
+  };
 
-      // Fetch dealers
-      const { data: dealerData, error: dealersError } = await supabase
+  const searchDealers = async () => {
+    if (!dealerSearchTerm.trim()) {
+      setDealerSearchResults([]);
+      return;
+    }
+    
+    setDealerSearching(true);
+    try {
+      const { data: dealers, error } = await supabase
         .from('dealers')
         .select(`
-          id, business_name, contact_name, state, status, created_at,
+          id, business_name, contact_name, email, state, status, created_at,
           is_featured, featured_until
         `)
+        .or(`business_name.ilike.%${dealerSearchTerm}%,contact_name.ilike.%${dealerSearchTerm}%,email.ilike.%${dealerSearchTerm}%,id.ilike.%${dealerSearchTerm}%`)
         .order('created_at', { ascending: false });
 
-      if (dealersError) throw dealersError;
-
-      setCarListings(listings || []);
-      setDealers(dealerData || []);
+      if (error) throw error;
+      setDealerSearchResults(dealers || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to fetch data');
+      console.error('Error searching dealers:', error);
+      toast.error('Failed to search dealers');
     } finally {
-      setLoading(false);
+      setDealerSearching(false);
     }
   };
 
@@ -80,7 +95,8 @@ export const FeaturedListingsManager = () => {
       if (error) throw error;
 
       toast.success('Car listing updated successfully');
-      fetchData();
+      // Refresh search results
+      searchCarListings();
     } catch (error) {
       console.error('Error updating car listing:', error);
       toast.error('Failed to update car listing');
@@ -100,7 +116,8 @@ export const FeaturedListingsManager = () => {
       if (error) throw error;
 
       toast.success('Dealer updated successfully');
-      fetchData();
+      // Refresh search results
+      searchDealers();
     } catch (error) {
       console.error('Error updating dealer:', error);
       toast.error('Failed to update dealer');
@@ -120,16 +137,17 @@ export const FeaturedListingsManager = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleCarSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      searchCarListings();
+    }
+  };
+
+  const handleDealerSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      searchDealers();
+    }
+  };
 
   return (
     <Card>
@@ -144,254 +162,220 @@ export const FeaturedListingsManager = () => {
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="cars" className="flex items-center gap-2">
               <Car className="h-4 w-4" />
-              Car Listings ({carListings.length})
+              Car Listings
             </TabsTrigger>
             <TabsTrigger value="dealers" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Dealers ({dealers.length})
+              Dealers
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="cars" className="mt-6">
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="border-yellow-200 bg-yellow-50">
-                  <CardContent className="p-4 text-center">
-                    <Crown className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                    <h3 className="font-semibold">Featured</h3>
-                    <p className="text-2xl font-bold text-yellow-600">
-                      {carListings.filter(c => c.is_featured).length}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border-red-200 bg-red-50">
-                  <CardContent className="p-4 text-center">
-                    <Star className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                    <h3 className="font-semibold">Top Listings</h3>
-                    <p className="text-2xl font-bold text-red-600">
-                      {carListings.filter(c => c.is_top_listing).length}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border-blue-200 bg-blue-50">
-                  <CardContent className="p-4 text-center">
-                    <TrendingUp className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                    <h3 className="font-semibold">Boosted</h3>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {carListings.filter(c => c.is_boosted).length}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
               {/* Car Search */}
-              <div className="mb-4">
+              <div className="space-y-4">
                 <Label htmlFor="car-search">Search Car Listings</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="car-search"
-                    placeholder="Search by make, model, year, or listing ID..."
-                    value={carSearchTerm}
-                    onChange={(e) => setCarSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="car-search"
+                      placeholder="Search by make, model, year, or listing ID..."
+                      value={carSearchTerm}
+                      onChange={(e) => setCarSearchTerm(e.target.value)}
+                      onKeyDown={handleCarSearch}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button 
+                    onClick={searchCarListings} 
+                    disabled={carSearching || !carSearchTerm.trim()}
+                  >
+                    {carSearching ? "Searching..." : "Search"}
+                  </Button>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {carListings
-                  .filter(listing => 
-                    listing.make?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
-                    listing.model?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
-                    listing.year?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
-                    listing.id.toLowerCase().includes(carSearchTerm.toLowerCase())
-                  )
-                  .map((listing) => (
-                  <Card key={listing.id} className="border">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold">
-                            {listing.year} {listing.make} {listing.model}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            <strong>ID:</strong> {listing.id.slice(0, 8)}... • ₦{listing.price?.toLocaleString()} • {listing.location}
-                          </p>
-                          <div className="flex gap-2 mt-2">
-                            {listing.is_featured && (
-                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                                <Crown className="h-3 w-3 mr-1" />
-                                Featured {formatDate(listing.featured_until)}
-                              </Badge>
-                            )}
-                            {listing.is_top_listing && (
-                              <Badge variant="secondary" className="bg-red-100 text-red-800">
-                                <Star className="h-3 w-3 mr-1" />
-                                Top Listing
-                              </Badge>
-                            )}
-                            {listing.is_boosted && (
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                <TrendingUp className="h-3 w-3 mr-1" />
-                                Boosted {formatDate(listing.boosted_until)}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-col gap-4 ml-4">
-                          <div className="space-y-3">
-                            {/* Featured Toggle */}
-                            <div className="flex items-center space-x-2">
-                              <Switch
-                                checked={listing.is_featured}
-                                onCheckedChange={(checked) => {
-                                  updateCarListing(listing.id, {
-                                    is_featured: checked,
-                                    featured_until: checked ? getExpiryDate(30) : null
-                                  });
-                                }}
-                                disabled={updating === listing.id}
-                              />
-                              <Label className="text-sm">Featured (30 days)</Label>
-                            </div>
-                            
-                            {/* Top Listing Toggle */}
-                            <div className="flex items-center space-x-2">
-                              <Switch
-                                checked={listing.is_top_listing}
-                                onCheckedChange={(checked) => {
-                                  updateCarListing(listing.id, {
-                                    is_top_listing: checked
-                                  });
-                                }}
-                                disabled={updating === listing.id}
-                              />
-                              <Label className="text-sm">Top Listing</Label>
-                            </div>
-                            
-                            {/* Boosted Toggle */}
-                            <div className="flex items-center space-x-2">
-                              <Switch
-                                checked={listing.is_boosted}
-                                onCheckedChange={(checked) => {
-                                  updateCarListing(listing.id, {
-                                    is_boosted: checked,
-                                    boosted_until: checked ? getExpiryDate(14) : null
-                                  });
-                                }}
-                                disabled={updating === listing.id}
-                              />
-                              <Label className="text-sm">Boosted (14 days)</Label>
+              {/* Car Search Results */}
+              {carSearchResults.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">
+                    Search Results ({carSearchResults.length})
+                  </h3>
+                  {carSearchResults.map((listing) => (
+                    <Card key={listing.id} className="border">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">
+                              {listing.year} {listing.make} {listing.model}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              <strong>ID:</strong> {listing.id.slice(0, 8)}... • ₦{listing.price?.toLocaleString()} • {listing.location}
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              {listing.is_featured && (
+                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                  <Crown className="h-3 w-3 mr-1" />
+                                  Featured {formatDate(listing.featured_until)}
+                                </Badge>
+                              )}
+                              {listing.is_top_listing && (
+                                <Badge variant="secondary" className="bg-red-100 text-red-800">
+                                  <Star className="h-3 w-3 mr-1" />
+                                  Top Listing
+                                </Badge>
+                              )}
+                              {listing.is_boosted && (
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                  <TrendingUp className="h-3 w-3 mr-1" />
+                                  Boosted {formatDate(listing.boosted_until)}
+                                </Badge>
+                              )}
                             </div>
                           </div>
+                          
+                          <div className="flex flex-col gap-4 ml-4">
+                            <div className="space-y-3">
+                              {/* Featured Toggle */}
+                              <div className="flex items-center space-x-2">
+                                <Switch
+                                  checked={listing.is_featured}
+                                  onCheckedChange={(checked) => {
+                                    updateCarListing(listing.id, {
+                                      is_featured: checked,
+                                      featured_until: checked ? getExpiryDate(30) : null
+                                    });
+                                  }}
+                                  disabled={updating === listing.id}
+                                />
+                                <Label className="text-sm">Featured (30 days)</Label>
+                              </div>
+                              
+                              {/* Top Listing Toggle */}
+                              <div className="flex items-center space-x-2">
+                                <Switch
+                                  checked={listing.is_top_listing}
+                                  onCheckedChange={(checked) => {
+                                    updateCarListing(listing.id, {
+                                      is_top_listing: checked
+                                    });
+                                  }}
+                                  disabled={updating === listing.id}
+                                />
+                                <Label className="text-sm">Top Listing</Label>
+                              </div>
+                              
+                              {/* Boosted Toggle */}
+                              <div className="flex items-center space-x-2">
+                                <Switch
+                                  checked={listing.is_boosted}
+                                  onCheckedChange={(checked) => {
+                                    updateCarListing(listing.id, {
+                                      is_boosted: checked,
+                                      boosted_until: checked ? getExpiryDate(14) : null
+                                    });
+                                  }}
+                                  disabled={updating === listing.id}
+                                />
+                                <Label className="text-sm">Boosted (14 days)</Label>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
 
-                {carListings
-                  .filter(listing => 
-                    listing.make?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
-                    listing.model?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
-                    listing.year?.toLowerCase().includes(carSearchTerm.toLowerCase()) ||
-                    listing.id.toLowerCase().includes(carSearchTerm.toLowerCase())
-                  ).length === 0 && carSearchTerm && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No car listings match your search criteria.
-                  </div>
-                )}
-              </div>
+              {carSearchTerm && carSearchResults.length === 0 && !carSearching && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No car listings match your search criteria.
+                </div>
+              )}
             </div>
           </TabsContent>
 
           <TabsContent value="dealers" className="mt-6">
             <div className="space-y-4">
-              <Card className="border-yellow-200 bg-yellow-50">
-                <CardContent className="p-4 text-center">
-                  <Crown className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                  <h3 className="font-semibold">Featured Dealers</h3>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {dealers.filter(d => d.is_featured).length}
-                  </p>
-                </CardContent>
-              </Card>
-
               {/* Dealer Search */}
-              <div className="mb-4">
+              <div className="space-y-4">
                 <Label htmlFor="dealer-search">Search Dealers</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="dealer-search"
-                    placeholder="Search by business name, contact name, or dealer ID..."
-                    value={dealerSearchTerm}
-                    onChange={(e) => setDealerSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="dealer-search"
+                      placeholder="Search by business name, contact name, email, or dealer ID..."
+                      value={dealerSearchTerm}
+                      onChange={(e) => setDealerSearchTerm(e.target.value)}
+                      onKeyDown={handleDealerSearch}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button 
+                    onClick={searchDealers} 
+                    disabled={dealerSearching || !dealerSearchTerm.trim()}
+                  >
+                    {dealerSearching ? "Searching..." : "Search"}
+                  </Button>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {dealers
-                  .filter(dealer => 
-                    dealer.business_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
-                    dealer.contact_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
-                    dealer.id.toLowerCase().includes(dealerSearchTerm.toLowerCase())
-                  )
-                  .map((dealer) => (
-                  <Card key={dealer.id} className="border">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold">{dealer.business_name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            <strong>ID:</strong> {dealer.id.slice(0, 8)}... • {dealer.contact_name} • {dealer.state}
-                          </p>
-                          <div className="flex gap-2 mt-2">
-                            <Badge variant={dealer.status === 'verified' ? 'default' : 'secondary'}>
-                              {dealer.status}
-                            </Badge>
-                            {dealer.is_featured && (
-                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                                <Crown className="h-3 w-3 mr-1" />
-                                Featured {formatDate(dealer.featured_until)}
+              {/* Dealer Search Results */}
+              {dealerSearchResults.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">
+                    Search Results ({dealerSearchResults.length})
+                  </h3>
+                  {dealerSearchResults.map((dealer) => (
+                    <Card key={dealer.id} className="border">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">{dealer.business_name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              <strong>ID:</strong> {dealer.id.slice(0, 8)}... • {dealer.contact_name} • {dealer.email} • {dealer.state}
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <Badge variant={dealer.status === 'verified' ? 'default' : 'secondary'}>
+                                {dealer.status}
                               </Badge>
-                            )}
+                              {dealer.is_featured && (
+                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                  <Crown className="h-3 w-3 mr-1" />
+                                  Featured {formatDate(dealer.featured_until)}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2 ml-4">
+                            <Switch
+                              checked={dealer.is_featured}
+                              onCheckedChange={(checked) => {
+                                updateDealer(dealer.id, {
+                                  is_featured: checked,
+                                  featured_until: checked ? getExpiryDate(30) : null
+                                });
+                              }}
+                              disabled={updating === dealer.id}
+                            />
+                            <Label className="text-sm">Featured (30 days)</Label>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center space-x-2 ml-4">
-                          <Switch
-                            checked={dealer.is_featured}
-                            onCheckedChange={(checked) => {
-                              updateDealer(dealer.id, {
-                                is_featured: checked,
-                                featured_until: checked ? getExpiryDate(30) : null
-                              });
-                            }}
-                            disabled={updating === dealer.id}
-                          />
-                          <Label className="text-sm">Featured (30 days)</Label>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
 
-                {dealers
-                  .filter(dealer => 
-                    dealer.business_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
-                    dealer.contact_name?.toLowerCase().includes(dealerSearchTerm.toLowerCase()) ||
-                    dealer.id.toLowerCase().includes(dealerSearchTerm.toLowerCase())
-                  ).length === 0 && dealerSearchTerm && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No dealers match your search criteria.
-                  </div>
-                )}
-              </div>
+              {dealerSearchTerm && dealerSearchResults.length === 0 && !dealerSearching && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No dealers match your search criteria.
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
