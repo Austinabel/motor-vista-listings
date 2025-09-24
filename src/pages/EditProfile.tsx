@@ -1,15 +1,17 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { User } from "lucide-react";
+import { User, Camera, Settings, MessageSquare } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const EditProfile = () => {
   const { user } = useAuth();
@@ -20,6 +22,9 @@ const EditProfile = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [userType, setUserType] = useState("buyer");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch user profile
   const { data: profile, isLoading } = useQuery({
@@ -47,8 +52,41 @@ const EditProfile = () => {
       setLastName(profile.last_name || "");
       setPhone(profile.phone || "");
       setUserType(profile.user_type || "buyer");
+      setAvatarUrl(profile.avatar_url || "");
     }
   }, [profile]);
+
+  const uploadAvatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      if (!user?.id) throw new Error("No user found");
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('car-listing-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('car-listing-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    },
+    onSuccess: (url) => {
+      setAvatarUrl(url);
+      toast({ title: "Avatar uploaded successfully" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upload Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
 
   const updateProfileMutation = useMutation({
     mutationFn: async (updatedData: any) => {
@@ -77,6 +115,27 @@ const EditProfile = () => {
     }
   });
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      await uploadAvatarMutation.mutateAsync(file);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateProfileMutation.mutate({
@@ -84,6 +143,7 @@ const EditProfile = () => {
       last_name: lastName,
       phone: phone,
       user_type: userType,
+      avatar_url: avatarUrl,
       updated_at: new Date().toISOString()
     });
   };
@@ -97,8 +157,24 @@ const EditProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <Link to="/account/settings">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+          </Link>
+          <Link to="/feedback">
+            <Button variant="outline" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Feedback
+            </Button>
+          </Link>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -111,6 +187,36 @@ const EditProfile = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Avatar Section */}
+              <div className="flex flex-col items-center space-y-4">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={avatarUrl} />
+                  <AvatarFallback className="text-lg">
+                    {firstName.charAt(0).toUpperCase()}{lastName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-center space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="flex items-center gap-2"
+                  >
+                    <Camera className="h-4 w-4" />
+                    {uploading ? "Uploading..." : "Change Avatar"}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-gray-500">JPG, PNG up to 5MB</p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>

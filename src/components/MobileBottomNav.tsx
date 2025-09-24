@@ -1,4 +1,4 @@
-import { Home, Search, Plus, User, LayoutDashboard } from "lucide-react";
+import { Home, Search, Plus, User, LayoutDashboard, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -30,6 +30,11 @@ export const MobileBottomNav = () => {
       label: "Sell",
       path: "/sell",
     },
+    ...(user ? [{
+      icon: MessageCircle,
+      label: "Messages",
+      path: "/messages",
+    }] : []),
     {
       icon: isDealer ? LayoutDashboard : User,
       label: isDealer ? "Dashboard" : "Profile",

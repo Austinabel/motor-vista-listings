@@ -104,9 +104,10 @@ export const FeaturedListings = () => {
         icon: <Building className="w-3 h-3 text-blue-600" />
       };
     } else if (listing.profiles) {
+      const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
       return {
         type: 'user',
-        name: 'Private Seller',
+        name: fullName || 'Private Seller',
         icon: <User className="w-3 h-3 text-gray-600" />
       };
     }
