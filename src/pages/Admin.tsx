@@ -51,6 +51,38 @@ const Admin = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  // Restrict access on mobile devices
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md mx-auto text-center">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center gap-2 text-destructive">
+              <Shield className="h-8 w-8" />
+              Desktop Only
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <p className="text-lg font-medium">Admin Panel Not Available</p>
+              <p className="text-muted-foreground">
+                The Admin panel is only accessible on desktop devices for optimal management experience and security.
+              </p>
+            </div>
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                Please switch to a desktop or laptop computer to access the admin features.
+              </p>
+            </div>
+            <Button onClick={() => navigate("/")} className="w-full" size="lg">
+              Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   useEffect(() => {
     checkAdminAccess();
   }, [user]);
