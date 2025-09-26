@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,13 +45,39 @@ export const SearchFilters = () => {
   const handleSearch = () => {
     const searchParams = new URLSearchParams();
     Object.entries(searchForm).forEach(([key, value]) => {
-      if (value) searchParams.set(key, value);
+      if (value) {
+        // Map form fields to URL parameters that CarListings expects
+        if (key === 'priceRange') {
+          const [min, max] = value.includes('-') ? value.split('-') : [value.replace('+', ''), ''];
+          if (min) searchParams.set('minPrice', min);
+          if (max) searchParams.set('maxPrice', max);
+        } else {
+          searchParams.set(key, value);
+        }
+      }
     });
     navigate(`/cars?${searchParams.toString()}`);
   };
 
   const handleQuickCategory = (categoryId) => {
-    navigate(`/cars?categories=${categoryId}`);
+    // Map category IDs to appropriate URL parameters
+    if (categoryId === 'brand-new' || categoryId === 'foreign-used' || categoryId === 'local-used') {
+      const conditionMap = {
+        'brand-new': 'brand_new',
+        'foreign-used': 'foreign_used', 
+        'local-used': 'local_used'
+      };
+      navigate(`/cars?condition=${conditionMap[categoryId]}`);
+    } else if (['toyota', 'honda', 'mercedes-benz'].includes(categoryId)) {
+      const makeMap = {
+        'toyota': 'Toyota',
+        'honda': 'Honda',
+        'mercedes-benz': 'Mercedes‑Benz'
+      };
+      navigate(`/cars?make=${makeMap[categoryId]}`);
+    } else {
+      navigate(`/cars?category=${categoryId}`);
+    }
   };
 
   return (

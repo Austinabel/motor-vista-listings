@@ -52,6 +52,15 @@ const nigerianStates = [
   "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
 ];
 
+const carMakes = [
+  "Acura", "Audi", "Bestune", "BMW", "Brilliance", "Buick", "Cadillac", 
+  "Changan", "Chevrolet", "Chrysler", "Daihatsu", "Dodge", "Ford", "GAC", 
+  "GMC", "Honda", "Hyundai", "Infiniti", "IVM", "Jeep", "Kia", "Land Rover", 
+  "Lexus", "Lincoln", "Mazda", "Mercedes‑Benz", "Mini", "Mitsubishi", 
+  "Nissan", "Opel", "Peugeot", "Pontiac", "Porsche", "Renault", "Rover", 
+  "Saturn", "Scion", "Subaru", "Suzuki", "Toyota", "Volkswagen", "Volvo", "Others"
+];
+
 const CARS_PER_PAGE = 8;
 
 const CarListings = () => {
@@ -80,12 +89,36 @@ const CarListings = () => {
   useEffect(() => {
     fetchCarListings();
     
-    // Check URL parameters for initial category selection
+    // Check URL parameters for filters and categories
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Handle direct filter parameters from SearchFilters
+    const makeParam = urlParams.get('make');
+    const modelParam = urlParams.get('model');
+    const conditionParam = urlParams.get('condition');
+    const locationParam = urlParams.get('location');
+    const minPriceParam = urlParams.get('minPrice');
+    const maxPriceParam = urlParams.get('maxPrice');
+    
+    // Handle category parameters
     const categoryParam = urlParams.get('category');
     const typeParam = urlParams.get('type');
     const categoriesParam = urlParams.get('categories');
     
+    // Set filters from URL parameters
+    if (makeParam || modelParam || conditionParam || locationParam || minPriceParam || maxPriceParam) {
+      setFilters(prev => ({
+        ...prev,
+        make: makeParam || '',
+        model: modelParam || '',
+        condition: conditionParam || '',
+        location: locationParam || '',
+        minPrice: minPriceParam || '',
+        maxPrice: maxPriceParam || ''
+      }));
+    }
+    
+    // Set categories from URL parameters
     if (categoryParam) {
       setSelectedCategories([categoryParam]);
     } else if (typeParam) {
@@ -278,11 +311,11 @@ const CarListings = () => {
           
         // Conditions
         case 'brand-new':
-          return condition === 'brand_new' || condition === 'new';
+          return condition === 'brand_new' || condition === 'brand-new';
         case 'foreign-used':
-          return condition === 'foreign_used' || condition === 'tokunbo';
+          return condition === 'foreign_used' || condition === 'foreign-used';
         case 'local-used':
-          return condition === 'local_used' || condition === 'nigerian_used';
+          return condition === 'local_used' || condition === 'local-used';
           
         // Brands - More flexible matching
         case 'toyota':
@@ -331,7 +364,14 @@ const CarListings = () => {
       
       if (filters.minPrice && price < parseFloat(filters.minPrice)) return false;
       if (filters.maxPrice && price > parseFloat(filters.maxPrice)) return false;
-      if (filters.make && !car.make?.toLowerCase().includes(filters.make.toLowerCase())) return false;
+      
+      // Improved make matching - handle different cases and exact matches
+      if (filters.make) {
+        const filterMake = filters.make.toLowerCase();
+        const carMake = car.make?.toLowerCase();
+        if (!carMake?.includes(filterMake) && carMake !== filterMake) return false;
+      }
+      
       if (filters.model && !car.model?.toLowerCase().includes(filters.model.toLowerCase())) return false;
       if (filters.yearFrom && year < parseInt(filters.yearFrom)) return false;
       if (filters.yearTo && year > parseInt(filters.yearTo)) return false;
@@ -556,11 +596,16 @@ const CarListings = () => {
                   </div>
                   <div>
                     <Label htmlFor="make">Make</Label>
-                    <Input 
-                      placeholder="Select make" 
+                    <select 
+                      className="w-full p-2 border rounded-md"
                       value={filters.make}
                       onChange={(e) => handleFilterChange('make', e.target.value)}
-                    />
+                    >
+                      <option value="">Select make</option>
+                      {carMakes.map(make => (
+                        <option key={make} value={make}>{make}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <Label htmlFor="model">Model</Label>
