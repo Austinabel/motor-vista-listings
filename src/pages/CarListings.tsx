@@ -284,46 +284,53 @@ const CarListings = () => {
     return categories.some(categoryId => {
       const make = car.make?.toLowerCase();
       const fuelType = car.fuel_type?.toLowerCase();
-      const condition = car.condition;
+      const condition = car.condition?.toLowerCase();
       const model = car.model?.toLowerCase();
       
       switch(categoryId) {
         // Vehicle types - More comprehensive matching
         case 'electric-cars':
-          return fuelType === 'electric' || fuelType === 'hybrid' || model?.includes('electric') || model?.includes('tesla');
+          return fuelType === 'electric' || fuelType === 'hybrid' || 
+                 model?.includes('electric') || model?.includes('tesla') ||
+                 model?.includes('ev') || model?.includes('e-') ||
+                 make?.includes('tesla');
         case 'tricycles':
           return make?.includes('bajaj') || make?.includes('tvs') || make?.includes('piaggio') || 
-                 model?.includes('tricycle') || model?.includes('keke') || model?.includes('tuk');
+                 model?.includes('tricycle') || model?.includes('keke') || model?.includes('tuk') ||
+                 model?.includes('ape') || model?.includes('trike');
         case 'trucks':
           return make?.includes('man') || make?.includes('daf') || make?.includes('volvo') || 
-                 make?.includes('mercedes') || make?.includes('scania') || make?.includes('iveco') ||
+                 make?.includes('scania') || make?.includes('iveco') || make?.includes('hino') ||
                  model?.includes('truck') || model?.includes('tipper') || model?.includes('trailer') ||
-                 model?.includes('lorry') || model?.includes('pickup') || model?.includes('hilux');
+                 model?.includes('lorry') || model?.includes('pickup') || model?.includes('hilux') ||
+                 model?.includes('tundra') || model?.includes('f-150') || model?.includes('ranger');
         case 'motorbikes':
           return make?.includes('honda') || make?.includes('yamaha') || make?.includes('suzuki') ||
                  make?.includes('kawasaki') || make?.includes('bajaj') || make?.includes('tvs') ||
+                 make?.includes('ducati') || make?.includes('harley') ||
                  model?.includes('bike') || model?.includes('motorcycle') || model?.includes('cbr') ||
-                 model?.includes('ninja') || model?.includes('pulsar');
+                 model?.includes('ninja') || model?.includes('pulsar') || model?.includes('sport');
         case 'buses-shuttles':
           return model?.includes('bus') || model?.includes('hiace') || model?.includes('coaster') ||
                  model?.includes('shuttle') || model?.includes('transit') || make?.includes('iveco') ||
+                 model?.includes('sprinter') || model?.includes('crafter') ||
                  (make?.includes('toyota') && model?.includes('hiace'));
           
-        // Conditions
+        // Conditions - Handle both database values and URL parameters
         case 'brand-new':
-          return condition === 'brand_new' || condition === 'brand-new';
+          return condition === 'brand_new' || condition === 'brand-new' || condition === 'new';
         case 'foreign-used':
-          return condition === 'foreign_used' || condition === 'foreign-used';
+          return condition === 'foreign_used' || condition === 'foreign-used' || condition === 'tokunbo';
         case 'local-used':
-          return condition === 'local_used' || condition === 'local-used';
+          return condition === 'local_used' || condition === 'local-used' || condition === 'nigerian_used';
           
-        // Brands - More flexible matching
+        // Brands - More flexible and comprehensive matching
         case 'toyota':
           return make?.includes('toyota');
         case 'honda':
           return make?.includes('honda');
         case 'mercedes-benz':
-          return make?.includes('mercedes') || make?.includes('benz');
+          return make?.includes('mercedes') || make?.includes('benz') || make === 'mercedes‑benz';
         case 'bmw':
           return make?.includes('bmw');
         case 'audi':
@@ -350,6 +357,34 @@ const CarListings = () => {
           return make?.includes('tvs');
         case 'acura':
           return make?.includes('acura');
+        case 'chevrolet':
+          return make?.includes('chevrolet') || make?.includes('chevy');
+        case 'jeep':
+          return make?.includes('jeep');
+        case 'land-rover':
+          return make?.includes('land rover') || make?.includes('landrover');
+        case 'mitsubishi':
+          return make?.includes('mitsubishi');
+        case 'mazda':
+          return make?.includes('mazda');
+        case 'subaru':
+          return make?.includes('subaru');
+        case 'infiniti':
+          return make?.includes('infiniti');
+        case 'cadillac':
+          return make?.includes('cadillac');
+        case 'lincoln':
+          return make?.includes('lincoln');
+        case 'porsche':
+          return make?.includes('porsche');
+        case 'mini':
+          return make?.includes('mini');
+        case 'opel':
+          return make?.includes('opel');
+        case 'renault':
+          return make?.includes('renault');
+        case 'volvo':
+          return make?.includes('volvo');
           
         default:
           return false;
@@ -365,11 +400,18 @@ const CarListings = () => {
       if (filters.minPrice && price < parseFloat(filters.minPrice)) return false;
       if (filters.maxPrice && price > parseFloat(filters.maxPrice)) return false;
       
-      // Improved make matching - handle different cases and exact matches
+      // Improved make matching - handle special characters and exact matches
       if (filters.make) {
         const filterMake = filters.make.toLowerCase();
         const carMake = car.make?.toLowerCase();
-        if (!carMake?.includes(filterMake) && carMake !== filterMake) return false;
+        
+        // Handle Mercedes-Benz special case
+        if (filterMake === 'mercedes‑benz' || filterMake === 'mercedes-benz') {
+          if (!(carMake?.includes('mercedes') || carMake?.includes('benz'))) return false;
+        } else {
+          // Exact match or contains match
+          if (!carMake?.includes(filterMake) && carMake !== filterMake) return false;
+        }
       }
       
       if (filters.model && !car.model?.toLowerCase().includes(filters.model.toLowerCase())) return false;
@@ -377,8 +419,30 @@ const CarListings = () => {
       if (filters.yearTo && year > parseInt(filters.yearTo)) return false;
       if (filters.transmission && car.transmission?.toLowerCase() !== filters.transmission.toLowerCase()) return false;
       if (filters.fuelType && car.fuel_type?.toLowerCase() !== filters.fuelType.toLowerCase()) return false;
-      if (filters.location && !car.location?.toLowerCase().includes(filters.location.toLowerCase())) return false;
-      if (filters.condition && car.condition !== filters.condition) return false;
+      
+      // Improved location matching
+      if (filters.location) {
+        const filterLocation = filters.location.toLowerCase();
+        const carLocation = car.location?.toLowerCase();
+        if (!carLocation?.includes(filterLocation)) return false;
+      }
+      
+      // Improved condition matching - handle both formats
+      if (filters.condition) {
+        const filterCondition = filters.condition.toLowerCase();
+        const carCondition = car.condition?.toLowerCase();
+        
+        // Handle condition variations
+        if (filterCondition === 'brand_new' || filterCondition === 'brand-new') {
+          if (!(carCondition === 'brand_new' || carCondition === 'brand-new' || carCondition === 'new')) return false;
+        } else if (filterCondition === 'foreign_used' || filterCondition === 'foreign-used') {
+          if (!(carCondition === 'foreign_used' || carCondition === 'foreign-used' || carCondition === 'tokunbo')) return false;
+        } else if (filterCondition === 'local_used' || filterCondition === 'local-used') {
+          if (!(carCondition === 'local_used' || carCondition === 'local-used' || carCondition === 'nigerian_used')) return false;
+        } else {
+          if (carCondition !== filterCondition) return false;
+        }
+      }
       
       return true;
     });
