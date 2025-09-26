@@ -86,6 +86,28 @@ const CarListings = () => {
     condition: ""
   });
 
+  const clearAllFilters = () => {
+    setFilters({
+      minPrice: "",
+      maxPrice: "",
+      make: "",
+      model: "",
+      yearFrom: "",
+      yearTo: "",
+      minMileage: "",
+      maxMileage: "",
+      transmission: "",
+      fuelType: "",
+      location: "",
+      condition: ""
+    });
+    setSelectedCategories([]);
+    // Update URL to remove all parameters
+    window.history.pushState({}, '', window.location.pathname);
+    // Fetch all cars
+    fetchCarListings();
+  };
+
   useEffect(() => {
     fetchCarListings();
     
@@ -636,6 +658,17 @@ const CarListings = () => {
                 </div>
               </div>
             )}
+            
+            {/* Show All Cars Button */}
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                onClick={clearAllFilters}
+                className="w-full sm:w-auto"
+              >
+                Show All Cars
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">

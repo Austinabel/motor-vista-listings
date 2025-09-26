@@ -18,6 +18,7 @@ import { AdminDealerForm } from "@/components/admin/AdminDealerForm";
 import { AdminCarListingForm } from "@/components/admin/AdminCarListingForm";
 import { FeaturedListingsManager } from "@/components/admin/FeaturedListingsManager";
 import { ListingEnhancementManager } from "@/components/admin/ListingEnhancementManager";
+import { NotificationManager } from "@/components/admin/NotificationManager";
 
 const Admin = () => {
   // All hooks must be called first, before any conditional logic
@@ -629,6 +630,7 @@ const Admin = () => {
             <TabsTrigger value="dealers">Dealers</TabsTrigger>
             <TabsTrigger value="featured">Featured Manager</TabsTrigger>
             <TabsTrigger value="requests">Ad Requests</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="add-dealer">Add Dealer</TabsTrigger>
             <TabsTrigger value="add-listing">Add Listing</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -1302,6 +1304,10 @@ const Admin = () => {
           {/* Ad Requests Tab */}
           <TabsContent value="requests">
             <ListingEnhancementManager />
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationManager />
           </TabsContent>
 
           {/* Add Dealer Tab */}

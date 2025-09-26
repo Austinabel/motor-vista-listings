@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationIcon } from "@/components/NotificationIcon";
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -200,79 +201,82 @@ export const Navigation = () => {
               {loading ? (
                 <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
               ) : user ? (
-                <div className="relative">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="flex items-center space-x-2"
-                  >
-                    <User className="h-4 w-4" />
-                    <span className="max-w-32 truncate">{getUserDisplayName()}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center space-x-3">
+                  <NotificationIcon />
+                  <div className="relative">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                      className="flex items-center space-x-2"
+                    >
+                      <User className="h-4 w-4" />
+                      <span className="max-w-32 truncate">{getUserDisplayName()}</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
                   
-                  {isUserDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                      {isDealer && (
-                        <>
-                          <Link
-                            to="/dealer/dashboard"
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                          >
-                            <LayoutDashboard className="h-4 w-4 mr-2" />
-                            Dashboard
-                          </Link>
-                          <div className="border-t border-gray-100 my-1" />
-                        </>
-                      )}
-                      <Link
-                        to="/profile/edit"
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Profile
-                      </Link>
-                      <Link
-                        to="/profile/favorites"
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Heart className="h-4 w-4 mr-2" />
-                        Favorites
-                      </Link>
-                      <Link
-                        to="/profile/messages"
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Messages
-                      </Link>
-                      <Link
-                        to="/profile/boost-sales"
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Zap className="h-4 w-4 mr-2" />
-                        Boost Sales
-                      </Link>
-                      <div className="border-t border-gray-100 mt-1 pt-1">
-                        <button
-                          onClick={() => {
-                            handleSignOut();
-                            setIsUserDropdownOpen(false);
-                          }}
+                    {isUserDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                        {isDealer && (
+                          <>
+                            <Link
+                              to="/dealer/dashboard"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                              onClick={() => setIsUserDropdownOpen(false)}
+                            >
+                              <LayoutDashboard className="h-4 w-4 mr-2" />
+                              Dashboard
+                            </Link>
+                            <div className="border-t border-gray-100 my-1" />
+                          </>
+                        )}
+                        <Link
+                          to="/profile/edit"
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                          onClick={() => setIsUserDropdownOpen(false)}
                         >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out
-                        </button>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Profile
+                        </Link>
+                        <Link
+                          to="/profile/favorites"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <Heart className="h-4 w-4 mr-2" />
+                          Favorites
+                        </Link>
+                        <Link
+                          to="/profile/messages"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Messages
+                        </Link>
+                        <Link
+                          to="/profile/boost-sales"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <Zap className="h-4 w-4 mr-2" />
+                          Boost Sales
+                        </Link>
+                        <div className="border-t border-gray-100 mt-1 pt-1">
+                          <button
+                            onClick={() => {
+                              handleSignOut();
+                              setIsUserDropdownOpen(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center"
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Sign Out
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               ) : (
                 <>
@@ -291,7 +295,7 @@ export const Navigation = () => {
               )}
             </div>
 
-            {/* Mobile menu button - simplified for app-like experience */}
+            {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
               {user ? (
                 <div className="relative">
@@ -378,8 +382,6 @@ export const Navigation = () => {
               )}
             </div>
           </div>
-
-          {/* Mobile Navigation - Removed for cleaner app experience */}
         </div>
       </div>
     </nav>
