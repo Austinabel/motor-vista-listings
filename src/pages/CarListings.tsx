@@ -20,16 +20,23 @@ const categories = [
   { id: "motorbikes", name: "Motorbikes", logo: "🏍️", type: "vehicle_type" },
   { id: "buses-shuttles", name: "Buses & Shuttles", logo: "🚌", type: "vehicle_type" },
   
-  // Car Brands
+  // Car Brands - Match with BrandCarousel brands
   { id: "toyota", name: "Toyota", logo: "🚗", type: "brand" },
-  { id: "ford", name: "Ford", logo: "🚙", type: "brand" },
   { id: "honda", name: "Honda", logo: "🚗", type: "brand" },
-  { id: "lexus", name: "Lexus", logo: "🚗", type: "brand" },
   { id: "mercedes-benz", name: "Mercedes Benz", logo: "🚗", type: "brand" },
   { id: "bmw", name: "BMW", logo: "🚗", type: "brand" },
-  { id: "acura", name: "Acura", logo: "🚗", type: "brand" },
-  { id: "innoson", name: "Innoson", logo: "🚗", type: "brand" },
+  { id: "audi", name: "Audi", logo: "🚗", type: "brand" },
+  { id: "lexus", name: "Lexus", logo: "🚗", type: "brand" },
   { id: "nissan", name: "Nissan", logo: "🚗", type: "brand" },
+  { id: "hyundai", name: "Hyundai", logo: "🚗", type: "brand" },
+  { id: "ford", name: "Ford", logo: "🚗", type: "brand" },
+  { id: "volkswagen", name: "Volkswagen", logo: "🚗", type: "brand" },
+  { id: "peugeot", name: "Peugeot", logo: "🚗", type: "brand" },
+  { id: "kia", name: "Kia", logo: "🚗", type: "brand" },
+  { id: "innoson", name: "Innoson", logo: "🚗", type: "brand" },
+  { id: "suzuki", name: "Suzuki", logo: "🚗", type: "brand" },
+  { id: "tvs", name: "TVS", logo: "🚗", type: "brand" },
+  { id: "acura", name: "Acura", logo: "🚗", type: "brand" },
   
   // Conditions
   { id: "brand-new", name: "Brand New", logo: "✨", type: "condition" },
@@ -280,22 +287,36 @@ const CarListings = () => {
         // Brands - More flexible matching
         case 'toyota':
           return make?.includes('toyota');
-        case 'ford':
-          return make?.includes('ford');
         case 'honda':
           return make?.includes('honda');
-        case 'lexus':
-          return make?.includes('lexus');
         case 'mercedes-benz':
           return make?.includes('mercedes') || make?.includes('benz');
         case 'bmw':
           return make?.includes('bmw');
-        case 'acura':
-          return make?.includes('acura');
-        case 'innoson':
-          return make?.includes('innoson');
+        case 'audi':
+          return make?.includes('audi');
+        case 'lexus':
+          return make?.includes('lexus');
         case 'nissan':
           return make?.includes('nissan');
+        case 'hyundai':
+          return make?.includes('hyundai');
+        case 'ford':
+          return make?.includes('ford');
+        case 'volkswagen':
+          return make?.includes('volkswagen') || make?.includes('vw');
+        case 'peugeot':
+          return make?.includes('peugeot');
+        case 'kia':
+          return make?.includes('kia');
+        case 'innoson':
+          return make?.includes('innoson');
+        case 'suzuki':
+          return make?.includes('suzuki');
+        case 'tvs':
+          return make?.includes('tvs');
+        case 'acura':
+          return make?.includes('acura');
           
         default:
           return false;

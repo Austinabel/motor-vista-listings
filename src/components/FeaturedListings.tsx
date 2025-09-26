@@ -27,7 +27,7 @@ export const FeaturedListings = () => {
       // First expire any expired featured/boosted listings
       await supabase.rpc('expire_featured_listings');
 
-      // Fetch car listings first - include pending_review for own listings
+      // Fetch only admin-featured car listings
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
         .select(`
@@ -37,9 +37,9 @@ export const FeaturedListings = () => {
             is_primary
           )
         `)
-        .or(`status.eq.active${user ? `,and(status.eq.pending_review,user_id.eq.${user.id})` : ''}`)
+        .eq('status', 'active')
+        .eq('is_featured', true)
         .order('is_top_listing', { ascending: false })
-        .order('is_featured', { ascending: false })
         .order('is_boosted', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(108); // 6 rows * 6 cars * 3 pages

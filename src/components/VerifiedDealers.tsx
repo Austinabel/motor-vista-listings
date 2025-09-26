@@ -26,7 +26,7 @@ export const VerifiedDealers = () => {
         .from('dealers')
         .select('id, business_name, state, year_established, description, website, created_at, is_featured')
         .eq('status', 'verified')
-        .order('is_featured', { ascending: false })
+        .eq('is_featured', true)
         .order('created_at', { ascending: false });
 
       if (error) {
