@@ -120,76 +120,83 @@ export const MobileCarGrid = () => {
                               listing.car_listing_images?.[0]?.image_url;
 
           return (
-            <Link key={listing.id} to={`/cars/${listing.id}`}>
-              <Card className={`overflow-hidden border-0 shadow-sm hover:shadow-lg transition-shadow cursor-pointer bg-white rounded-lg relative ${index % 2 === 0 ? 'mr-1' : 'ml-1'}`}>
-                {/* Image */}
-                <div className="relative">
-                  {primaryImage ? (
-                    <img
-                      src={primaryImage}
-                      alt={`${listing.make} ${listing.model}`}
-                      className="w-full h-32 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No Image</span>
+            <div key={listing.id} className="relative">
+              {/* Horizontal divider after every 2 cards (after each row) */}
+              {index > 1 && index % 2 === 0 && (
+                <div className="absolute -top-1 left-0 right-0 h-px bg-red-200/50 z-10"></div>
+              )}
+              
+              <Link to={`/cars/${listing.id}`}>
+                <Card className={`overflow-hidden border-0 shadow-sm hover:shadow-lg transition-shadow cursor-pointer bg-white rounded-lg relative ${index % 2 === 0 ? 'mr-1' : 'ml-1'}`}>
+                  {/* Image */}
+                  <div className="relative">
+                    {primaryImage ? (
+                      <img
+                        src={primaryImage}
+                        alt={`${listing.make} ${listing.model}`}
+                        className="w-full h-32 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">No Image</span>
+                      </div>
+                    )}
+                    
+                    {/* Fixed badge positioning to prevent overlap */}
+                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                      <Badge className="bg-green-600 text-white text-xs px-1.5 py-0.5 flex items-center">
+                        <CheckCircle className="w-2.5 h-2.5 mr-1" />
+                        Verified
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs px-1.5 py-0.5 flex items-center bg-yellow-500 text-white">
+                        <Star className="w-2.5 h-2.5 mr-1" />
+                        POPULAR
+                      </Badge>
                     </div>
-                  )}
-                  
-                  {/* Fixed badge positioning to prevent overlap */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    <Badge className="bg-green-600 text-white text-xs px-1.5 py-0.5 flex items-center">
-                      <CheckCircle className="w-2.5 h-2.5 mr-1" />
-                      Verified
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5 flex items-center bg-yellow-500 text-white">
-                      <Star className="w-2.5 h-2.5 mr-1" />
-                      POPULAR
-                    </Badge>
                   </div>
-                </div>
 
-              {/* Content */}
-              <div className="p-2">
-                {/* Price */}
-                <div className="font-bold text-lg text-red-600 mb-1">
-                  {formatPrice(listing.price)}
-                </div>
+                  {/* Content */}
+                  <div className="p-2">
+                    {/* Price */}
+                    <div className="font-bold text-lg text-red-600 mb-1">
+                      {formatPrice(listing.price)}
+                    </div>
 
-                {/* Title */}
-                <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">
-                  {listing.make} {listing.model} {listing.year}
-                </h3>
+                    {/* Title */}
+                    <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">
+                      {listing.make} {listing.model} {listing.year}
+                    </h3>
 
-                {/* Details */}
-                <div className="space-y-1 text-xs text-gray-600">
-                  {listing.condition && (
-                    <Badge className={`${getConditionColor(listing.condition)} text-xs`}>
-                      {getConditionLabel(listing.condition)}
-                    </Badge>
-                  )}
-                  
-                  {listing.mileage && (
-                    <div>• {listing.mileage} km</div>
-                  )}
-                  
-                  {listing.color && (
-                    <div>• {listing.color}</div>
-                  )}
-                  
-                  <div className="flex items-center text-xs text-gray-500 mt-2">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    {listing.location}
+                    {/* Details */}
+                    <div className="space-y-1 text-xs text-gray-600">
+                      {listing.condition && (
+                        <Badge className={`${getConditionColor(listing.condition)} text-xs`}>
+                          {getConditionLabel(listing.condition)}
+                        </Badge>
+                      )}
+                      
+                      {listing.mileage && (
+                        <div>• {listing.mileage} km</div>
+                      )}
+                      
+                      {listing.color && (
+                        <div>• {listing.color}</div>
+                      )}
+                      
+                      <div className="flex items-center text-xs text-gray-500 mt-2">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {listing.location}
+                      </div>
+                    </div>
+
+                    {/* Seller */}
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <div className="text-xs text-gray-600">Private Seller</div>
+                    </div>
                   </div>
-                </div>
-
-                {/* Seller */}
-                <div className="mt-2 pt-2 border-t border-gray-100">
-                  <div className="text-xs text-gray-600">Private Seller</div>
-                </div>
-              </div>
-            </Card>
-            </Link>
+                </Card>
+              </Link>
+            </div>
           );
         })}
       </div>
