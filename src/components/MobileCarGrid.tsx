@@ -30,6 +30,9 @@ export const MobileCarGrid = () => {
 
   const fetchListings = async () => {
     try {
+      // Expire any outdated featured/boosted listings first
+      await supabase.rpc('expire_featured_listings');
+
       const { data, error } = await supabase
         .from('car_listings')
         .select(`
@@ -37,13 +40,17 @@ export const MobileCarGrid = () => {
           car_listing_images(image_url, is_primary)
         `)
         .eq('status', 'active')
+        .or('is_featured.eq.true,is_top_listing.eq.true,is_boosted.eq.true')
+        .order('is_top_listing', { ascending: false })
+        .order('is_boosted', { ascending: false })
+        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(10);
 
       if (error) throw error;
       setListings(data || []);
     } catch (error) {
-      console.error('Error fetching listings:', error);
+      console.error('Error fetching featured listings:', error);
     } finally {
       setLoading(false);
     }
@@ -95,6 +102,15 @@ export const MobileCarGrid = () => {
 
   return (
     <div className="bg-white px-2 py-4">
+      {/* Divider */}
+      <div className="border-t border-gray-200 mb-4"></div>
+      
+      {/* Section Header */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">Featured Cars</h2>
+        <p className="text-sm text-gray-600">Discover our top picks and featured listings</p>
+      </div>
+      
       <div className="grid grid-cols-2 gap-2">
         {listings.map((listing) => {
           const primaryImage = listing.car_listing_images?.find(img => img.is_primary)?.image_url || 
