@@ -16,16 +16,16 @@ import { Link, useNavigate } from "react-router-dom";
 import heroBgPattern from "@/assets/hero-bg-pattern.jpg";
 
 const categories = [
-  { id: 'post', name: 'Post ad', icon: Plus, color: 'bg-red-500', link: '/sell' },
-  { id: 'verified-dealers', name: 'Verified Dealers', icon: TrendingUp, color: 'bg-red-600', link: '/dealers' },
-  { id: 'brand-new', name: 'Brand New', icon: Car, color: 'bg-red-400', link: '/cars?type=brand-new' },
-  { id: 'foreign-used', name: 'Foreign Used', icon: Car, color: 'bg-red-500', link: '/cars?type=foreign-used' },
-  { id: 'local-used', name: 'Local Used', icon: Car, color: 'bg-red-600', link: '/cars?type=local-used' },
-  { id: 'electric-cars', name: 'Electric Cars', icon: Zap, color: 'bg-red-400', link: '/cars?category=electric' },
-  { id: 'tricycles', name: 'Tricycles', icon: Bike, color: 'bg-red-500', link: '/cars?category=tricycles' },
-  { id: 'trucks', name: 'Trucks', icon: Truck, color: 'bg-red-600', link: '/cars?category=trucks' },
-  { id: 'motorbikes', name: 'Motorbikes', icon: Bike, color: 'bg-red-400', link: '/cars?category=motorbikes' },
-  { id: 'buses', name: 'Buses', icon: Bus, color: 'bg-red-500', link: '/cars?category=buses' },
+  { id: 'post', name: 'Post ad', icon: Plus, bgColor: '#210070', iconColor: '#213970', link: '/sell' },
+  { id: 'verified-dealers', name: 'Verified Dealers', icon: TrendingUp, bgColor: '#143d59', iconColor: '#f4b41a', link: '/dealers' },
+  { id: 'brand-new', name: 'Brand New', icon: Car, bgColor: '#5b0e2d', iconColor: '#ffa781', link: '/cars?type=brand-new' },
+  { id: 'foreign-used', name: 'Foreign Used', icon: Car, bgColor: '#030e4f', iconColor: '#f49f1c', link: '/cars?type=foreign-used' },
+  { id: 'local-used', name: 'Local Used', icon: Car, bgColor: '#0e387a', iconColor: '#9fafca', link: '/cars?type=local-used' },
+  { id: 'electric-cars', name: 'Electric Cars', icon: Zap, bgColor: '#514644', iconColor: '#efc8b1', link: '/cars?category=electric' },
+  { id: 'tricycles', name: 'Tricycles', icon: Bike, bgColor: '#5e057e', iconColor: '#c299d0', link: '/cars?category=tricycles' },
+  { id: 'trucks', name: 'Trucks', icon: Truck, bgColor: '#ffbab1', iconColor: '#993441', link: '/cars?category=trucks' },
+  { id: 'motorbikes', name: 'Motorbikes', icon: Bike, bgColor: '#008970', iconColor: '#99eedf', link: '/cars?category=motorbikes' },
+  { id: 'buses', name: 'Buses', icon: Bus, bgColor: '#0f4d19', iconColor: '#6fc27c', link: '/cars?category=buses' },
 ];
 
 export const MobileHero = () => {
@@ -137,8 +137,11 @@ export const MobileHero = () => {
                   to={category.link}
                   className="group flex flex-col items-center text-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
-                  <div className={`${category.color} p-3 rounded-xl mb-2 shadow-md group-hover:shadow-lg transition-shadow`}>
-                    <Icon className="h-6 w-6 text-white" />
+                  <div 
+                    className="p-3 rounded-xl mb-2 shadow-md group-hover:shadow-lg transition-shadow"
+                    style={{ backgroundColor: category.bgColor }}
+                  >
+                    <Icon className="h-6 w-6" style={{ color: category.iconColor }} />
                   </div>
                   <span className="text-sm text-gray-700 font-medium leading-tight group-hover:text-gray-900 transition-colors">
                     {category.name}
