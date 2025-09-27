@@ -43,17 +43,17 @@ export const FeaturedListingsManager = () => {
 
       console.log('Searching car listings with term:', carSearchTerm);
       
-      // Build search conditions
-      const searchConditions = [];
-      const term = carSearchTerm.toLowerCase();
-      
-      searchConditions.push(`make.ilike.%${term}%`);
-      searchConditions.push(`model.ilike.%${term}%`);
-      searchConditions.push(`year.ilike.%${term}%`);
+      // Build search conditions with proper PostgREST syntax
+      const term = `%${carSearchTerm.toLowerCase()}%`;
+      const searchConditions = [
+        `make.ilike.${term}`,
+        `model.ilike.${term}`,
+        `year.ilike.${term}`
+      ];
       
       // Only add ID search if the term looks like a UUID (starts with valid chars)
-      if (/^[a-f0-9-]+$/i.test(term)) {
-        searchConditions.push(`id::text.ilike.%${term}%`);
+      if (/^[a-f0-9-]+$/i.test(carSearchTerm.trim())) {
+        searchConditions.push(`id::text.ilike.${term}`);
       }
 
       const { data: listings, error, count } = await supabase
@@ -94,17 +94,17 @@ export const FeaturedListingsManager = () => {
 
       console.log('Searching dealers with term:', dealerSearchTerm);
       
-      // Build search conditions
-      const searchConditions = [];
-      const term = dealerSearchTerm.toLowerCase();
-      
-      searchConditions.push(`business_name.ilike.%${term}%`);
-      searchConditions.push(`contact_name.ilike.%${term}%`);
-      searchConditions.push(`email.ilike.%${term}%`);
+      // Build search conditions with proper PostgREST syntax
+      const term = `%${dealerSearchTerm.toLowerCase()}%`;
+      const searchConditions = [
+        `business_name.ilike.${term}`,
+        `contact_name.ilike.${term}`,
+        `email.ilike.${term}`
+      ];
       
       // Only add ID search if the term looks like a UUID (starts with valid chars)
-      if (/^[a-f0-9-]+$/i.test(term)) {
-        searchConditions.push(`id::text.ilike.%${term}%`);
+      if (/^[a-f0-9-]+$/i.test(dealerSearchTerm.trim())) {
+        searchConditions.push(`id::text.ilike.${term}`);
       }
 
       const { data: dealers, error, count } = await supabase
