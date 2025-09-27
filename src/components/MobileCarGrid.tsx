@@ -111,14 +111,17 @@ export const MobileCarGrid = () => {
         <p className="text-sm text-gray-600">Discover our top picks and featured listings</p>
       </div>
       
-      <div className="grid grid-cols-2 gap-2">
-        {listings.map((listing) => {
+      <div className="grid grid-cols-2 gap-2 relative">
+        {/* Vertical divider */}
+        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-red-200/50 transform -translate-x-1/2 z-10"></div>
+        
+        {listings.map((listing, index) => {
           const primaryImage = listing.car_listing_images?.find(img => img.is_primary)?.image_url || 
                               listing.car_listing_images?.[0]?.image_url;
 
           return (
             <Link key={listing.id} to={`/cars/${listing.id}`}>
-              <Card className="overflow-hidden border-0 shadow-sm hover:shadow-lg transition-shadow cursor-pointer bg-white rounded-lg">
+              <Card className={`overflow-hidden border-0 shadow-sm hover:shadow-lg transition-shadow cursor-pointer bg-white rounded-lg relative ${index % 2 === 0 ? 'mr-1' : 'ml-1'}`}>
                 {/* Image */}
                 <div className="relative">
                   {primaryImage ? (
