@@ -16,7 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import heroBgPattern from "@/assets/hero-bg-pattern.jpg";
 
 const categories = [
-  { id: 'post', name: 'Post ad', icon: Plus, bgColor: '#210070', iconColor: '#213970', link: '/sell' },
+  { id: 'post', name: 'Post ad', icon: Plus, bgColor: '#210070', iconColor: '#ffffff', link: '/sell' },
   { id: 'verified-dealers', name: 'Verified Dealers', icon: TrendingUp, bgColor: '#143d59', iconColor: '#f4b41a', link: '/dealers' },
   { id: 'brand-new', name: 'Brand New', icon: Car, bgColor: '#5b0e2d', iconColor: '#ffa781', link: '/cars?type=brand-new' },
   { id: 'foreign-used', name: 'Foreign Used', icon: Car, bgColor: '#030e4f', iconColor: '#f49f1c', link: '/cars?type=foreign-used' },
