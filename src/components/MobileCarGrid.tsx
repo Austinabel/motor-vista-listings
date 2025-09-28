@@ -33,7 +33,7 @@ export const MobileCarGrid = () => {
       // Expire any outdated featured/boosted listings first
       await supabase.rpc('expire_featured_listings');
 
-      const { data, error } = await supabase
+      const { data: listings, error } = await supabase
         .from('car_listings')
         .select(`
           *,
@@ -47,7 +47,45 @@ export const MobileCarGrid = () => {
         .limit(50);
 
       if (error) throw error;
-      setListings(data || []);
+
+      // Enrich listings with seller information
+      const enrichedListings = await Promise.all(
+        (listings || []).map(async (listing) => {
+          // Get seller profile info
+          const { data: sellerInfo, error: sellerError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, user_type, show_profile')
+            .eq('id', listing.user_id)
+            .maybeSingle();
+
+          let dealerInfo = null;
+          
+          // If seller is a dealer, fetch dealer information
+          if (sellerInfo && sellerInfo.user_type === 'dealer') {
+            const { data: dealersData, error: dealersError } = await supabase
+              .rpc('get_public_dealers');
+
+            const dealerData = dealersData?.find(dealer => 
+              sellerInfo?.id === listing.user_id
+            );
+
+            if (dealerData) {
+              dealerInfo = {
+                id: dealerData.id, 
+                business_name: dealerData.business_name
+              };
+            }
+          }
+
+          return {
+            ...listing,
+            profiles: sellerInfo,
+            dealers: dealerInfo ? [dealerInfo] : []
+          };
+        })
+      );
+
+      setListings(enrichedListings);
     } catch (error) {
       console.error('Error fetching listings:', error);
     } finally {
@@ -80,6 +118,28 @@ export const MobileCarGrid = () => {
       case 'local_used': return 'Local Used';
       default: return condition;
     }
+  };
+
+  const getSellerName = (listing: any) => {
+    // If it's a dealer, show business name
+    if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
+      return listing.dealers[0].business_name;
+    } 
+    
+    // If it's a regular user
+    if (listing.profiles) {
+      // Check privacy settings
+      const showProfile = listing.profiles.show_profile ?? true;
+      
+      if (!showProfile) {
+        return 'Private Seller';
+      }
+      
+      const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
+      return fullName || 'Private Seller';
+    }
+    
+    return 'Private Seller';
   };
 
   if (loading) {
@@ -190,7 +250,7 @@ export const MobileCarGrid = () => {
 
                     {/* Seller */}
                     <div className="mt-2 pt-2 border-t border-gray-100">
-                      <div className="text-xs text-gray-600">Private Seller</div>
+                      <div className="text-xs text-gray-600">{getSellerName(listing)}</div>
                     </div>
                   </div>
                 </Card>
