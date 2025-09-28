@@ -40,17 +40,16 @@ export const MobileCarGrid = () => {
           car_listing_images(image_url, is_primary)
         `)
         .eq('status', 'active')
-        .or('is_featured.eq.true,is_top_listing.eq.true,is_boosted.eq.true')
+        .order('is_featured', { ascending: false })
         .order('is_top_listing', { ascending: false })
         .order('is_boosted', { ascending: false })
-        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (error) throw error;
       setListings(data || []);
     } catch (error) {
-      console.error('Error fetching featured listings:', error);
+      console.error('Error fetching listings:', error);
     } finally {
       setLoading(false);
     }
@@ -107,8 +106,8 @@ export const MobileCarGrid = () => {
       
       {/* Section Header */}
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Featured Cars</h2>
-        <p className="text-sm text-gray-600">Discover our top picks and featured listings</p>
+        <h2 className="text-lg font-semibold text-gray-900">Available Cars</h2>
+        <p className="text-sm text-gray-600">Discover the best cars available right now</p>
       </div>
       
       <div className="grid grid-cols-2 gap-2 relative">
