@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, Filter, User, Building } from "lucide-react";
+import { Eye, Filter, User, Building, LogIn } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
@@ -211,7 +211,7 @@ const CarListings = () => {
         // If seller is a dealer, find dealer information
         if (profile && profile.user_type === 'dealer') {
           const dealerData = dealersData?.find(dealer => 
-            profile?.id === listing.user_id
+            dealer.id === listing.user_id
           );
 
           if (dealerData) {
@@ -825,10 +825,19 @@ const CarListings = () => {
                             <div className="grid grid-cols-1 gap-1 text-xs">
                               {car.mileage && <span>{car.mileage}</span>}
                               <span>{car.fuel_type || 'Petrol'} • {car.transmission || 'Automatic'}</span>
-                              <div className="flex items-center gap-1 mt-1">
-                                {listedBy.icon}
-                                <span className="text-xs text-gray-500 truncate">{listedBy.name}</span>
-                              </div>
+                               <div className="flex items-center gap-1 mt-1">
+                                 {user ? (
+                                   <>
+                                     {listedBy.icon}
+                                     <span className="text-xs text-gray-500 truncate">{listedBy.name}</span>
+                                   </>
+                                 ) : (
+                                   <>
+                                     <LogIn className="w-3 h-3 text-blue-600" />
+                                     <span className="text-xs text-blue-600 truncate">Sign in to see seller</span>
+                                   </>
+                                 )}
+                               </div>
                             </div>
                           </CardContent>
                           <CardFooter className="p-3 pt-0">

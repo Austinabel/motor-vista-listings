@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Eye, Star, CheckCircle } from "lucide-react";
+import { MapPin, Eye, Star, CheckCircle, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CarListing {
   id: string;
@@ -21,6 +22,7 @@ interface CarListing {
 }
 
 export const MobileCarGrid = () => {
+  const { user } = useAuth();
   const [listings, setListings] = useState<CarListing[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,8 +77,7 @@ export const MobileCarGrid = () => {
         // If seller is a dealer, find dealer information
         if (profile && profile.user_type === 'dealer') {
           const dealerData = dealersData?.find(dealer => 
-            // Match by business context - this is a workaround since user_id isn't exposed
-            profile?.id === listing.user_id
+            dealer.id === listing.user_id
           );
 
           if (dealerData) {
@@ -259,7 +260,14 @@ export const MobileCarGrid = () => {
 
                     {/* Seller */}
                     <div className="mt-2 pt-2 border-t border-gray-100">
-                      <div className="text-xs text-gray-600">{getSellerName(listing)}</div>
+                      {user ? (
+                        <div className="text-xs text-gray-600">{getSellerName(listing)}</div>
+                      ) : (
+                        <div className="text-xs text-blue-600 flex items-center gap-1">
+                          <LogIn className="w-3 h-3" />
+                          Sign in to see seller
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Card>
