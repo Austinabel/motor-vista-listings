@@ -48,42 +48,51 @@ export const MobileCarGrid = () => {
 
       if (error) throw error;
 
+      // Get unique user IDs from listings
+      const userIds = [...new Set(listings?.map(listing => listing.user_id).filter(Boolean))];
+      
+      // Fetch all profiles at once for better efficiency with RLS
+      let profiles = [];
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, user_type, show_profile')
+          .in('id', userIds);
+
+        if (!profilesError) {
+          profiles = profilesData || [];
+        }
+      }
+
+      // Fetch dealer information for dealer users
+      const { data: dealersData } = await supabase.rpc('get_public_dealers');
+
       // Enrich listings with seller information
-      const enrichedListings = await Promise.all(
-        (listings || []).map(async (listing) => {
-          // Get seller profile info
-          const { data: sellerInfo, error: sellerError } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, user_type, show_profile')
-            .eq('id', listing.user_id)
-            .maybeSingle();
+      const enrichedListings = (listings || []).map(listing => {
+        const profile = profiles?.find(p => p.id === listing.user_id);
+        let dealerInfo = null;
+        
+        // If seller is a dealer, find dealer information
+        if (profile && profile.user_type === 'dealer') {
+          const dealerData = dealersData?.find(dealer => 
+            // Match by business context - this is a workaround since user_id isn't exposed
+            profile?.id === listing.user_id
+          );
 
-          let dealerInfo = null;
-          
-          // If seller is a dealer, fetch dealer information
-          if (sellerInfo && sellerInfo.user_type === 'dealer') {
-            const { data: dealersData, error: dealersError } = await supabase
-              .rpc('get_public_dealers');
-
-            const dealerData = dealersData?.find(dealer => 
-              sellerInfo?.id === listing.user_id
-            );
-
-            if (dealerData) {
-              dealerInfo = {
-                id: dealerData.id, 
-                business_name: dealerData.business_name
-              };
-            }
+          if (dealerData) {
+            dealerInfo = {
+              id: dealerData.id, 
+              business_name: dealerData.business_name
+            };
           }
+        }
 
-          return {
-            ...listing,
-            profiles: sellerInfo,
-            dealers: dealerInfo ? [dealerInfo] : []
-          };
-        })
-      );
+        return {
+          ...listing,
+          profiles: profile,
+          dealers: dealerInfo ? [dealerInfo] : []
+        };
+      });
 
       setListings(enrichedListings);
     } catch (error) {

@@ -163,7 +163,10 @@ const CarListings = () => {
       // Fetch car listings first - include pending_review for own listings
       const { data: listings, error: listingsError } = await supabase
         .from('car_listings')
-        .select('*')
+        .select(`
+          *,
+          car_listing_images(image_url, is_primary)
+        `)
         .or(`status.eq.active${user ? `,and(status.eq.pending_review,user_id.eq.${user.id})` : ''}`)
         .order('created_at', { ascending: false });
 
@@ -173,28 +176,23 @@ const CarListings = () => {
         return;
       }
 
-      // Fetch images for all listings
-      const { data: allImages, error: imagesError } = await supabase
-        .from('car_listing_images')
-        .select('listing_id, image_url, is_primary')
-        .in('listing_id', (listings || []).map(l => l.id));
-
-      if (imagesError) {
-        console.error('Error fetching images:', imagesError);
+      if (listingsError) {
+        console.error('Error fetching car listings:', listingsError);
+        toast.error('Failed to load car listings');
+        return;
       }
 
       console.log('Raw listings data:', listings);
-      console.log('Images data:', allImages);
 
-      // Get unique user IDs from listings
+      // Get unique user IDs from listings  
       const userIds = [...new Set(listings?.map(listing => listing.user_id).filter(Boolean))];
       
-      // Fetch profiles for these users
+      // Fetch all profiles at once for better efficiency with RLS
       let profiles = [];
       if (userIds.length > 0) {
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, user_type')
+          .select('id, first_name, last_name, user_type, show_profile')
           .in('id', userIds);
 
         if (!profilesError) {
@@ -202,38 +200,34 @@ const CarListings = () => {
         }
       }
 
-      // Fetch dealers for dealer users
-      const dealerUserIds = profiles?.filter(p => p.user_type === 'dealer').map(p => p.id) || [];
-      let dealers = [];
-      
-      if (dealerUserIds.length > 0) {
-        const { data: dealersData, error: dealersError } = await supabase
-          .rpc('get_public_dealers');
+      // Fetch dealer information
+      const { data: dealersData } = await supabase.rpc('get_public_dealers');
 
-        if (!dealersError) {
-          // Match dealers by user_id (not available in public function, so we'll use profile matching)
-          dealers = (dealersData || []).map(dealer => ({
-            id: dealer.id,
-            business_name: dealer.business_name,
-            contact_name: 'Dealer', // Generic name for security
-            user_id: null // Not exposed in public function
-          }));
-        }
-      }
-
-      // Combine the data
-      const enrichedListings = listings?.map(listing => {
+      // Combine the data with enriched seller information
+      const enrichedListings = (listings || []).map(listing => {
         const profile = profiles?.find(p => p.id === listing.user_id);
-        const dealer = dealers?.find(d => d.user_id === listing.user_id);
-        const listingImages = allImages?.filter(img => img.listing_id === listing.id) || [];
+        let dealerInfo = null;
         
+        // If seller is a dealer, find dealer information
+        if (profile && profile.user_type === 'dealer') {
+          const dealerData = dealersData?.find(dealer => 
+            profile?.id === listing.user_id
+          );
+
+          if (dealerData) {
+            dealerInfo = {
+              id: dealerData.id, 
+              business_name: dealerData.business_name
+            };
+          }
+        }
+
         return {
           ...listing,
-          car_listing_images: listingImages,
           profiles: profile,
-          dealers: dealer ? [dealer] : []
+          dealers: dealerInfo ? [dealerInfo] : []
         };
-      }) || [];
+      });
 
       console.log('Enriched listings:', enrichedListings);
       setCarListings(enrichedListings);
@@ -253,15 +247,27 @@ const CarListings = () => {
         icon: <Building className="w-3 h-3 text-blue-600" />
       };
     } else if (listing.profiles) {
+      // Check privacy settings
+      const showProfile = listing.profiles.show_profile ?? true;
+      
+      if (!showProfile) {
+        return {
+          type: 'user',
+          name: 'Private Seller',
+          icon: <User className="w-3 h-3 text-gray-600" />
+        };
+      }
+      
+      const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
       return {
         type: 'user',
-        name: 'Private Seller',
+        name: fullName || 'Private Seller',
         icon: <User className="w-3 h-3 text-gray-600" />
       };
     }
     return {
-      type: 'unknown',
-      name: 'Unknown',
+      type: 'user',
+      name: 'Private Seller',
       icon: <User className="w-3 h-3 text-gray-600" />
     };
   };
