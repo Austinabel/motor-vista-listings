@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Car, MapPin, Calendar, Heart, Crown, Star, TrendingUp, Eye, User, Building } from "lucide-react";
+import { ChevronLeft, ChevronRight, Car, MapPin, Calendar, Heart, Crown, Star, TrendingUp, Eye, User, Building, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import MessageSellerButton from "@/components/MessageSellerButton";
@@ -85,8 +85,7 @@ export const FeaturedListings = () => {
               .rpc('get_public_dealers')
 
             const dealerData = dealersData?.find(dealer => 
-              // Match by comparing with user profiles - we need a safer way to link this
-              sellerInfo?.id === listing.user_id
+              dealer.id === listing.user_id
             );
 
             if (dealerData) {
@@ -255,8 +254,17 @@ export const FeaturedListings = () => {
                     {car.mileage && <span className="truncate">{car.mileage}</span>}
                     <span className="truncate">{car.fuel_type || 'Petrol'} • {car.transmission || 'Automatic'}</span>
                     <div className="flex items-center gap-1 mt-1">
-                      {listedBy.icon}
-                      <span className="text-xs text-gray-500 truncate">{listedBy.name}</span>
+                      {user ? (
+                        <>
+                          {listedBy.icon}
+                          <span className="text-xs text-gray-500 truncate">{listedBy.name}</span>
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="w-3 h-3 text-blue-600" />
+                          <span className="text-xs text-blue-600 truncate">Sign in to see seller</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </CardContent>
