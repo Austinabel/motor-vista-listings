@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Eye, Star, CheckCircle, LogIn } from "lucide-react";
+import { MapPin, Eye, Star, CheckCircle, LogIn, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +18,9 @@ interface CarListing {
   color?: string;
   description?: string;
   created_at: string;
+  is_featured?: boolean;
+  is_top_listing?: boolean;
+  is_boosted?: boolean;
   car_listing_images?: { image_url: string; is_primary: boolean }[];
 }
 
@@ -212,11 +215,17 @@ export const MobileCarGrid = () => {
                     )}
                     
                     {/* Fixed badge positioning to prevent overlap */}
-                    <div className="absolute top-2 left-2">
+                    <div className="absolute top-2 left-2 flex flex-col gap-1">
                       <Badge className="bg-green-600 text-white text-xs px-1.5 py-0.5 flex items-center">
                         <CheckCircle className="w-2.5 h-2.5 mr-1" />
                         Verified
                       </Badge>
+                      {listing.is_featured && (
+                        <Badge className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 flex items-center">
+                          <Crown className="w-2.5 h-2.5 mr-1" />
+                          Featured
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
