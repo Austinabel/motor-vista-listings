@@ -212,14 +212,10 @@ export const MobileCarGrid = () => {
                     )}
                     
                     {/* Fixed badge positioning to prevent overlap */}
-                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    <div className="absolute top-2 left-2">
                       <Badge className="bg-green-600 text-white text-xs px-1.5 py-0.5 flex items-center">
                         <CheckCircle className="w-2.5 h-2.5 mr-1" />
                         Verified
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs px-1.5 py-0.5 flex items-center bg-yellow-500 text-white">
-                        <Star className="w-2.5 h-2.5 mr-1" />
-                        POPULAR
                       </Badge>
                     </div>
                   </div>
