@@ -67,20 +67,28 @@ const AdminRegister = () => {
       });
 
       if (error) {
+        console.error('Registration error:', error);
+        
         // Handle specific error cases with clearer messages
-        if (error.message.toLowerCase().includes('already registered') || 
-            error.message.toLowerCase().includes('already been registered') ||
-            error.message.toLowerCase().includes('user already registered') ||
-            error.message.toLowerCase().includes('email address already in use')) {
+        const errorMessage = error.message.toLowerCase();
+        
+        if (errorMessage.includes('already') || 
+            errorMessage.includes('duplicate') ||
+            errorMessage.includes('unique') ||
+            error.status === 422 ||
+            errorMessage.includes('user with this email already exists')) {
           toast.error("This email address is already registered. Please use the admin login page or contact support if you need access to an existing account.");
-        } else if (error.message.toLowerCase().includes('email rate limit exceeded')) {
+        } else if (errorMessage.includes('email rate limit exceeded') || 
+                   errorMessage.includes('too many requests')) {
           toast.error("Too many registration attempts. Please wait a few minutes before trying again.");
-        } else if (error.message.toLowerCase().includes('invalid email')) {
-          toast.error("Please enter a valid email address.");
-        } else if (error.message.toLowerCase().includes('weak password')) {
-          toast.error("Password does not meet security requirements. Please choose a stronger password.");
+        } else if (errorMessage.includes('invalid email') || 
+                   errorMessage.includes('email format')) {
+          toast.error("Please enter a valid email address in the correct format.");
+        } else if (errorMessage.includes('weak password') || 
+                   errorMessage.includes('password')) {
+          toast.error("Your password doesn't meet the security requirements. Please ensure it has at least 8 characters, including uppercase, lowercase, numbers, and special characters.");
         } else {
-          toast.error(`Registration failed: ${error.message}`);
+          toast.error(`Registration failed: ${error.message || "An unexpected error occurred."}`);
         }
       } else {
         toast.success("Admin registration request submitted! Please check your email for verification and contact support to activate admin privileges.");

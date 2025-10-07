@@ -77,38 +77,46 @@ const Register = () => {
     const { error } = await signUp(formData.email, formData.password, userData);
 
     if (error) {
+      console.error('Registration error:', error);
+      
       // Handle specific error cases with clearer messages
-      if (error.message.toLowerCase().includes('already registered') || 
-          error.message.toLowerCase().includes('already been registered') ||
-          error.message.toLowerCase().includes('user already registered') ||
-          error.message.toLowerCase().includes('email address already in use')) {
+      const errorMessage = error.message.toLowerCase();
+      
+      if (errorMessage.includes('already') || 
+          errorMessage.includes('duplicate') ||
+          errorMessage.includes('unique') ||
+          error.status === 422 || // Unprocessable Entity - often means duplicate email
+          errorMessage.includes('user with this email already exists')) {
         toast({
-          title: "Account Already Exists",
-          description: "This email address is already registered. Please sign in instead or use a different email address.",
+          title: "Email Already Registered",
+          description: "An account with this email address already exists. Please sign in or use the 'Forgot Password' option if you can't remember your password.",
           variant: "destructive"
         });
-      } else if (error.message.toLowerCase().includes('email rate limit exceeded')) {
+      } else if (errorMessage.includes('email rate limit exceeded') || 
+                 errorMessage.includes('too many requests')) {
         toast({
           title: "Too Many Attempts",
           description: "Too many registration attempts. Please wait a few minutes before trying again.",
           variant: "destructive"
         });
-      } else if (error.message.toLowerCase().includes('invalid email')) {
+      } else if (errorMessage.includes('invalid email') || 
+                 errorMessage.includes('email format')) {
         toast({
-          title: "Invalid Email",
-          description: "Please enter a valid email address.",
+          title: "Invalid Email Address",
+          description: "Please enter a valid email address in the correct format.",
           variant: "destructive"
         });
-      } else if (error.message.toLowerCase().includes('weak password')) {
+      } else if (errorMessage.includes('weak password') || 
+                 errorMessage.includes('password')) {
         toast({
-          title: "Password Too Weak",
-          description: "Password does not meet security requirements. Please choose a stronger password.",
+          title: "Password Requirements Not Met",
+          description: "Your password doesn't meet the security requirements. Please ensure it has at least 8 characters, including uppercase, lowercase, numbers, and special characters.",
           variant: "destructive"
         });
       } else {
         toast({
           title: "Registration Failed",
-          description: error.message,
+          description: error.message || "An unexpected error occurred. Please try again.",
           variant: "destructive"
         });
       }
