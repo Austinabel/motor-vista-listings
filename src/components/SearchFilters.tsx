@@ -29,7 +29,6 @@ const quickCategories = [
   { id: "toyota", name: "Toyota", icon: "🚗" },
   { id: "honda", name: "Honda", icon: "🚗" },
   { id: "mercedes-benz", name: "Mercedes", icon: "🚗" },
-  { id: "electric-cars", name: "Electric", icon: "⚡" },
 ];
 
 export const SearchFilters = () => {

@@ -141,9 +141,39 @@ const CarListings = () => {
       }));
     }
     
-    // Set categories from URL parameters - support brand, category, type params
+    // Handle category parameter - check if it's a brand/make or other category type
     if (categoryParam) {
-      setSelectedCategories([categoryParam]);
+      const brandCategories = ['toyota', 'honda', 'mercedes-benz', 'bmw', 'audi', 'lexus', 'nissan', 
+                               'hyundai', 'ford', 'volkswagen', 'peugeot', 'kia', 'innoson', 'suzuki', 'tvs', 'acura'];
+      
+      // If category is a brand, convert to make filter
+      if (brandCategories.includes(categoryParam.toLowerCase())) {
+        const makeMap = {
+          'toyota': 'Toyota',
+          'honda': 'Honda',
+          'mercedes-benz': 'Mercedes‑Benz',
+          'bmw': 'BMW',
+          'audi': 'Audi',
+          'lexus': 'Lexus',
+          'nissan': 'Nissan',
+          'hyundai': 'Hyundai',
+          'ford': 'Ford',
+          'volkswagen': 'Volkswagen',
+          'peugeot': 'Peugeot',
+          'kia': 'Kia',
+          'innoson': 'Innoson',
+          'suzuki': 'Suzuki',
+          'tvs': 'TVS',
+          'acura': 'Acura'
+        };
+        setFilters(prev => ({
+          ...prev,
+          make: makeMap[categoryParam.toLowerCase()] || categoryParam
+        }));
+      } else {
+        // Otherwise treat as a category (vehicle type, condition, etc.)
+        setSelectedCategories([categoryParam]);
+      }
     } else if (brandParam) {
       setSelectedCategories([brandParam]);
     } else if (typeParam) {
