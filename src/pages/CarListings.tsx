@@ -122,8 +122,9 @@ const CarListings = () => {
     const minPriceParam = urlParams.get('minPrice');
     const maxPriceParam = urlParams.get('maxPrice');
     
-    // Handle category parameters
+    // Handle category parameters - support both 'category' and 'brand' params
     const categoryParam = urlParams.get('category');
+    const brandParam = urlParams.get('brand');
     const typeParam = urlParams.get('type');
     const categoriesParam = urlParams.get('categories');
     
@@ -140,9 +141,11 @@ const CarListings = () => {
       }));
     }
     
-    // Set categories from URL parameters
+    // Set categories from URL parameters - support brand, category, type params
     if (categoryParam) {
       setSelectedCategories([categoryParam]);
+    } else if (brandParam) {
+      setSelectedCategories([brandParam]);
     } else if (typeParam) {
       setSelectedCategories([typeParam]);
     } else if (categoriesParam) {
@@ -539,6 +542,19 @@ const CarListings = () => {
     ? carListings.filter(car => carMatchesCategories(car, selectedCategories))
     : carListings;
   filteredCars = applyFilters(filteredCars);
+  
+  // Get similar listings (for empty state) - show all cars if no matches
+  const similarListings = filteredCars.length === 0 && (selectedCategories.length > 0 || Object.values(filters).some(f => f !== ''))
+    ? carListings.slice(0, 8) // Show up to 8 random listings
+    : [];
+  
+  // Get the active category name for display
+  const getActiveCategoryName = () => {
+    if (selectedCategories.length === 0) return null;
+    const categoryId = selectedCategories[0];
+    const category = categories.find(cat => cat.id === categoryId);
+    return category?.name || categoryId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
   const paginatedCars = filteredCars.slice(0, displayedCars);
@@ -700,9 +716,75 @@ const CarListings = () => {
 
             <div className="lg:w-3/4">
               {paginatedCars.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-600 text-lg">No car listings found matching your criteria.</p>
-                  <Button onClick={resetFilters} className="mt-4">Clear Filters</Button>
+                <div className="py-12">
+                  <div className="text-center mb-8">
+                    {getActiveCategoryName() ? (
+                      <>
+                        <h2 className="text-2xl font-bold mb-3">No {getActiveCategoryName()} Cars Listed Yet</h2>
+                        <p className="text-gray-600 text-lg mb-4">We currently don't have any {getActiveCategoryName()} vehicles available.</p>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="text-2xl font-bold mb-3">No Cars Found</h2>
+                        <p className="text-gray-600 text-lg mb-4">No car listings found matching your criteria.</p>
+                      </>
+                    )}
+                    <Button onClick={resetFilters} className="bg-red-600 hover:bg-red-700">Clear Filters & View All Cars</Button>
+                  </div>
+                  
+                  {similarListings.length > 0 && (
+                    <div className="mt-8">
+                      <h3 className="text-xl font-bold mb-4 text-center">Similar Listings You Might Like</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                        {similarListings.map((car) => {
+                          const listedBy = getListedBy(car);
+                          return (
+                            <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
+                              <div className="relative">
+                                <img src={getCarImage(car)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-40 object-cover" />
+                                <FavoriteButton listingId={car.id} className="absolute top-2 right-2" />
+                                <div className="absolute top-2 left-2">
+                                  <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                    {getConditionLabel(car.condition)}
+                                  </span>
+                                </div>
+                              </div>
+                              <CardContent className="p-3">
+                                <h3 className="font-bold text-sm mb-1 line-clamp-2">{car.year} {car.make} {car.model}</h3>
+                                <p className="text-lg font-bold text-red-600 mb-1">₦{parseFloat(car.price).toLocaleString()}</p>
+                                <p className="text-xs text-gray-600 mb-2">{car.location}</p>
+                                <div className="grid grid-cols-1 gap-1 text-xs">
+                                  {car.mileage && <span>{car.mileage}</span>}
+                                  <span>{car.fuel_type || 'Petrol'} • {car.transmission || 'Automatic'}</span>
+                                  <div className="flex items-center gap-1 mt-1">
+                                    {user ? (
+                                      <>
+                                        {listedBy.icon}
+                                        <span className="text-xs text-gray-500 truncate">{listedBy.name}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <LogIn className="w-3 h-3 text-blue-600" />
+                                        <span className="text-xs text-blue-600 truncate">Sign in to see seller</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </CardContent>
+                              <CardFooter className="p-3 pt-0">
+                                <Link to={`/cars/${car.id}`} className="w-full">
+                                  <Button className="w-full bg-red-600 hover:bg-red-700 text-xs">
+                                    <Eye className="mr-1 h-3 w-3" />
+                                    View Details
+                                  </Button>
+                                </Link>
+                              </CardFooter>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
