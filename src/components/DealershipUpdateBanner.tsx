@@ -24,7 +24,7 @@ export const DealershipUpdateBanner = () => {
                 </Badge>
               </div>
               <p className="text-gray-700 mb-2">
-                <span className="font-semibold">₦45,000 one-time payment</span> - Get verified dealer status with 20 FREE car listings included!
+                <span className="font-semibold">₦35,000 one-time payment</span> - Get verified dealer status with 20 FREE car listings included!
               </p>
               <p className="text-sm text-gray-600">
                 After your free listings, pay only per listing or choose our monthly subscription plans. 
