@@ -6,7 +6,8 @@
 export const safeRedirectPath = (value: string | null | undefined): string | null => {
   if (!value) return null;
   if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return null;
-  if (/[\u0000-\u001f]/.test(value)) return null;
+  // Control characters (tabs, newlines) can change how browsers parse the path
+  if ([...value].some((char) => char.charCodeAt(0) < 0x20)) return null;
   // Never bounce back to an auth page
   if (/^\/(login|register|forgot-password)(\/|\?|$)/.test(value)) return null;
   return value;

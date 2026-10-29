@@ -18,3 +18,13 @@ test("WhatsApp numbers are converted to international format", () => {
   assert.equal(toWhatsAppNumber("+234 803 123 4567"), "2348031234567");
   assert.equal(toWhatsAppNumber("12345"), null);
 });
+
+test("text mileage is parsed, junk becomes null", async () => {
+  const { parseMileage } = await import("@/lib/format");
+  assert.equal(parseMileage("45000"), 45000);
+  assert.equal(parseMileage("45,000 km"), 45000);
+  assert.equal(parseMileage("N/A"), null);
+  assert.equal(parseMileage(""), null);
+  assert.equal(parseMileage(null), null);
+  assert.equal(parseMileage("-5"), null);
+});

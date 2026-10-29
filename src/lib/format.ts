@@ -5,6 +5,16 @@ const nairaFormatter = new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0
 /** ₦4,800,000 */
 export const formatNaira = (amount: number) => `₦${nairaFormatter.format(amount)}`;
 
+/**
+ * car_listings.mileage is a text column; returns kilometres as a number, or null when the
+ * stored value is empty or not a number (for example "N/A").
+ */
+export const parseMileage = (value: string | number | null | undefined): number | null => {
+  if (value === null || value === undefined || value === "") return null;
+  const km = typeof value === "number" ? value : Number(String(value).replace(/[,\s]/g, "").replace(/km$/i, ""));
+  return Number.isFinite(km) && km >= 0 ? km : null;
+};
+
 /** 45,000 km */
 export const formatMileage = (km: number) => `${nairaFormatter.format(km)} km`;
 

@@ -37,6 +37,8 @@ import Favorites from "./pages/Favorites";
 import Messages from "./pages/Messages";
 import BoostSales from "./pages/BoostSales";
 import DealerDashboard from "./pages/DealerDashboard";
+import MyListings from "./pages/MyListings";
+import EditListing from "./pages/EditListing";
 import AccountSettings from "./pages/AccountSettings";
 import Feedback from "./pages/Feedback";
 import { useEffect } from "react";
@@ -105,6 +107,8 @@ const AppContent = () => {
           <Route path="/dealer/dashboard" element={<DealerDashboard />} />
           <Route path="/buy-from-abroad" element={<BuyFromAbroad />} />
           <Route path="/sell" element={<SellYourCar />} />
+          <Route path="/sell/edit/:id" element={<EditListing />} />
+          <Route path="/my-listings" element={<MyListings />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

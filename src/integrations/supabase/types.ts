@@ -76,6 +76,8 @@ export type Database = {
       car_listings: {
         Row: {
           admin_created: boolean
+          availability_confirmed_at: string | null
+          availability_status: string
           boost_approved_at: string | null
           boost_approved_by: string | null
           boosted_until: string | null
@@ -101,6 +103,7 @@ export type Database = {
           model: string
           payment_reference: string | null
           price: number
+          sold_at: string | null
           status: string
           transmission: string | null
           updated_at: string
@@ -109,6 +112,8 @@ export type Database = {
         }
         Insert: {
           admin_created?: boolean
+          availability_confirmed_at?: string | null
+          availability_status?: string
           boost_approved_at?: string | null
           boost_approved_by?: string | null
           boosted_until?: string | null
@@ -134,6 +139,7 @@ export type Database = {
           model: string
           payment_reference?: string | null
           price: number
+          sold_at?: string | null
           status?: string
           transmission?: string | null
           updated_at?: string
@@ -142,6 +148,8 @@ export type Database = {
         }
         Update: {
           admin_created?: boolean
+          availability_confirmed_at?: string | null
+          availability_status?: string
           boost_approved_at?: string | null
           boost_approved_by?: string | null
           boosted_until?: string | null
@@ -167,6 +175,7 @@ export type Database = {
           model?: string
           payment_reference?: string | null
           price?: number
+          sold_at?: string | null
           status?: string
           transmission?: string | null
           updated_at?: string
@@ -314,6 +323,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "car_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          details: string | null
+          id: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          listing_id: string
+          reason: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          listing_id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_reports_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "car_listings"
@@ -590,6 +646,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      renew_listing: {
+        Args: { listing_id: string }
+        Returns: string
       }
       is_admin: {
         Args: { user_id?: string }

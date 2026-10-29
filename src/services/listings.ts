@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { parseMileage } from "@/lib/format";
+import { LISTING_LIFECYCLE } from "@/config/features";
 import {
   CONDITION_VARIANTS,
   matchesTextCriteria,
@@ -23,10 +25,24 @@ export interface ListingSummary {
   createdAt: string;
   isFeatured: boolean;
   imageUrl: string | null;
+  /** Seller's availability claim; null until the listing-lifecycle migration is live. */
+  availabilityStatus: AvailabilityStatus | null;
+  availabilityConfirmedAt: string | null;
 }
 
+export type AvailabilityStatus = "available" | "reserved" | "sold" | "unavailable";
+
+// Columns that exist only after the listing-lifecycle migration
+const LIFECYCLE_COLUMNS = LISTING_LIFECYCLE ? ", availability_status, availability_confirmed_at" : "";
+
 const SUMMARY_COLUMNS =
-  "id, make, model, year, price, condition, location, mileage, transmission, created_at, is_featured, car_listing_images(image_url, is_primary)";
+  `id, make, model, year, price, condition, location, mileage, transmission, created_at, is_featured${LIFECYCLE_COLUMNS}, car_listing_images(image_url, is_primary)`;
+
+/** Listings buyers may see: approved and, once availability exists, not sold or withdrawn. */
+const publicListings = (columns: string) => {
+  const query = supabase.from("car_listings").select(columns).eq("status", "active");
+  return LISTING_LIFECYCLE ? query.in("availability_status", ["available", "reserved"]) : query;
+};
 
 type ListingRow = {
   id: string;
@@ -36,10 +52,12 @@ type ListingRow = {
   price: number;
   condition: string | null;
   location: string | null;
-  mileage: number | null;
+  mileage: string | null;
   transmission: string | null;
   created_at: string;
   is_featured: boolean | null;
+  availability_status?: AvailabilityStatus;
+  availability_confirmed_at?: string | null;
   car_listing_images: { image_url: string; is_primary: boolean | null }[] | null;
 };
 
@@ -55,20 +73,19 @@ const toSummary = (row: ListingRow): ListingSummary => {
     price: Number(row.price),
     condition: row.condition,
     location: row.location,
-    mileage: row.mileage,
+    mileage: parseMileage(row.mileage),
     transmission: row.transmission,
     createdAt: row.created_at,
     isFeatured: Boolean(row.is_featured),
     imageUrl: primary?.image_url ?? null,
+    availabilityStatus: row.availability_status ?? null,
+    availabilityConfirmedAt: row.availability_confirmed_at ?? null,
   };
 };
 
 /** Admin-featured active listings whose featured period has not ended. */
 export async function fetchFeaturedListings(limit = 8): Promise<ListingSummary[]> {
-  const { data, error } = await supabase
-    .from("car_listings")
-    .select(SUMMARY_COLUMNS)
-    .eq("status", "active")
+  const { data, error } = await publicListings(SUMMARY_COLUMNS)
     .eq("is_featured", true)
     .or(`featured_until.is.null,featured_until.gt.${new Date().toISOString()}`)
     .order("is_top_listing", { ascending: false })
@@ -82,10 +99,7 @@ export async function fetchFeaturedListings(limit = 8): Promise<ListingSummary[]
 
 /** Most recently created active listings. */
 export async function fetchRecentListings(limit = 8): Promise<ListingSummary[]> {
-  const { data, error } = await supabase
-    .from("car_listings")
-    .select(SUMMARY_COLUMNS)
-    .eq("status", "active")
+  const { data, error } = await publicListings(SUMMARY_COLUMNS)
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -95,10 +109,7 @@ export async function fetchRecentListings(limit = 8): Promise<ListingSummary[]> 
 
 /** A seller's active listings, newest first. */
 export async function fetchSellerListings(sellerId: string): Promise<ListingSummary[]> {
-  const { data, error } = await supabase
-    .from("car_listings")
-    .select(SUMMARY_COLUMNS)
-    .eq("status", "active")
+  const { data, error } = await publicListings(SUMMARY_COLUMNS)
     .eq("user_id", sellerId)
     .order("created_at", { ascending: false });
 
@@ -134,7 +145,7 @@ const toNumber = (value: string) => {
  * those fields are free text with inconsistent spellings.
  */
 export async function searchListings(criteria: SearchCriteria): Promise<SearchResult> {
-  let query = supabase.from("car_listings").select(SEARCH_COLUMNS).eq("status", "active");
+  let query = publicListings(SEARCH_COLUMNS);
 
   const minPrice = toNumber(criteria.minPrice);
   const maxPrice = toNumber(criteria.maxPrice);
@@ -196,10 +207,7 @@ const hasCondition = (row: SearchRow, condition: keyof typeof CONDITION_VARIANTS
 export async function fetchHomepageListings(): Promise<HomepageListings> {
   const [featured, pool] = await Promise.all([
     fetchFeaturedListings(8),
-    supabase
-      .from("car_listings")
-      .select(SEARCH_COLUMNS)
-      .eq("status", "active")
+    publicListings(SEARCH_COLUMNS)
       .order("created_at", { ascending: false })
       .limit(HOMEPAGE_POOL),
   ]);
@@ -253,6 +261,9 @@ export interface ListingDetail {
   isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
+  expiresAt: string | null;
+  availabilityStatus: AvailabilityStatus | null;
+  availabilityConfirmedAt: string | null;
   images: ListingImage[];
 }
 
@@ -265,7 +276,7 @@ type DetailRow = {
   price: number;
   condition: string | null;
   location: string | null;
-  mileage: number | null;
+  mileage: string | null;
   transmission: string | null;
   fuel_type: string | null;
   color: string | null;
@@ -275,6 +286,9 @@ type DetailRow = {
   is_featured: boolean | null;
   created_at: string;
   updated_at: string;
+  expires_at: string | null;
+  availability_status?: AvailabilityStatus;
+  availability_confirmed_at?: string | null;
   car_listing_images: { id: string; image_url: string; is_primary: boolean | null }[] | null;
 };
 
@@ -286,7 +300,7 @@ export async function fetchListingDetail(id: string): Promise<ListingDetail | nu
   const { data, error } = await supabase
     .from("car_listings")
     .select(
-      "id, user_id, make, model, year, price, condition, location, mileage, transmission, fuel_type, color, description, features, status, is_featured, created_at, updated_at, car_listing_images(id, image_url, is_primary)"
+      `id, user_id, make, model, year, price, condition, location, mileage, transmission, fuel_type, color, description, features, status, is_featured, created_at, updated_at, expires_at${LIFECYCLE_COLUMNS}, car_listing_images(id, image_url, is_primary)`
     )
     .eq("id", id)
     .maybeSingle();
@@ -308,7 +322,7 @@ export async function fetchListingDetail(id: string): Promise<ListingDetail | nu
     price: Number(row.price),
     condition: row.condition,
     location: row.location,
-    mileage: row.mileage,
+    mileage: parseMileage(row.mileage),
     transmission: row.transmission,
     fuelType: row.fuel_type,
     color: row.color,
@@ -318,16 +332,16 @@ export async function fetchListingDetail(id: string): Promise<ListingDetail | nu
     isFeatured: Boolean(row.is_featured),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    expiresAt: row.expires_at,
+    availabilityStatus: row.availability_status ?? null,
+    availabilityConfirmedAt: row.availability_confirmed_at ?? null,
     images: images.map((image) => ({ id: image.id, url: image.image_url })),
   };
 }
 
 /** Other active listings of the same make, then in a similar price range. Empty when none exist. */
 export async function fetchSimilarListings(listing: ListingDetail, limit = 4): Promise<ListingSummary[]> {
-  const sameMake = await supabase
-    .from("car_listings")
-    .select(SUMMARY_COLUMNS)
-    .eq("status", "active")
+  const sameMake = await publicListings(SUMMARY_COLUMNS)
     .neq("id", listing.id)
     .ilike("make", listing.make)
     .order("created_at", { ascending: false })
@@ -337,10 +351,7 @@ export async function fetchSimilarListings(listing: ListingDetail, limit = 4): P
   const results = ((sameMake.data ?? []) as unknown as ListingRow[]).map(toSummary);
   if (results.length >= limit) return results;
 
-  const similarPrice = await supabase
-    .from("car_listings")
-    .select(SUMMARY_COLUMNS)
-    .eq("status", "active")
+  const similarPrice = await publicListings(SUMMARY_COLUMNS)
     .neq("id", listing.id)
     .gte("price", Math.round(listing.price * 0.7))
     .lte("price", Math.round(listing.price * 1.3))

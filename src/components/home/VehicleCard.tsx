@@ -31,11 +31,18 @@ export const VehicleCard = ({ listing }: { listing: ListingSummary }) => {
             <span className="text-sm">{imageFailed ? "Photo unavailable" : "No photo provided"}</span>
           </div>
         )}
-        {listing.isFeatured && (
-          <span className="absolute left-3 top-3 rounded-full bg-gold px-3 py-1 text-xs font-bold uppercase tracking-wide text-gold-foreground shadow">
-            Featured
-          </span>
-        )}
+        <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          {listing.isFeatured && (
+            <span className="rounded-full bg-gold px-3 py-1 text-xs font-bold uppercase tracking-wide text-gold-foreground shadow">
+              Featured
+            </span>
+          )}
+          {listing.availabilityStatus === "reserved" && (
+            <span className="rounded-full bg-brand-dark px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-foreground shadow">
+              Reserved
+            </span>
+          )}
+        </div>
         {/* Keep favourite clicks from opening the listing */}
         <div
           className="absolute right-3 top-3"

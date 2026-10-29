@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Edit, Heart, LayoutDashboard, LogOut, MessageSquare, Search, Settings, User, Zap } from "lucide-react";
+import { Car, ChevronDown, Edit, Heart, LayoutDashboard, LogOut, MessageSquare, Search, Settings, User, Zap } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -128,6 +128,11 @@ export const Navigation = () => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
+        )}
+        {!isDealer && (
+          <DropdownMenuItem asChild>
+            <Link to="/my-listings"><Car className="mr-2 h-4 w-4" />My listings</Link>
+          </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
           <Link to="/profile/edit"><Edit className="mr-2 h-4 w-4" />Edit profile</Link>

@@ -11,6 +11,9 @@ import { Footer } from "@/components/Footer";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import MessageSellerButton from "@/components/MessageSellerButton";
 import { ImageGallery } from "@/components/listing/ImageGallery";
+import { ReportListingDialog } from "@/components/listing/ReportListingDialog";
+import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
+import { describeAvailability } from "@/lib/availability";
 import { VehicleCard } from "@/components/home/VehicleCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { loginPathFor } from "@/lib/redirect";
@@ -101,7 +104,12 @@ const SellerCard = ({
           <div className="min-w-0">
             <p className="truncate font-semibold">{name}</p>
             <p className="text-sm text-muted-foreground">
-              {isDealer ? "Dealer" : seller?.kind === "private" ? "Private seller" : "Seller type not available"}
+              {/* The type is repeated only under a real name, never as "Dealer / Dealer" */}
+              {isDealer
+                ? seller?.dealer ? "Dealer" : "Business name shown once the dealer is approved"
+                : seller?.kind === "private"
+                  ? seller.displayName ? "Private seller" : "Name hidden by the seller"
+                  : "Seller type not available"}
               {seller?.dealer?.state ? ` · ${seller.dealer.state}` : ""}
             </p>
             {seller?.dealer && (
@@ -233,6 +241,7 @@ const CarDetail = () => {
   const isOwner = user?.id === listing.userId;
   const condition = formatCondition(listing.condition);
   const wasUpdated = new Date(listing.updatedAt).getTime() - new Date(listing.createdAt).getTime() > 60 * 60 * 1000;
+  const availability = describeAvailability(listing.availabilityStatus, listing.availabilityConfirmedAt, AVAILABILITY_FRESH_DAYS);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -346,12 +355,18 @@ const CarDetail = () => {
               </p>
             </div>
 
-            {/* No availability confirmation is recorded yet, so it is never presented as confirmed */}
-            <div className="rounded-2xl border border-dashed border-gold/70 bg-card p-4">
-              <p className="font-semibold">Availability not confirmed</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                The seller has not confirmed recently that this car is still for sale. Ask them before you travel to see it.
-              </p>
+            {/* Availability is shown as confirmed only when the seller confirmed it recently */}
+            <div
+              className={`rounded-2xl border p-4 ${
+                availability.tone === "confirmed"
+                  ? "border-primary/40 bg-accent/40"
+                  : availability.tone === "closed"
+                    ? "border-destructive/40 bg-card"
+                    : "border-dashed border-gold/70 bg-card"
+              }`}
+            >
+              <p className="font-semibold">{availability.label}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{availability.detail}</p>
             </div>
 
             <SellerCard
@@ -369,6 +384,12 @@ const CarDetail = () => {
                 Share
               </Button>
             </div>
+
+            {LISTING_LIFECYCLE && !isOwner && (
+              <div className="pt-1 text-center">
+                <ReportListingDialog listingId={listing.id} signedIn={Boolean(user)} />
+              </div>
+            )}
           </aside>
         </div>
 

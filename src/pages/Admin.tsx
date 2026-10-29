@@ -19,6 +19,8 @@ import { AdminCarListingForm } from "@/components/admin/AdminCarListingForm";
 import { FeaturedListingsManager } from "@/components/admin/FeaturedListingsManager";
 import { ListingEnhancementManager } from "@/components/admin/ListingEnhancementManager";
 import { NotificationManager } from "@/components/admin/NotificationManager";
+import { ReportsManager } from "@/components/admin/ReportsManager";
+import { LISTING_LIFECYCLE } from "@/config/features";
 
 const Admin = () => {
   // All hooks must be called first, before any conditional logic
@@ -631,6 +633,7 @@ const Admin = () => {
             <TabsTrigger value="featured">Featured Manager</TabsTrigger>
             <TabsTrigger value="requests">Ad Requests</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            {LISTING_LIFECYCLE && <TabsTrigger value="reports">Reports</TabsTrigger>}
             <TabsTrigger value="add-dealer">Add Dealer</TabsTrigger>
             <TabsTrigger value="add-listing">Add Listing</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -1309,6 +1312,12 @@ const Admin = () => {
           <TabsContent value="notifications">
             <NotificationManager />
           </TabsContent>
+
+          {LISTING_LIFECYCLE && (
+            <TabsContent value="reports">
+              <ReportsManager />
+            </TabsContent>
+          )}
 
           {/* Add Dealer Tab */}
           <TabsContent value="add-dealer">
