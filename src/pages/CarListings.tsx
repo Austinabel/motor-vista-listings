@@ -5,6 +5,7 @@ import { AlertCircle, Car, RefreshCw, SearchX, SlidersHorizontal } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Footer } from "@/components/Footer";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { FilterPanel } from "@/components/listings/FilterPanel";
 import { AppliedFilters } from "@/components/listings/AppliedFilters";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
@@ -31,6 +32,11 @@ const OWNED_PARAMS = new Set([
 const CarListings = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const criteria = useMemo(() => parseCriteria(searchParams), [searchParams]);
+  const place = criteria.location === "FCT" ? "Abuja" : criteria.location;
+  usePageMeta({
+    title: `${criteria.make ? `${criteria.make} cars` : "Cars"} for sale${place ? ` in ${place}` : " in Nigeria"}`,
+    description: `Browse ${criteria.make ? `${criteria.make} ` : ""}cars for sale${place ? ` in ${place}` : " across Nigeria"} from dealers, car stands and private sellers on Motorcars.`,
+  });
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [filtersOpen, setFiltersOpen] = useState(false);
 

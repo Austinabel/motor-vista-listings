@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HelpCircle, MessageCircle, Phone, Mail } from "lucide-react";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const Help = () => {
+  usePageMeta({ title: "Help centre" });
   const faqs = [
     {
       question: "How do I buy a car on Motorcars.ng?",

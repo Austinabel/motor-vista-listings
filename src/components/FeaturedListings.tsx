@@ -149,12 +149,10 @@ export const FeaturedListings = () => {
   };
 
   const getCarImage = (listing) => {
-    console.log('Getting car image for listing:', listing.id, 'Images:', listing.car_listing_images);
     const images = listing.car_listing_images || [];
     const primaryImage = images.find(img => img.is_primary)?.image_url;
     const imageUrl = primaryImage || images[0]?.image_url;
     
-    console.log('Primary image:', primaryImage, 'First image:', images[0]?.image_url, 'Final URL:', imageUrl);
     
     // Check if it's a real uploaded image URL (not a placeholder)
     if (imageUrl && (
@@ -163,12 +161,10 @@ export const FeaturedListings = () => {
       imageUrl.includes('car-listing-images') ||
       imageUrl.startsWith('/')
     ) && !imageUrl.includes('placeholder-image')) {
-      console.log('Using real image:', imageUrl);
       return imageUrl;
     }
     
     // Return fallback image for placeholders or missing images
-    console.log('Using fallback image for listing:', listing.id, 'because imageUrl was:', imageUrl);
     return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop";
   };
 

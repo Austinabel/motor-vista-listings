@@ -17,7 +17,9 @@ import { useDealer } from "@/contexts/DealerContext";
 import { DealerRegistrationBanner } from "@/components/DealerRegistrationBanner";
 import { useAuth } from "@/contexts/AuthContext";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const SellYourCar = () => {
+  usePageMeta({ title: "Sell your car", description: "List your car on Motorcars with photos and your price. Buyers contact you directly." });
   const navigate = useNavigate();
   const { user } = useAuth();
   const { dealerInfo, isDealer, loading: dealerLoading, refetchDealerInfo } = useDealer();

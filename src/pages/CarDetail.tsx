@@ -16,6 +16,7 @@ import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { describeAvailability } from "@/lib/availability";
 import { VehicleCard } from "@/components/home/VehicleCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { loginPathFor } from "@/lib/redirect";
 import { fetchListingDetail, fetchSimilarListings, type ListingDetail } from "@/services/listings";
 import { fetchSellerPublicInfo, type SellerPublicInfo } from "@/services/sellers";
@@ -182,6 +183,15 @@ const CarDetail = () => {
     retry: 1,
   });
   const listing = listingQuery.data;
+  usePageMeta(
+    listing
+      ? {
+          title: `${listing.year} ${listing.make} ${listing.model} for ${formatNaira(listing.price)}${listing.location ? ` in ${listing.location}` : ""}`,
+          description: `${listing.year} ${listing.make} ${listing.model}${listing.condition ? `, ${formatCondition(listing.condition)?.toLowerCase()}` : ""}, ${formatNaira(listing.price)}. See photos and contact the seller on Motorcars.`,
+          image: listing.images[0]?.url ?? null,
+        }
+      : { title: "Car for sale" }
+  );
 
   const sellerQuery = useQuery({
     queryKey: ["seller", listing?.userId, Boolean(user)],

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, ArrowLeft, Calendar, Car, Globe, MapPin, Phone, RefreshCw, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
 import { fetchPublicDealer } from "@/services/dealers";
 import { fetchSellerListings } from "@/services/listings";
@@ -19,6 +20,15 @@ const DealerProfile = () => {
     retry: 1,
   });
   const dealer = dealerQuery.data;
+  usePageMeta(
+    dealer
+      ? {
+          title: `${dealer.businessName}${dealer.state ? `, ${dealer.state}` : ""}`,
+          description: `${dealer.businessName} on Motorcars: see the cars this stand has for sale and contact them directly.`,
+          image: dealer.imageUrl,
+        }
+      : { title: "Car stand" }
+  );
 
   const listingsQuery = useQuery({
     queryKey: ["dealer-listings", dealer?.userId],

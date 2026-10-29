@@ -8,7 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const Favorites = () => {
+  usePageMeta({ title: "Saved cars", noIndex: true });
   const { user } = useAuth();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);

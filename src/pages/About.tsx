@@ -2,7 +2,9 @@
 import { Footer } from "@/components/Footer";
 import { Car, Shield, Users, Award } from "lucide-react";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const About = () => {
+  usePageMeta({ title: "About Motorcars" });
   return (
     <>
       <div className="min-h-screen bg-gray-50">

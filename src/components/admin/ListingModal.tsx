@@ -60,7 +60,6 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
                       alt={`Car image ${index + 1}`}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                       onError={(e) => {
-                        console.log('Image failed to load:', image.image_url);
                         const target = e.target as HTMLImageElement;
                         target.src = 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400&h=300&fit=crop&crop=center';
                       }}

@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { CONTACT } from "@/config/contact";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 // Only confirmed contact details are shown (see src/config/contact.ts).
 // The previous form was never submitted anywhere, so email is the contact route.
 const Contact = () => {
+  usePageMeta({ title: "Contact", description: "Contact the Motorcars team about your account, a listing or registering your car stand." });
   const details = [
     { icon: Mail, label: "Email", value: CONTACT.supportEmail, href: `mailto:${CONTACT.supportEmail}` },
     CONTACT.phone && { icon: Phone, label: "Phone", value: CONTACT.phone, href: `tel:${CONTACT.phone}` },

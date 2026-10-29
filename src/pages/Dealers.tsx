@@ -11,7 +11,9 @@ import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const Dealers = () => {
+  usePageMeta({ title: "Car stands and dealers", description: "Find approved car dealers and car stands across Nigeria and browse the cars they have for sale." });
   const navigate = useNavigate();
   const [dealers, setDealers] = useState([]);
   const [filteredDealers, setFilteredDealers] = useState([]);

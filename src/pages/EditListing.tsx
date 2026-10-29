@@ -13,6 +13,7 @@ import { loginPathFor } from "@/lib/redirect";
 import { FUEL_TYPES, TRANSMISSIONS } from "@/lib/vehicleSearch";
 import { fetchMyListing, updateMyListing, type MyListing } from "@/services/myListings";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const selectClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
@@ -37,6 +38,7 @@ const toForm = (listing: MyListing): FormState => ({
 });
 
 const EditListing = () => {
+  usePageMeta({ title: "Edit listing", noIndex: true });
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

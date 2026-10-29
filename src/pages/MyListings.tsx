@@ -11,6 +11,7 @@ import {
 import { Footer } from "@/components/Footer";
 import { DealerRegistrationBanner } from "@/components/DealerRegistrationBanner";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDealer } from "@/contexts/DealerContext";
 import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { describeAvailability, type AvailabilityTone } from "@/lib/availability";
@@ -150,6 +151,7 @@ const ListingRow = ({ listing, userId }: { listing: MyListing; userId: string })
 };
 
 const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
+  usePageMeta({ title: dealerView ? "Dealer dashboard" : "My listings", noIndex: true });
   const { user, loading: authLoading } = useAuth();
   const { dealerInfo, isDealer, loading: dealerLoading } = useDealer();
 

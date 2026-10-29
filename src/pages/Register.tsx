@@ -11,7 +11,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { validatePassword } from "@/lib/password-validation";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const Register = () => {
+  usePageMeta({ title: "Create an account", noIndex: true });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);

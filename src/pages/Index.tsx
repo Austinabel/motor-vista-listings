@@ -16,9 +16,11 @@ import { SellSection } from "@/components/home/SellSection";
 import { HOMEPAGE_BUDGET, fetchHomepageListings } from "@/services/listings";
 import { formatNaira } from "@/lib/format";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const container = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
 
 const Index = () => {
+  usePageMeta({});
   const { hash } = useLocation();
 
   // Links such as /#services land on a homepage section

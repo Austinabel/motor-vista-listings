@@ -73,7 +73,6 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
   useEffect(() => {
     // Clean up previous subscription if it exists
     if (channelRef.current) {
-      console.log('Cleaning up existing subscription');
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
@@ -82,7 +81,6 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
       return;
     }
 
-    console.log('Setting up real-time subscription for user:', userId);
 
     const channel = supabase
       .channel(`messages-channel-${userId}`)
@@ -94,14 +92,12 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
           table: 'messages'
         },
         (payload) => {
-          console.log('New message received via real-time:', payload);
           const newMessage = payload.new as Message;
 
           setMessages(prevMessages => {
             // Check if message already exists to avoid duplicates
             const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
             if (!messageExists) {
-              console.log('Adding new message to state');
               return [...prevMessages, newMessage].sort((a, b) =>
                 new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
               );
@@ -111,16 +107,13 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
         }
       )
       .subscribe((status: any) => {
-        console.log('Real-time subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to messages channel');
         }
       });
 
     channelRef.current = channel;
 
     return () => {
-      console.log('Cleaning up real-time subscription');
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
@@ -210,7 +203,6 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
 
   const fetchMessages = useCallback(async (conversationId: string) => {
     try {
-      console.log('Fetching messages for conversation:', conversationId);
 
       const { data, error } = await supabase
         .from('messages')
@@ -224,7 +216,6 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
         return;
       }
 
-      console.log('Fetched messages:', data);
       setMessages(data || []);
 
       // Mark messages as read
@@ -317,7 +308,6 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
     if (!user || !content.trim()) return false;
 
     try {
-      console.log('Sending message to conversation:', conversationId);
       
       // Create optimistic message
       const optimisticMessage: Message = {
@@ -352,7 +342,6 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({ children }
         return false;
       }
 
-      console.log('Message sent successfully:', data);
       
       // Replace optimistic message with real message
       setMessages(prevMessages => 

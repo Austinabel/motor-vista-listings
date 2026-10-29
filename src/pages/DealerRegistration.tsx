@@ -201,7 +201,6 @@ const DealerRegistration = () => {
         image_url: imageUrl, // The public URL of the business image
       };
 
-      console.log('Submitting registration data:', registrationData);
 
       const { data, error } = await supabase
         .from('dealers')
@@ -215,7 +214,6 @@ const DealerRegistration = () => {
         const errorMessage = getDetailedErrorMessage(error);
         toast.error(errorMessage);
       } else {
-        console.log('Registration successful:', data);
         toast.success("Registration submitted successfully! We'll review your payment and application within 2-3 business days.");
         navigate("/");
       }

@@ -41,7 +41,6 @@ export const FeaturedListingsManager = () => {
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
-      console.log('Searching car listings with term:', carSearchTerm);
       
       // Build search conditions with proper PostgREST syntax
       const term = `%${carSearchTerm.toLowerCase()}%`;
@@ -68,7 +67,6 @@ export const FeaturedListingsManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      console.log('Car search results:', listings?.length, 'total:', count);
       setCarSearchResults(listings || []);
       setCarTotal(count || 0);
       setCarPage(page);
@@ -92,7 +90,6 @@ export const FeaturedListingsManager = () => {
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
-      console.log('Searching dealers with term:', dealerSearchTerm);
       
       // Build search conditions with proper PostgREST syntax
       const term = `%${dealerSearchTerm.toLowerCase()}%`;
@@ -118,7 +115,6 @@ export const FeaturedListingsManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      console.log('Dealer search results:', dealers?.length, 'total:', count);
       setDealerSearchResults(dealers || []);
       setDealerTotal(count || 0);
       setDealerPage(page);

@@ -348,7 +348,6 @@ const Admin = () => {
 
   const updateListingStatus = async (listingId: string, newStatus: string) => {
     try {
-      console.log('Updating listing status:', { listingId, newStatus });
       
       const { error } = await supabase
         .from('car_listings')

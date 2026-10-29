@@ -39,7 +39,6 @@ export const FavoriteButton = ({ listingId, className = "", size = "sm" }: Favor
       }
     } catch (error) {
       // Not an error if no favorite found
-      console.log('No favorite found:', error);
     }
   };
 

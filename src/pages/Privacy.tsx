@@ -1,7 +1,9 @@
 
 import { Footer } from "@/components/Footer";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const Privacy = () => {
+  usePageMeta({ title: "Privacy policy" });
   return (
     <>
       <div className="min-h-screen bg-gray-50">

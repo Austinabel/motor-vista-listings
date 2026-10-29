@@ -7,6 +7,7 @@ import { useMessaging, Conversation } from "@/contexts/MessagingContext";
 import { useAuth } from "@/contexts/AuthContext";
 import ChatInterface from "@/components/ChatInterface";
 import { formatDistanceToNow } from "date-fns";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Separator } from "@/components/ui/separator"; // <-- NEW
 
 function stringAvatar(name?: string) {
@@ -18,6 +19,7 @@ function stringAvatar(name?: string) {
 }
 
 const Messages = () => {
+  usePageMeta({ title: "Messages", noIndex: true });
   const { user } = useAuth();
   const { conversations, loading, fetchConversations, messages } = useMessaging();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);

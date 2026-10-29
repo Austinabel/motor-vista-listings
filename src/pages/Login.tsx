@@ -9,7 +9,9 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+import { usePageMeta } from "@/hooks/usePageMeta";
 const Login = () => {
+  usePageMeta({ title: "Log in", noIndex: true });
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
