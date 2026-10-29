@@ -7,6 +7,9 @@ import { ConfirmationEmail } from './_templates/confirmation-email.tsx';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const hookSecret = Deno.env.get('SEND_CONFIRMATION_HOOK_SECRET') as string;
+// Must be an address on a domain verified in Resend (for example "Motorcars <noreply@motorcars.ng>").
+// Resend's test sender only delivers to the Resend account owner.
+const emailFrom = Deno.env.get('EMAIL_FROM') ?? 'Motorcars <onboarding@resend.dev>';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const firstName = user.user_metadata?.first_name || 'User';
-    const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
+    const confirmUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${encodeURIComponent(token_hash)}&type=${encodeURIComponent(email_action_type)}&redirect_to=${encodeURIComponent(redirect_to)}`;
 
     const html = await renderAsync(
       React.createElement(ConfirmationEmail, {
@@ -60,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const { error } = await resend.emails.send({
-      from: 'motorcars.ng <onboarding@resend.dev>',
+      from: emailFrom,
       to: [user.email],
       subject: 'Confirm your motorcars.ng account',
       html,
