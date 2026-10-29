@@ -1,4 +1,4 @@
-import { Home, Search, Plus, User, LayoutDashboard, MessageCircle } from "lucide-react";
+import { Home, Search, Plus, User, LayoutDashboard, Store } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -14,6 +14,7 @@ export const MobileBottomNav = () => {
     return location.pathname.startsWith(path);
   };
 
+  // Messages stays reachable from the account menu in the top bar
   const navItems = [
     {
       icon: Home,
@@ -22,29 +23,29 @@ export const MobileBottomNav = () => {
     },
     {
       icon: Search,
-      label: "Browse",
+      label: "Cars",
       path: "/cars",
+    },
+    {
+      icon: Store,
+      label: "Stands",
+      path: "/dealers",
     },
     {
       icon: Plus,
       label: "Sell",
       path: "/sell",
     },
-    ...(user ? [{
-      icon: MessageCircle,
-      label: "Messages",
-      path: "/messages",
-    }] : []),
     {
       icon: isDealer ? LayoutDashboard : User,
-      label: isDealer ? "Dashboard" : "Profile",
+      label: isDealer ? "Dashboard" : user ? "Profile" : "Log in",
       path: user ? (isDealer ? "/dealer/dashboard" : "/profile/edit") : "/login",
     },
   ];
 
   // Hide bottom nav on auth pages and admin pages
   const shouldHideBottomNav = [
-    '/login', '/register', '/forgot-password', 
+    '/login', '/register', '/forgot-password',
     '/admin', '/admin/login', '/admin/register'
   ].includes(location.pathname) || location.pathname.startsWith('/admin');
 
@@ -53,27 +54,29 @@ export const MobileBottomNav = () => {
   }
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
-      <div className="flex items-center justify-around px-2 py-2">
+    <nav
+      aria-label="Primary"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur safe-area-bottom"
+    >
+      <div className="flex items-center justify-around px-1 py-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = isActiveLink(item.path);
-          
+
           return (
             <Link
               key={item.path}
               to={item.path}
-              className="flex flex-col items-center justify-center min-w-0 flex-1 px-1 py-2 transition-colors"
+              aria-current={isActive ? "page" : undefined}
+              className="flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-1.5"
             >
-              <div className={`p-2 rounded-xl transition-all duration-200 ${
-                isActive 
-                  ? 'bg-red-100 text-red-600 scale-110' 
-                  : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+              <span className={`rounded-xl p-2 transition-colors ${
+                isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
               }`}>
                 <Icon className="h-5 w-5" />
-              </div>
-              <span className={`text-xs mt-1 font-medium transition-colors ${
-                isActive ? 'text-red-600' : 'text-gray-600'
+              </span>
+              <span className={`mt-0.5 text-[11px] font-semibold ${
+                isActive ? 'text-primary' : 'text-muted-foreground'
               }`}>
                 {item.label}
               </span>
@@ -81,6 +84,6 @@ export const MobileBottomNav = () => {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };

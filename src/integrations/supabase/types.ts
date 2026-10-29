@@ -536,6 +536,31 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_public_dealer: {
+        Args: { dealer_id: string }
+        Returns: {
+          address: string
+          business_name: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          is_featured: boolean
+          phone: string
+          state: string
+          user_id: string
+          website: string
+          year_established: string
+        }[]
+      }
+      get_public_dealer_by_seller: {
+        Args: { seller_id: string }
+        Returns: {
+          business_name: string
+          id: string
+          state: string
+        }[]
+      }
       get_public_dealers: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -543,6 +568,8 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          image_url: string
+          is_featured: boolean
           state: string
           website: string
           year_established: string

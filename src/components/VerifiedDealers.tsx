@@ -23,9 +23,7 @@ export const VerifiedDealers = () => {
       await supabase.rpc('expire_featured_listings');
       
       const { data, error } = await supabase
-        .from('dealers')
-        .select('id, business_name, state, year_established, description, website, created_at, is_featured')
-        .eq('status', 'verified')
+        .rpc('get_public_dealers')
         .eq('is_featured', true)
         .order('created_at', { ascending: false });
 
@@ -37,7 +35,7 @@ export const VerifiedDealers = () => {
           id: dealer.id,
           business_name: dealer.business_name,
           state: dealer.state,
-          image_url: null, // Not included in public data for security
+          image_url: dealer.image_url,
           description: dealer.description,
           monthly_inventory: null, // Not included in public data
           year_established: dealer.year_established,

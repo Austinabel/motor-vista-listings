@@ -396,36 +396,7 @@ const SellYourCar = () => {
         }
       }
 
-      // 4) If this is a free listing, increment the appropriate counter
-      if (isFreeListing) {
-        if (dealerInfo && isDealer) {
-          // Update dealer free listings counter
-          const { error: updateError } = await supabase
-            .from('dealers')
-            .update({ 
-              free_listings_used: dealerInfo.free_listings_used + 1,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', dealerInfo.id);
-
-          if (updateError) {
-            console.error('Error updating dealer free listings count:', updateError);
-          }
-        } else {
-          // Update regular user monthly listings counter
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ 
-              monthly_listings_used: (userProfile?.monthly_listings_used || 0) + 1,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', user.id);
-
-          if (updateError) {
-            console.error('Error updating user monthly listings count:', updateError);
-          }
-        }
-      }
+      // 4) Free listing counters are incremented by the count_free_listing database trigger
 
       // Success: either go to payment or finish
       if (!listingPlansEnabled || selectedPlan === "free") {

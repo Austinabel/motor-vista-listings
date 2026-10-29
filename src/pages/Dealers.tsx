@@ -17,7 +17,10 @@ const Dealers = () => {
   const [filteredDealers, setFilteredDealers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedState, setSelectedState] = useState("all");
+  // ?state= comes from the homepage "Find stands near you" shortcuts
+  const [selectedState, setSelectedState] = useState(
+    () => new URLSearchParams(window.location.search).get("state") || "all"
+  );
 
   const states = [
     "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 

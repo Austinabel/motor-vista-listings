@@ -28,9 +28,7 @@ const DealerProfile = () => {
     queryFn: async () => {
       console.log('Fetching dealer with ID:', dealerId);
       const { data, error } = await supabase
-        .from('dealers')
-        .select('*')
-        .eq('id', dealerId)
+        .rpc('get_public_dealer', { dealer_id: dealerId! })
         .maybeSingle();
       if (error) {
         console.error("Error fetching dealer:", error);

@@ -1,73 +1,81 @@
-# Welcome to your Lovable project
+# Motocars.ng
 
-## Project info
+A car marketplace for Nigeria. Private sellers and verified dealers list cars; buyers browse, save favorites and message sellers. Admins approve listings and dealers, confirm manual bank-transfer payments, and manage featured/boosted placements.
 
-**URL**: https://lovable.dev/projects/5dd4da10-8947-4bf9-a19a-9e5cc236c059
+Originally generated with [Lovable](https://lovable.dev/projects/5dd4da10-8947-4bf9-a19a-9e5cc236c059); changes pushed to the connected repo sync back to Lovable.
 
-## How can I edit this code?
+## Stack
 
-There are several ways of editing your application.
+- **Frontend:** Vite, React 18, TypeScript, Tailwind CSS, shadcn/ui (Radix), React Router, TanStack Query, react-hook-form + zod
+- **Backend:** Supabase (Postgres with row-level security, Auth, Storage, Edge Functions)
+- **Email:** Resend, called from Supabase Edge Functions
 
-**Use Lovable**
+## Getting started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5dd4da10-8947-4bf9-a19a-9e5cc236c059) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Requires Node.js 18+.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install
+npm run dev       # http://localhost:8080
+npm run build     # production build in dist/
+npm run lint
 ```
 
-**Edit a file directly in GitHub**
+The Supabase project is configured in `.env`:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+VITE_SUPABASE_PROJECT_ID=...
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...   # the public anon key
+```
 
-**Use GitHub Codespaces**
+The anon key ships to the browser, so all data protection lives in the database's RLS policies and SECURITY DEFINER functions, not in the frontend.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project layout
 
-## What technologies are used for this project?
+```
+src/
+  pages/                 one component per route (routes are declared in App.tsx)
+  components/            page sections and shared widgets
+  components/admin/      admin panel forms and managers
+  components/ui/         shadcn/ui primitives
+  contexts/              AuthContext, DealerContext, MessagingContext
+  integrations/supabase/ client and generated database types
+supabase/
+  migrations/            schema, RLS policies, functions and triggers (applied in order)
+  functions/             Edge Functions: send-confirmation-email, send-notification-email
+```
 
-This project is built with:
+## Domain overview
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+| Table | Purpose |
+| --- | --- |
+| `profiles` | One row per user; holds the monthly free-listing counter |
+| `dealers` | Dealer applications and verified dealers (ID card, CAC number, payment reference) |
+| `car_listings`, `car_listing_images` | Listings and their photos |
+| `favorites` | Saved listings |
+| `conversations`, `messages` | Buyer–seller messaging |
+| `listing_enhancement_requests` | Requests to feature/boost a listing |
+| `notifications` | In-app notifications sent by admins |
+| `user_roles` | Admin role assignments (checked by `is_admin()`) |
+| `app_settings` | Admin-controlled settings such as whether paid listing plans are enabled |
 
-## How can I deploy this project?
+**Listing lifecycle:** free listings start as `pending_review`; paid plans start as `pending_payment` and move to `pending_review` once the seller submits a bank-transfer reference. An admin then sets them `active` (or rejects them).
 
-Simply open [Lovable](https://lovable.dev/projects/5dd4da10-8947-4bf9-a19a-9e5cc236c059) and click on Share -> Publish.
+**Free listing limits:** verified dealers get 20 free listings in total; regular users get 5 per month. `can_create_free_listing()` checks the limit and the `count_free_listing` trigger increments the counter.
 
-## Can I connect a custom domain to my Lovable project?
+**Dealer verification:** dealers upload an ID card to the private `dealer_documents` bucket and pay a registration fee by transfer; an admin verifies them. Public dealer data is served only through `get_public_dealers()` and `get_public_dealer(id)`, never by reading the `dealers` table directly.
 
-Yes, you can!
+## Admin access
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Admins are users with an `admin` row in `user_roles`. Grant it from the Supabase SQL editor:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```sql
+SELECT public.assign_admin_role('person@example.com');
+```
+
+This function is not callable through the API.
+
+## Deploying database changes
+
+Apply new migrations with the Supabase CLI (`supabase db push`) or by running them in the SQL editor. Regenerate `src/integrations/supabase/types.ts` afterwards with `supabase gen types typescript`.

@@ -3,38 +3,44 @@
 @tailwind utilities;
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Motorcars palette: forest #0B5C2E, dark green #073D25, gold #C9A84C, cream #F7F0E3, ivory #FFFCF6, charcoal #17251C */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 39 55% 93%;
+    --foreground: 141 23% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 40 100% 98%;
+    --card-foreground: 141 23% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 40 100% 98%;
+    --popover-foreground: 141 23% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 146 79% 20%;
+    --primary-foreground: 40 100% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 39 45% 88%;
+    --secondary-foreground: 153 80% 13%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 39 40% 89%;
+    --muted-foreground: 131 5% 42%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 44 60% 88%;
+    --accent-foreground: 153 80% 13%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 40 100% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 39 38% 85%;
+    --input: 39 38% 85%;
+    --ring: 146 79% 20%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Motorcars brand tokens beyond the shadcn set */
+    --brand-dark: 153 80% 13%;
+    --gold: 44 54% 54%;
+    --gold-foreground: 153 80% 13%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -98,7 +104,12 @@
 }
 
 body {
-  @apply bg-background text-foreground;
+  @apply bg-background text-foreground antialiased;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+h1, h2, h3, h4 {
+  @apply tracking-tight;
 }
 
 /* Mobile app safe area support */

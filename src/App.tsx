@@ -84,15 +84,14 @@ const AppContent = () => {
     }
   }, [user, isAdmin, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, navigate, clearLastAuthEvent]);
 
-  const isHomepage = location.pathname === "/";
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/forgot-password";
-  const isAdminAuthPage = location.pathname === "/admin/login" || location.pathname === "/admin/register";
   const isAdminPage = location.pathname === "/admin" || location.pathname.startsWith("/admin");
 
   return (
     <>
+      {/* Navigation is sticky and in the page flow, so content needs no top offset */}
       {!isAuthPage && !isAdminPage && <Navigation />}
-      <div className={`${isHomepage || isAuthPage || isAdminPage ? "" : "pt-24"} ${!isAuthPage && !isAdminPage ? "pb-20 md:pb-0" : ""}`}>
+      <div className={!isAuthPage && !isAdminPage ? "pb-20 lg:pb-0" : ""}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cars" element={<CarListings />} />

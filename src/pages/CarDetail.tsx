@@ -1,555 +1,389 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Heart, Share2, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, User, Building, LogIn } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, type ReactNode } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import {
+  AlertCircle, ArrowLeft, Building, CalendarClock, Car, CircleHelp, Info, LogIn, MapPin, Phone, RefreshCw,
+  Share2, ShieldAlert, User,
+} from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import MessageSellerButton from "@/components/MessageSellerButton";
+import { ImageGallery } from "@/components/listing/ImageGallery";
+import { VehicleCard } from "@/components/home/VehicleCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { fetchListingDetail, fetchSimilarListings, type ListingDetail } from "@/services/listings";
+import { fetchSellerPublicInfo, type SellerPublicInfo } from "@/services/sellers";
+import {
+  capitalise, formatCondition, formatDate, formatListedAgo, formatMileage, formatNaira, toWhatsAppNumber,
+} from "@/lib/format";
+
+const STATUS_LABELS: Record<string, string> = {
+  pending_review: "waiting for review",
+  pending_payment: "waiting for payment",
+  rejected: "rejected",
+};
+
+const titleOf = (listing: ListingDetail) => `${listing.year} ${listing.make} ${listing.model}`;
+
+/** Specifications the seller actually filled in; nothing is inferred. */
+const specsOf = (listing: ListingDetail) =>
+  [
+    ["Year", String(listing.year)],
+    ["Make", listing.make],
+    ["Model", listing.model],
+    ["Condition", formatCondition(listing.condition)],
+    ["Mileage", listing.mileage != null ? formatMileage(listing.mileage) : null],
+    ["Gearbox", listing.transmission ? capitalise(listing.transmission) : null],
+    ["Fuel", listing.fuelType ? capitalise(listing.fuelType) : null],
+    ["Colour", listing.color ? capitalise(listing.color) : null],
+  ].filter((spec): spec is [string, string] => Boolean(spec[1]));
+
+const DetailSkeleton = () => (
+  <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8" aria-busy="true" aria-label="Loading car details">
+    <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+    <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+      <div className="aspect-[16/10] animate-pulse rounded-2xl bg-muted" />
+      <div className="space-y-4">
+        <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="h-10 w-1/2 animate-pulse rounded bg-muted" />
+        <div className="h-48 animate-pulse rounded-2xl bg-muted" />
+      </div>
+    </div>
+  </div>
+);
+
+const StateMessage = ({ icon, title, text, action }: { icon: ReactNode; title: string; text: string; action: ReactNode }) => (
+  <div className="mx-auto flex max-w-xl flex-col items-center gap-3 px-4 py-24 text-center">
+    {icon}
+    <h1 className="text-2xl font-bold">{title}</h1>
+    <p className="text-muted-foreground">{text}</p>
+    <div className="mt-2">{action}</div>
+  </div>
+);
+
+const SellerCard = ({
+  listing,
+  seller,
+  sellerLoading,
+  isOwner,
+  signedIn,
+}: {
+  listing: ListingDetail;
+  seller: SellerPublicInfo | undefined;
+  sellerLoading: boolean;
+  isOwner: boolean;
+  signedIn: boolean;
+}) => {
+  const title = titleOf(listing);
+  const isDealer = seller?.kind === "dealer";
+  const name = isDealer
+    ? seller?.dealer?.businessName ?? "Dealer"
+    : seller?.kind === "private"
+      ? seller.displayName ?? "Private seller"
+      : "Seller";
+  const whatsApp = seller?.phone ? toWhatsAppNumber(seller.phone) : null;
+  const whatsAppText = `Hello, I saw your ${title} on Motorcars (${window.location.href}). Is it still available?`;
+
+  return (
+    <div className="rounded-2xl border bg-card p-5 shadow-sm">
+      <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Seller</p>
+
+      {sellerLoading ? (
+        <div className="mt-3 h-12 animate-pulse rounded-lg bg-muted" />
+      ) : (
+        <div className="mt-3 flex items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-dark text-gold">
+            {isDealer ? <Building className="h-6 w-6" /> : <User className="h-6 w-6" />}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-semibold">{name}</p>
+            <p className="text-sm text-muted-foreground">
+              {isDealer ? "Dealer" : seller?.kind === "private" ? "Private seller" : "Seller type not available"}
+              {seller?.dealer?.state ? ` · ${seller.dealer.state}` : ""}
+            </p>
+            {seller?.dealer && (
+              <Link to={`/dealer/${seller.dealer.id}`} className="text-sm font-semibold text-primary hover:underline">
+                View dealer profile
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-5 space-y-3">
+        {isOwner ? (
+          <p className="rounded-lg bg-muted px-3 py-2 text-sm">This is your listing.</p>
+        ) : signedIn ? (
+          <>
+            {whatsApp && (
+              <Button asChild size="lg" className="w-full">
+                <a href={`https://wa.me/${whatsApp}?text=${encodeURIComponent(whatsAppText)}`} target="_blank" rel="noopener noreferrer">
+                  Chat on WhatsApp
+                </a>
+              </Button>
+            )}
+            {seller?.phone && (
+              <Button asChild variant="outline" size="lg" className="w-full">
+                <a href={`tel:${seller.phone}`}>
+                  <Phone className="mr-2 h-4 w-4" />
+                  Call seller
+                </a>
+              </Button>
+            )}
+            <MessageSellerButton listingId={listing.id} sellerId={listing.userId} carTitle={title} sellerName={name} />
+            {!sellerLoading && !seller?.phone && (
+              <p className="text-xs text-muted-foreground">This seller has not shared a phone number. Send a message instead.</p>
+            )}
+          </>
+        ) : (
+          <>
+            <Button asChild size="lg" className="w-full">
+              <Link to="/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign in to contact the seller
+              </Link>
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Phone numbers and messages are available to signed-in buyers.
+            </p>
+          </>
+        )}
+      </div>
+
+      <p className="mt-5 flex gap-2 rounded-lg bg-accent/60 px-3 py-2 text-xs text-accent-foreground">
+        <ShieldAlert className="h-4 w-4 shrink-0" />
+        Never pay before you have seen the car and its papers in person.
+      </p>
+    </div>
+  );
+};
 
 const CarDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const [listing, setListing] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  useEffect(() => {
-    if (id) {
-      fetchCarDetails();
-      if (user) {
-        checkIfFavorite();
-      }
-    }
-  }, [id, user]);
+  const listingQuery = useQuery({
+    queryKey: ["listing", id],
+    queryFn: () => fetchListingDetail(id!),
+    enabled: Boolean(id),
+    retry: 1,
+  });
+  const listing = listingQuery.data;
 
-  const fetchCarDetails = async () => {
-    try {
-      console.log('Fetching car details for ID:', id);
-      
-      // Fetch the car listing
-      const { data: carData, error: carError } = await supabase
-        .from('car_listings')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+  const sellerQuery = useQuery({
+    queryKey: ["seller", listing?.userId, Boolean(user)],
+    queryFn: () => fetchSellerPublicInfo(listing!.userId, Boolean(user)),
+    enabled: Boolean(listing),
+    retry: 1,
+  });
 
-      if (carError) {
-        console.error('Error fetching car details:', carError);
-        toast.error('Failed to load car details');
-        return;
-      }
+  const similarQuery = useQuery({
+    queryKey: ["similar", id],
+    queryFn: () => fetchSimilarListings(listing!),
+    enabled: Boolean(listing) && listing?.status === "active",
+    retry: 1,
+  });
 
-      if (!carData) {
-        console.log('No car found with ID:', id);
-        setListing(null);
-        return;
-      }
+  // Opening a similar car reuses this page, so start it at the top
+  useEffect(() => window.scrollTo(0, 0), [id]);
 
-      console.log('Car data:', carData);
+  // Back returns to the results with their filters when the visitor came from inside the site
+  const goBack = () => (location.key !== "default" ? navigate(-1) : navigate("/cars"));
 
-      // Fetch images separately
-      const { data: images, error: imagesError } = await supabase
-        .from('car_listing_images')
-        .select('*')
-        .eq('listing_id', id)
-        .order('is_primary', { ascending: false });
+  if (listingQuery.isLoading) return <DetailSkeleton />;
 
-      if (imagesError) {
-        console.error('Error fetching images:', imagesError);
-      }
-
-      console.log('Images:', images);
-
-      // Fetch seller info using the RPC function with privacy settings
-      let sellerData = null;
-      if (carData.user_id) {
-        const { data: seller, error: sellerError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, phone, user_type, show_profile, show_phone_number')
-          .eq('id', carData.user_id)
-          .maybeSingle();
-
-        if (!sellerError && seller) {
-          sellerData = seller;
-        }
-      }
-
-      // Fetch dealer info if seller is a dealer
-      let dealerData = null;
-      if (sellerData?.user_type === 'dealer' && carData.user_id) {
-        const { data: dealers } = await supabase
-          .rpc('get_public_dealers');
-        
-        if (dealers) {
-          dealerData = dealers.find(dealer => dealer.id === carData.user_id);
-        }
-      }
-
-      // Combine all the data
-      const enrichedListing = {
-        ...carData,
-        car_listing_images: images || [],
-        profiles: sellerData,
-        dealers: dealerData ? [dealerData] : []
-      };
-
-      console.log('Enriched listing:', enrichedListing);
-      setListing(enrichedListing);
-    } catch (error) {
-      console.error('Error in fetchCarDetails:', error);
-      toast.error('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkIfFavorite = async () => {
-    try {
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('listing_id', id)
-        .single();
-
-      if (!error && data) {
-        setIsFavorite(true);
-      }
-    } catch (error) {
-      console.error('Error checking favorite status:', error);
-    }
-  };
-
-  const getListedBy = () => {
-    if (!listing) return { type: 'unknown', name: 'Unknown Seller', phone: null, email: null };
-    
-    if (listing.profiles?.user_type === 'dealer' && listing.dealers?.[0]) {
-      return {
-        type: 'dealer',
-        name: listing.dealers[0].business_name,
-        contact: listing.dealers[0].contact_name,
-        phone: listing.dealers[0].phone,
-        email: listing.dealers[0].email
-      };
-    } else if (listing.profiles) {
-      // Check privacy settings
-      const showProfile = listing.profiles.show_profile ?? true;
-      const showPhone = listing.profiles.show_phone_number ?? false;
-      
-      if (!showProfile) {
-        return {
-          type: 'user',
-          name: 'Private Seller',
-          phone: null,
-          email: null
-        };
-      }
-      
-      const fullName = `${listing.profiles.first_name || ''} ${listing.profiles.last_name || ''}`.trim();
-      return {
-        type: 'user',
-        name: fullName || 'Private Seller',
-        phone: showPhone ? listing.profiles.phone : null,
-        email: null // Private sellers don't expose email directly
-      };
-    }
-    return {
-      type: 'unknown',
-      name: 'Unknown Seller',
-      phone: null,
-      email: null
-    };
-  };
-
-  const handleAddToFavorites = async () => {
-    if (!user) {
-      toast.error('Please sign in to add to favorites');
-      return;
-    }
-
-    try {
-      if (isFavorite) {
-        // Remove from favorites
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('listing_id', id);
-
-        if (error) {
-          console.error('Error removing favorite:', error);
-          toast.error('Failed to remove from favorites');
-          return;
-        }
-
-        setIsFavorite(false);
-        toast.success('Removed from favorites');
-      } else {
-        // Add to favorites
-        const { error } = await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, listing_id: id });
-
-        if (error) {
-          console.error('Error adding favorite:', error);
-          toast.error('Failed to add to favorites');
-          return;
-        }
-
-        setIsFavorite(true);
-        toast.success('Added to favorites');
-      }
-    } catch (error) {
-      console.error('Error handling favorites:', error);
-      toast.error('An error occurred');
-    }
-  };
-
-  const handleShare = async () => {
-    const url = window.location.href;
-    const title = `${listing?.year} ${listing?.make} ${listing?.model}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: title,
-          text: `Check out this ${title} for ₦${listing?.price?.toLocaleString()}`,
-          url: url,
-        });
-        toast.success('Shared successfully');
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          console.error('Error sharing:', error);
-          fallbackShare(url, title);
-        }
-      }
-    } else {
-      fallbackShare(url, title);
-    }
-  };
-
-  const fallbackShare = (url, title) => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => {
-        toast.success('Link copied to clipboard');
-      }).catch(() => {
-        toast.error('Failed to copy link');
-      });
-    } else {
-      toast.error('Sharing not supported on this device');
-    }
-  };
-
-  const handleCallSeller = () => {
-    if (!user) {
-      toast.error('Please sign in to contact the seller');
-      return;
-    }
-
-    const listedBy = getListedBy();
-    if (listedBy.phone) {
-      window.open(`tel:${listedBy.phone}`, '_self');
-    } else {
-      toast.error('Phone number not available');
-    }
-  };
-
-  const handleScheduleTestDrive = () => {
-    if (!user) {
-      toast.error('Please sign in to schedule a test drive');
-      return;
-    }
-
-    const listedBy = getListedBy();
-    const subject = `Test Drive Request for ${listing?.year} ${listing?.make} ${listing?.model}`;
-    const body = `Hi, I would like to schedule a test drive for your ${listing?.year} ${listing?.make} ${listing?.model}. Please let me know your availability.`;
-    
-    if (listedBy.email) {
-      window.open(`mailto:${listedBy.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
-    } else if (listedBy.phone) {
-      const message = `Hi, I would like to schedule a test drive for your ${listing?.year} ${listing?.make} ${listing?.model}. Please let me know your availability.`;
-      window.open(`https://wa.me/${listedBy.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
-    } else {
-      toast.error('Contact information not available');
-    }
-  };
-
-  if (loading) {
+  if (listingQuery.isError) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div>Loading car details...</div>
-      </div>
+      <StateMessage
+        icon={<AlertCircle className="h-12 w-12 text-destructive" />}
+        title="We couldn't load this car"
+        text="Check your connection and try again."
+        action={
+          <Button variant="outline" onClick={() => listingQuery.refetch()} disabled={listingQuery.isFetching}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${listingQuery.isFetching ? "animate-spin" : ""}`} />
+            Try again
+          </Button>
+        }
+      />
     );
   }
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div>Car not found</div>
-      </div>
+      <StateMessage
+        icon={<Car className="h-12 w-12 text-muted-foreground" />}
+        title="This car isn't available"
+        text="It may have been sold or removed by the seller, or the link may be wrong."
+        action={
+          <Button asChild>
+            <Link to="/cars">Browse cars</Link>
+          </Button>
+        }
+      />
     );
   }
 
-  const listedBy = getListedBy();
-  const images = listing.car_listing_images || [];
-  const currentImage = images[currentImageIndex] || {};
-  const displayImage = currentImage.image_url;
+  const title = titleOf(listing);
+  const specs = specsOf(listing);
+  const isOwner = user?.id === listing.userId;
+  const condition = formatCondition(listing.condition);
+  const wasUpdated = new Date(listing.updatedAt).getTime() - new Date(listing.createdAt).getTime() > 60 * 60 * 1000;
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: `${title} for ${formatNaira(listing.price)} on Motorcars`, url });
+        return;
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch {
+      toast.error("Couldn't copy the link. Copy it from the address bar.");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            {/* Image Gallery */}
-            <div className="mb-8">
-              <img 
-                src={displayImage} 
-                alt={`${listing.year} ${listing.make} ${listing.model}`} 
-                className="w-full h-96 object-cover rounded-lg mb-4"
-              />
-              {images.length > 1 && (
-                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 max-h-48 overflow-y-auto">
-                   {images.map((image, index) => (
-                      <img 
-                        key={index}
-                        src={image.image_url}
-                        alt={`${listing.year} ${listing.make} ${listing.model} ${index + 1}`}
-                        className={`w-full h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-all duration-200 ${
-                          index === currentImageIndex ? 'ring-2 ring-primary shadow-lg' : ''
-                        }`}
-                        onClick={() => setCurrentImageIndex(index)}
-                      />
-                   ))}
-                </div>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <button
+          type="button"
+          onClick={goBack}
+          className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to results
+        </button>
+
+        {listing.status !== "active" && (
+          <p className="mt-4 flex gap-2 rounded-xl border border-gold/60 bg-accent/60 px-4 py-3 text-sm text-accent-foreground">
+            <Info className="h-4 w-4 shrink-0" />
+            This listing is {STATUS_LABELS[listing.status] ?? listing.status} and is not public. Only you can see it.
+          </p>
+        )}
+
+        <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+          <div className="min-w-0 space-y-8">
+            <ImageGallery images={listing.images} title={title} />
+
+            {/* Title block repeats here on small screens, where the sidebar sits below the photos */}
+            <div className="lg:hidden">
+              <h1 className="text-2xl font-extrabold">{title}</h1>
+              <p className="mt-1 text-3xl font-extrabold text-primary">{formatNaira(listing.price)}</p>
+            </div>
+
+            <section className="rounded-2xl border bg-card p-5 shadow-sm">
+              <h2 className="text-lg font-bold">Specifications</h2>
+              <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+                {specs.map(([label, value]) => (
+                  <div key={label}>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+                    <dd className="mt-0.5 font-semibold">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-5 flex gap-2 text-xs text-muted-foreground">
+                <CircleHelp className="h-4 w-4 shrink-0" />
+                Details are provided by the seller. Motorcars has not independently checked them.
+              </p>
+            </section>
+
+            {listing.description && (
+              <section className="rounded-2xl border bg-card p-5 shadow-sm">
+                <h2 className="text-lg font-bold">Seller's description</h2>
+                <p className="mt-3 whitespace-pre-line text-foreground/90">{listing.description}</p>
+              </section>
+            )}
+
+            {listing.features.length > 0 && (
+              <section className="rounded-2xl border bg-card p-5 shadow-sm">
+                <h2 className="text-lg font-bold">Features listed by the seller</h2>
+                <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {listing.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+
+          <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            <div className="hidden lg:block">
+              <h1 className="text-3xl font-extrabold leading-tight">{title}</h1>
+              <p className="mt-2 text-4xl font-extrabold text-primary">{formatNaira(listing.price)}</p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {condition && <span className="rounded-full bg-secondary px-3 py-1 text-sm font-semibold">{condition}</span>}
+              {listing.isFeatured && (
+                <span className="rounded-full bg-gold px-3 py-1 text-sm font-bold text-gold-foreground">Featured</span>
               )}
             </div>
 
-            {/* Car Details */}
-            <Card className="mb-8">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h1 className="text-3xl font-bold mb-2">{listing.year} {listing.make} {listing.model}</h1>
-                    <p className="text-3xl font-bold text-red-600">₦{parseFloat(listing.price).toLocaleString()}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={handleAddToFavorites}
-                      className={isFavorite ? 'text-red-600 border-red-600' : ''}
-                      disabled={!user}
-                    >
-                      <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleShare}>
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+            <div className="space-y-2 text-sm">
+              {listing.location && (
+                <p className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  {listing.location}
+                </p>
+              )}
+              <p className="flex items-center gap-2">
+                <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                Listed {formatDate(listing.createdAt)} ({formatListedAgo(listing.createdAt)})
+                {wasUpdated && ` · updated ${formatListedAgo(listing.updatedAt)}`}
+              </p>
+            </div>
 
-                {!user && (
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-blue-700 text-sm flex items-center gap-2">
-                      <LogIn className="h-4 w-4" />
-                      Sign in to contact the seller and add to favorites
-                    </p>
-                  </div>
-                )}
+            {/* No availability confirmation is recorded yet, so it is never presented as confirmed */}
+            <div className="rounded-2xl border border-dashed border-gold/70 bg-card p-4">
+              <p className="font-semibold">Availability not confirmed</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                The seller has not confirmed recently that this car is still for sale. Ask them before you travel to see it.
+              </p>
+            </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-gray-500" />
-                    <span>{listing.year}</span>
-                  </div>
-                  {listing.mileage && (
-                    <div className="flex items-center gap-2">
-                      <Gauge className="h-5 w-5 text-gray-500" />
-                      <span>{listing.mileage}</span>
-                    </div>
-                  )}
-                  {listing.fuel_type && (
-                    <div className="flex items-center gap-2">
-                      <Fuel className="h-5 w-5 text-gray-500" />
-                      <span>{listing.fuel_type}</span>
-                    </div>
-                  )}
-                  {listing.transmission && (
-                    <div className="flex items-center gap-2">
-                      <Settings className="h-5 w-5 text-gray-500" />
-                      <span>{listing.transmission}</span>
-                    </div>
-                  )}
-                </div>
+            <SellerCard
+              listing={listing}
+              seller={sellerQuery.data}
+              sellerLoading={sellerQuery.isLoading}
+              isOwner={isOwner}
+              signedIn={Boolean(user)}
+            />
 
-                <Tabs defaultValue="features" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="features">Features</TabsTrigger>
-                    <TabsTrigger value="description">Description</TabsTrigger>
-                    <TabsTrigger value="details">Details</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="features" className="mt-4">
-                    {listing.features && listing.features.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-2">
-                        {listing.features.map((feature, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span>{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-600">No features listed</p>
-                    )}
-                  </TabsContent>
-                  <TabsContent value="description" className="mt-4">
-                    <p className="text-gray-600">
-                      {listing.description || `This ${listing.year} ${listing.make} ${listing.model} is in ${listing.condition.toLowerCase()} condition and ready for its next owner.`}
-                    </p>
-                  </TabsContent>
-                  <TabsContent value="details" className="mt-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <span className="font-medium">Condition:</span>
-                        <p>{listing.condition}</p>
-                      </div>
-                      {listing.color && (
-                        <div>
-                          <span className="font-medium">Color:</span>
-                          <p>{listing.color}</p>
-                        </div>
-                      )}
-                      <div>
-                        <span className="font-medium">Location:</span>
-                        <p>{listing.location}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium">Listed:</span>
-                        <p>{new Date(listing.created_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div>
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4">Seller Information</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    {listedBy.type === 'dealer' ? (
-                      <Building className="w-8 h-8 text-blue-600" />
-                    ) : (
-                      <User className="w-8 h-8 text-gray-600" />
-                    )}
-                    <div>
-                      <h4 className="font-semibold">{listedBy.name}</h4>
-                      {listedBy.contact && (
-                        <p className="text-sm text-gray-600">{listedBy.contact}</p>
-                      )}
-                      <div className="flex items-center gap-1 text-sm">
-                        <Badge variant="outline" className="text-xs">
-                          {listedBy.type === 'dealer' ? 'Verified Dealer' : 'Private Seller'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {user ? (
-                    <>
-                      <MessageSellerButton
-                        listingId={listing.id}
-                        sellerId={listing.user_id || ''}
-                        carTitle={`${listing.year} ${listing.make} ${listing.model}`}
-                        sellerName={listedBy.name}
-                      />
-                      
-                      <Button 
-                        className="w-full bg-red-600 hover:bg-red-700"
-                        onClick={handleCallSeller}
-                        disabled={!listedBy.phone}
-                      >
-                        <Phone className="mr-2 h-4 w-4" />
-                        {listedBy.phone ? 'Call Seller' : 'No Phone Available'}
-                      </Button>
-                      
-                       <Button 
-                         variant="outline" 
-                         className="w-full"
-                         onClick={handleScheduleTestDrive}
-                         disabled={!listedBy.email && !listedBy.phone}
-                       >
-                         <Calendar className="mr-2 h-4 w-4" />
-                         Schedule Test Drive
-                       </Button>
-                    </>
-                  ) : (
-                    <div className="space-y-2">
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => toast.error('Please sign in to contact the seller')}
-                      >
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Sign in to Contact
-                      </Button>
-                      <p className="text-xs text-gray-600 text-center">
-                        Contact details available after sign in
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4">Vehicle Summary</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Make:</span>
-                    <span>{listing.make}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Model:</span>
-                    <span>{listing.model}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Year:</span>
-                    <span>{listing.year}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Condition:</span>
-                    <span>{listing.condition}</span>
-                  </div>
-                  {listing.color && (
-                    <div className="flex justify-between">
-                      <span>Color:</span>
-                      <span>{listing.color}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span>Location:</span>
-                    <span>{listing.location}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+            <div className="flex gap-2">
+              <FavoriteButton listingId={listing.id} size="default" className="flex-1 border" />
+              <Button variant="outline" className="flex-1" onClick={handleShare}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </Button>
+            </div>
+          </aside>
         </div>
+
+        {similarQuery.data && similarQuery.data.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-2xl font-bold">Similar cars</h2>
+            <p className="mt-1 text-muted-foreground">Other {listing.make} listings and cars at a similar price.</p>
+            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {similarQuery.data.map((item) => (
+                <VehicleCard key={item.id} listing={item} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
+      <Footer />
     </div>
   );
 };

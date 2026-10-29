@@ -96,12 +96,14 @@ export const FavoriteButton = ({ listingId, className = "", size = "sm" }: Favor
       size={size}
       variant="secondary" 
       className={`${
-        isFavorite 
-          ? 'bg-red-600 hover:bg-red-700 text-white' 
-          : 'bg-white hover:bg-gray-100 text-gray-600'
+        isFavorite
+          ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+          : 'bg-card hover:bg-muted text-muted-foreground'
       } ${className}`}
       onClick={handleToggleFavorite}
       disabled={loading}
+      aria-pressed={isFavorite}
+      aria-label={isFavorite ? 'Remove from saved cars' : 'Save this car'}
     >
       <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
     </Button>
