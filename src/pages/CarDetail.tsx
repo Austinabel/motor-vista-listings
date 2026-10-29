@@ -13,6 +13,7 @@ import MessageSellerButton from "@/components/MessageSellerButton";
 import { ImageGallery } from "@/components/listing/ImageGallery";
 import { VehicleCard } from "@/components/home/VehicleCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { loginPathFor } from "@/lib/redirect";
 import { fetchListingDetail, fetchSimilarListings, type ListingDetail } from "@/services/listings";
 import { fetchSellerPublicInfo, type SellerPublicInfo } from "@/services/sellers";
 import {
@@ -140,7 +141,7 @@ const SellerCard = ({
         ) : (
           <>
             <Button asChild size="lg" className="w-full">
-              <Link to="/login">
+              <Link to={loginPathFor(window.location.pathname)}>
                 <LogIn className="mr-2 h-4 w-4" />
                 Sign in to contact the seller
               </Link>

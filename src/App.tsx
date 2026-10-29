@@ -42,6 +42,7 @@ import Feedback from "./pages/Feedback";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { safeRedirectPath } from "@/lib/redirect";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,8 @@ const AppContent = () => {
     const onAuthPage = ['/login', '/register'].includes(location.pathname);
     const onAdminAuthPage = ['/admin/login', '/admin/register'].includes(location.pathname);
     const justSignedIn = lastAuthEvent === 'SIGNED_IN';
+    // Where the buyer was before signing in, e.g. a listing (validated to stay on this site)
+    const returnTo = safeRedirectPath(new URLSearchParams(location.search).get('redirect'));
 
     if (justSignedIn) {
       clearLastAuthEvent();
@@ -75,14 +78,14 @@ const AppContent = () => {
           navigate('/dealer-registration', { replace: true });
         }
       } else {
-        // Redirect regular users to homepage after login
-        navigate('/', { replace: true });
+        // Return regular users to the page they came from, or the homepage
+        navigate(returnTo ?? '/', { replace: true });
       }
     } else if (onAuthPage && !onAdminAuthPage) {
-      // Redirect to homepage if user is already logged in but on regular auth page
-      navigate('/', { replace: true });
+      // Already signed in on an auth page: go where they were heading, or the homepage
+      navigate(returnTo ?? '/', { replace: true });
     }
-  }, [user, isAdmin, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, navigate, clearLastAuthEvent]);
+  }, [user, isAdmin, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, location.search, navigate, clearLastAuthEvent]);
 
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/forgot-password";
   const isAdminPage = location.pathname === "/admin" || location.pathname.startsWith("/admin");
