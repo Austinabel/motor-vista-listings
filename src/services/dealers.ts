@@ -12,6 +12,34 @@ export interface DealerSummary {
   imageUrl: string | null;
 }
 
+export interface DealerProfileData extends DealerSummary {
+  /** The dealer's seller account; already public on every listing they post. */
+  userId: string;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  yearEstablished: string | null;
+}
+
+/** One approved dealer's public profile, or null when it does not exist or is not approved. */
+export async function fetchPublicDealer(dealerId: string): Promise<DealerProfileData | null> {
+  const { data, error } = await supabase.rpc("get_public_dealer", { dealer_id: dealerId }).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    id: data.id,
+    userId: data.user_id,
+    businessName: data.business_name,
+    state: data.state,
+    description: data.description,
+    imageUrl: data.image_url ?? null,
+    address: data.address,
+    phone: data.phone,
+    website: data.website,
+    yearEstablished: data.year_established,
+  };
+}
+
 export async function fetchPublicDealers(): Promise<DealerSummary[]> {
   const { data, error } = await supabase.rpc("get_public_dealers");
   if (error) throw error;

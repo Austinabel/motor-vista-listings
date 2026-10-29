@@ -93,6 +93,19 @@ export async function fetchRecentListings(limit = 8): Promise<ListingSummary[]> 
   return ((data ?? []) as unknown as ListingRow[]).map(toSummary);
 }
 
+/** A seller's active listings, newest first. */
+export async function fetchSellerListings(sellerId: string): Promise<ListingSummary[]> {
+  const { data, error } = await supabase
+    .from("car_listings")
+    .select(SUMMARY_COLUMNS)
+    .eq("status", "active")
+    .eq("user_id", sellerId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return ((data ?? []) as unknown as ListingRow[]).map(toSummary);
+}
+
 // ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------

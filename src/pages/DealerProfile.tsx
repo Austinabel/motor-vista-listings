@@ -1,306 +1,151 @@
-
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle, ArrowLeft, Calendar, Car, Globe, MapPin, Phone, RefreshCw, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Phone, Mail, Star, Eye, Heart, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
-import { Tables } from "@/integrations/supabase/types";
+import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
+import { fetchPublicDealer } from "@/services/dealers";
+import { fetchSellerListings } from "@/services/listings";
 
-type ListingWithImages = Tables<'car_listings'> & {
-  car_listing_images: {
-    image_url: string;
-    is_primary: boolean | null;
-  }[];
-};
+const websiteHref = (website: string) => (/^https?:\/\//i.test(website) ? website : `https://${website}`);
 
 const DealerProfile = () => {
   const { id: dealerId } = useParams<{ id: string }>();
-  const [userRating, setUserRating] = useState(0);
-  const [hoveredRating, setHoveredRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
 
-  const { data: dealer, isLoading: isLoadingDealer } = useQuery({
-    queryKey: ['dealer', dealerId],
-    queryFn: async () => {
-      console.log('Fetching dealer with ID:', dealerId);
-      const { data, error } = await supabase
-        .rpc('get_public_dealer', { dealer_id: dealerId! })
-        .maybeSingle();
-      if (error) {
-        console.error("Error fetching dealer:", error);
-        return null;
-      };
-      console.log('Dealer fetched:', data);
-      return data;
-    },
-    enabled: !!dealerId,
+  const dealerQuery = useQuery({
+    queryKey: ["dealer", dealerId],
+    queryFn: () => fetchPublicDealer(dealerId!),
+    enabled: Boolean(dealerId),
+    retry: 1,
+  });
+  const dealer = dealerQuery.data;
+
+  const listingsQuery = useQuery({
+    queryKey: ["dealer-listings", dealer?.userId],
+    queryFn: () => fetchSellerListings(dealer!.userId),
+    enabled: Boolean(dealer?.userId),
+    retry: 1,
   });
 
-  const { data: listings, isLoading: isLoadingListings } = useQuery({
-    queryKey: ['dealerListings', dealer?.user_id],
-    queryFn: async () => {
-      if (!dealer?.user_id) return [];
-      const { data, error } = await supabase
-        .from('car_listings')
-        .select(`
-          id,
-          make,
-          model,
-          year,
-          price,
-          mileage,
-          car_listing_images (
-            image_url,
-            is_primary
-          )
-        `)
-        .eq('user_id', dealer.user_id)
-        .eq('status', 'active');
-
-      if (error) {
-        console.error("Error fetching listings:", error);
-        return [];
-      };
-      return data as ListingWithImages[];
-    },
-    enabled: !!dealer?.user_id,
-  });
-
-  const reviews = [
-    {
-      id: 1,
-      customerName: "John Doe",
-      rating: 5,
-      comment: "Excellent service and quality cars. The buying process was smooth and professional.",
-      date: "2 weeks ago"
-    },
-    {
-      id: 2,
-      customerName: "Jane Smith", 
-      rating: 4,
-      comment: "Great selection of vehicles. Staff was helpful and knowledgeable.",
-      date: "1 month ago"
-    },
-    {
-      id: 3,
-      customerName: "Mike Johnson",
-      rating: 5,
-      comment: "Very satisfied with my purchase. Highly recommend this dealer.",
-      date: "3 weeks ago"
-    }
-  ];
-
-  const handleRatingSubmit = () => {
-    if (userRating > 0 && reviewText.trim()) {
-      // Handle review submission here
-      console.log("Rating:", userRating, "Review:", reviewText);
-      setUserRating(0);
-      setReviewText("");
-      alert("Thank you for your review!");
-    }
-  };
-  
-  const getPrimaryImage = (images: ListingWithImages['car_listing_images']) => {
-    if (!images || images.length === 0) {
-      return "/placeholder.svg"; // Placeholder
-    }
-    const primary = images.find(img => img.is_primary);
-    return primary?.image_url || images[0].image_url;
-  };
-
-  if (isLoadingDealer) {
+  if (dealerQuery.isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <Loader2 className="h-16 w-16 animate-spin text-red-600" />
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8" aria-busy="true">
+        <div className="h-48 animate-pulse rounded-3xl bg-muted" />
       </div>
     );
   }
 
-  if (!dealer) {
+  if (dealerQuery.isError || !dealer) {
+    const failed = dealerQuery.isError;
     return (
       <>
-        <div className="min-h-screen bg-gray-50">
-            <div className="container mx-auto px-4 py-8 text-center">
-                <h1 className="text-3xl font-bold">Dealer Not Found</h1>
-                <p className="text-gray-600 mt-2">The dealer you are looking for does not exist.</p>
-            </div>
+        <div className="mx-auto flex max-w-xl flex-col items-center gap-3 px-4 py-24 text-center">
+          {failed ? <AlertCircle className="h-12 w-12 text-destructive" /> : <Store className="h-12 w-12 text-muted-foreground" />}
+          <h1 className="text-2xl font-bold">{failed ? "We couldn't load this dealer" : "This dealer isn't available"}</h1>
+          <p className="text-muted-foreground">
+            {failed
+              ? "Check your connection and try again."
+              : "The profile may have been removed, may still be under review, or the link may be wrong."}
+          </p>
+          {failed ? (
+            <Button variant="outline" onClick={() => dealerQuery.refetch()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try again
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link to="/dealers">Browse car stands</Link>
+            </Button>
+          )}
         </div>
         <Footer />
       </>
     );
   }
 
+  const listings = listingsQuery.data ?? [];
+  const location = [dealer.address, dealer.state].filter(Boolean).join(", ");
+
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          {/* Dealer Header */}
-          <Card className="mb-8">
-            <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row gap-6">
-                <img 
-                  src={dealer.image_url || "https://images.unsplash.com/photo-1486162928267-e6274cb3106f?w=400&h=250&fit=crop"} 
-                  alt={dealer.business_name}
-                  className="w-full md:w-48 h-48 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h1 className="text-3xl font-bold mb-2">{dealer.business_name}</h1>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="flex items-center">
-                          <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                          <span className="ml-1 font-semibold">4.8</span>
-                        </div>
-                        <span className="text-gray-600">({reviews.length} reviews)</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600 mb-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>{dealer.address}, {dealer.state}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Established {dealer.year_established}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <a href={`tel:${dealer.phone}`}>
-                        <Button>
-                          <Phone className="mr-2 h-4 w-4" />
-                          Call
-                        </Button>
-                      </a>
-                    </div>
-                  </div>
-                  <p className="text-gray-600">{dealer.description}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <Link to="/dealers" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+          <ArrowLeft className="h-4 w-4" />
+          All car stands
+        </Link>
 
-          {/* Cars Section */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Available Cars ({listings?.length || 0})</h2>
-              <Button variant="outline" className="bg-background text-primary border-primary hover:bg-primary hover:text-primary-foreground">View All</Button>
-            </div>
-            
-            {isLoadingListings ? (
-              <div className="flex justify-center py-10">
-                  <Loader2 className="h-12 w-12 animate-spin text-red-600" />
-              </div>
-            ) : listings && listings.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {listings.map((car) => (
-                    <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                      <div className="relative">
-                        <img src={getPrimaryImage(car.car_listing_images)} alt={`${car.year} ${car.make} ${car.model}`} className="w-full h-48 object-cover bg-gray-200" />
-                        <Button size="sm" variant="secondary" className="absolute top-2 right-2">
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-bold text-lg mb-2">{`${car.year} ${car.make} ${car.model}`}</h3>
-                        <p className="text-2xl font-bold text-red-600 mb-2">₦{car.price.toLocaleString()}</p>
-                        <p className="text-sm text-gray-600 mb-4">{car.mileage ? `${parseInt(car.mileage).toLocaleString()} km` : 'N/A'}</p>
-                        <Button className="w-full">
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+        <section className="mt-4 overflow-hidden rounded-3xl bg-brand-dark text-primary-foreground shadow-lg">
+          <div className="flex flex-col gap-6 p-6 md:flex-row md:items-center md:p-10">
+            {dealer.imageUrl ? (
+              <img src={dealer.imageUrl} alt="" className="h-28 w-28 shrink-0 rounded-2xl object-cover md:h-36 md:w-36" />
             ) : (
-                <Card>
-                    <CardContent className="p-10 text-center">
-                        <p className="text-gray-500">This dealer has no active car listings at the moment.</p>
-                    </CardContent>
-                </Card>
+              <span className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-gold text-5xl font-black text-gold-foreground md:h-36 md:w-36">
+                {dealer.businessName.charAt(0).toUpperCase()}
+              </span>
             )}
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Car stand</p>
+              <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">{dealer.businessName}</h1>
+              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-primary-foreground/80">
+                {location && (
+                  <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />{location}</span>
+                )}
+                {dealer.yearEstablished && (
+                  <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" />Established {dealer.yearEstablished}</span>
+                )}
+              </div>
+              {dealer.description && <p className="mt-4 max-w-3xl text-primary-foreground/85">{dealer.description}</p>}
+            </div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row md:flex-col">
+              {dealer.phone && (
+                <Button asChild size="lg" className="rounded-xl bg-gold text-gold-foreground hover:bg-gold/90">
+                  <a href={`tel:${dealer.phone}`}><Phone className="mr-2 h-4 w-4" />Call the stand</a>
+                </Button>
+              )}
+              {dealer.website && (
+                <Button asChild variant="outline" size="lg" className="rounded-xl border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+                  <a href={websiteHref(dealer.website)} target="_blank" rel="noopener noreferrer"><Globe className="mr-2 h-4 w-4" />Website</a>
+                </Button>
+              )}
+            </div>
           </div>
+        </section>
 
-          {/* Public Rating System */}
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-6">Rate This Dealer</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="mb-2 font-medium">Your Rating:</p>
-                  <div className="flex items-center space-x-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => setUserRating(star)}
-                        onMouseEnter={() => setHoveredRating(star)}
-                        onMouseLeave={() => setHoveredRating(0)}
-                        className="focus:outline-none"
-                      >
-                        <Star
-                          className={`h-8 w-8 ${
-                            star <= (hoveredRating || userRating)
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
-                          } transition-colors`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-2 font-medium">Your Review:</p>
-                  <Textarea
-                    value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
-                    placeholder="Share your experience with this dealer..."
-                    className="min-h-[100px]"
-                  />
-                </div>
-                <Button 
-                  onClick={handleRatingSubmit}
-                  className="bg-red-600 hover:bg-red-700"
-                  disabled={!userRating || !reviewText.trim()}
-                >
-                  Submit Review
+        <section className="mt-10">
+          <h2 className="text-2xl font-extrabold md:text-3xl">
+            Cars from this stand{listingsQuery.data ? ` (${listings.length})` : ""}
+          </h2>
+          <div className="mt-6">
+            {listingsQuery.isLoading && (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 4 }, (_, index) => <VehicleCardSkeleton key={index} />)}
+              </div>
+            )}
+            {listingsQuery.isError && (
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed bg-card p-8 text-center">
+                <p className="font-medium">We couldn't load this stand's cars.</p>
+                <Button variant="outline" onClick={() => listingsQuery.refetch()}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Try again
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Reviews Section - Enhanced */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-6">Customer Reviews ({reviews.length})</h3>
-              <div className="space-y-6">
-                {reviews.map((review) => (
-                  <div key={review.id} className="border-b pb-4 last:border-b-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-4">
-                        <span className="font-semibold">{review.customerName}</span>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`h-4 w-4 ${
-                                i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                              }`} 
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <span className="text-sm text-gray-500">{review.date}</span>
-                    </div>
-                    <p className="text-gray-600">{review.comment}</p>
-                  </div>
-                ))}
+            )}
+            {listingsQuery.data && listings.length === 0 && (
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed bg-card p-8 text-center">
+                <Car className="h-10 w-10 text-muted-foreground" />
+                <p className="font-medium">This stand has no cars listed right now.</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            )}
+            {listings.length > 0 && (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {listings.map((listing) => <VehicleCard key={listing.id} listing={listing} />)}
+              </div>
+            )}
+          </div>
+        </section>
       </div>
       <Footer />
-    </>
+    </div>
   );
 };
 
