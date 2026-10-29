@@ -101,14 +101,14 @@ const AccountSettings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <Settings className="h-6 w-6 text-red-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
+            <Settings className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold text-foreground">Account Settings</h1>
           </div>
-          <p className="text-gray-600">Manage your account preferences and settings.</p>
+          <p className="text-muted-foreground">Manage your account preferences and settings.</p>
         </div>
 
         <Tabs defaultValue="notifications" className="space-y-6">
@@ -136,7 +136,7 @@ const AccountSettings = () => {
                     <Label htmlFor="email-notifications" className="text-base font-medium">
                       Email Notifications
                     </Label>
-                    <p className="text-sm text-gray-600">Receive notifications via email</p>
+                    <p className="text-sm text-muted-foreground">Receive notifications via email</p>
                   </div>
                   <Switch
                     id="email-notifications"
@@ -150,7 +150,7 @@ const AccountSettings = () => {
                     <Label htmlFor="sms-notifications" className="text-base font-medium">
                       SMS Notifications
                     </Label>
-                    <p className="text-sm text-gray-600">Receive notifications via text message</p>
+                    <p className="text-sm text-muted-foreground">Receive notifications via text message</p>
                   </div>
                   <Switch
                     id="sms-notifications"
@@ -164,7 +164,7 @@ const AccountSettings = () => {
                     <Label htmlFor="push-notifications" className="text-base font-medium">
                       Push Notifications
                     </Label>
-                    <p className="text-sm text-gray-600">Receive push notifications in your browser</p>
+                    <p className="text-sm text-muted-foreground">Receive push notifications in your browser</p>
                   </div>
                   <Switch
                     id="push-notifications"
@@ -178,7 +178,7 @@ const AccountSettings = () => {
                     <Label htmlFor="marketing-notifications" className="text-base font-medium">
                       Marketing Communications
                     </Label>
-                    <p className="text-sm text-gray-600">Receive updates about new features and promotions</p>
+                    <p className="text-sm text-muted-foreground">Receive updates about new features and promotions</p>
                   </div>
                   <Switch
                     id="marketing-notifications"
@@ -207,7 +207,7 @@ const AccountSettings = () => {
                     <Label htmlFor="show-profile" className="text-base font-medium">
                       Show Profile to Other Users
                     </Label>
-                    <p className="text-sm text-gray-600">Allow other users to view your profile information</p>
+                    <p className="text-sm text-muted-foreground">Allow other users to view your profile information</p>
                   </div>
                   <Switch
                     id="show-profile"
@@ -221,7 +221,7 @@ const AccountSettings = () => {
                     <Label htmlFor="show-phone" className="text-base font-medium">
                       Show Phone Number
                     </Label>
-                    <p className="text-sm text-gray-600">Display your phone number on listings</p>
+                    <p className="text-sm text-muted-foreground">Display your phone number on listings</p>
                   </div>
                   <Switch
                     id="show-phone"
@@ -235,7 +235,7 @@ const AccountSettings = () => {
                     <Label htmlFor="allow-messages" className="text-base font-medium">
                       Allow Messages
                     </Label>
-                    <p className="text-sm text-gray-600">Let other users send you messages about listings</p>
+                    <p className="text-sm text-muted-foreground">Let other users send you messages about listings</p>
                   </div>
                   <Switch
                     id="allow-messages"
@@ -305,27 +305,27 @@ const AccountSettings = () => {
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-2">Account Status</h4>
-                    <Badge variant="outline" className="text-green-600 border-green-600">
+                    <Badge variant="outline" className="text-primary border-primary/30">
                       Active
                     </Badge>
                   </div>
                   
                   <div>
                     <h4 className="font-medium mb-2">Email Verification</h4>
-                    <Badge variant="outline" className="text-green-600 border-green-600">
+                    <Badge variant="outline" className="text-primary border-primary/30">
                       Verified
                     </Badge>
                   </div>
                   
                   <div>
                     <h4 className="font-medium mb-2">Last Sign In</h4>
-                    <p className="text-sm text-gray-600">Today at 2:30 PM</p>
+                    <p className="text-sm text-muted-foreground">Today at 2:30 PM</p>
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-red-200">
-                  <h4 className="font-medium text-red-600 mb-2">Danger Zone</h4>
-                  <p className="text-sm text-gray-600 mb-4">
+                <div className="pt-6 border-t border-primary/20">
+                  <h4 className="font-medium text-primary mb-2">Danger Zone</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Once you delete your account, there is no going back. Please be certain.
                   </p>
                   <Button 

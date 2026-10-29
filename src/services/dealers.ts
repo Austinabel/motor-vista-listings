@@ -8,6 +8,7 @@ export interface DealerSummary {
   id: string;
   businessName: string;
   state: string | null;
+  yearEstablished?: string | null;
   description: string | null;
   imageUrl: string | null;
 }
@@ -48,6 +49,7 @@ export async function fetchPublicDealers(): Promise<DealerSummary[]> {
     id: dealer.id,
     businessName: dealer.business_name,
     state: dealer.state,
+    yearEstablished: dealer.year_established,
     description: dealer.description,
     // Only returned once the security-hardening migration is applied; absent before that.
     imageUrl: dealer.image_url ?? null,

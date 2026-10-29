@@ -299,41 +299,40 @@ const DealerRegistration = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-4xl mx-auto">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Become a Verified Dealer</CardTitle>
-              <p className="text-center text-gray-600">
-                Join our platform and reach thousands of potential customers
+              <CardTitle className="text-2xl text-center">Register your dealership or car stand</CardTitle>
+              <p className="text-center text-muted-foreground">
+                Get a business profile on Motorcars and list your stock. Our team reviews every application.
               </p>
             </CardHeader>
             <CardContent className="p-8">
               
-              <div className="mb-8 p-6 bg-red-50 rounded-lg border border-red-200">
-                <h3 className="text-xl font-bold text-red-700 mb-2">Dealer Registration Fee</h3>
-                <p className="text-3xl font-bold text-red-600">₦35,000 <span className="text-lg font-normal text-gray-600">one-time payment</span></p>
+              <div className="mb-8 p-6 bg-accent rounded-lg border border-primary/20">
+                <h3 className="text-xl font-bold text-primary mb-2">Dealer Registration Fee</h3>
+                <p className="text-3xl font-bold text-primary">₦35,000 <span className="text-lg font-normal text-muted-foreground">one-time payment</span></p>
                 <ul className="mt-4 space-y-2 text-sm">
-                  <li>✓ Verified dealer badge</li>
+                  <li>✓ Verified business badge once your CAC number and ID are reviewed</li>
                   <li>✓ 20 free car listings included</li>
-                  <li>✓ Featured dealer placement</li>
+                  <li>✓ Eligible for featured placement</li>
                   <li>✓ Direct customer contact</li>
-                  <li>✓ Analytics dashboard</li>
-                  <li>✓ 24/7 customer support</li>
+                  <li>✓ Email support</li>
                   <li>✓ Pay per listing after 20 free listings</li>
                 </ul>
               </div>
 
               
-              <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center">
+              <div className="mb-8 p-6 bg-accent/60 rounded-lg border border-primary/20">
+                <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                   <CreditCard className="w-5 h-5 mr-2" />
                   Payment Instructions
                 </h3>
-                <p className="text-sm text-gray-700 mb-4">
+                <p className="text-sm text-foreground/80 mb-4">
                   Please transfer ₦35,000 to the account below and enter the transaction reference in the form:
                 </p>
-                <div className="bg-white p-4 rounded-lg border space-y-3">
+                <div className="bg-card p-4 rounded-lg border space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Bank Name:</span>
                     <div className="flex items-center space-x-2">
@@ -376,7 +375,7 @@ const DealerRegistration = () => {
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Amount:</span>
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-red-600">₦35,000</span>
+                      <span className="font-bold text-primary">₦35,000</span>
                       <Button 
                         size="sm" 
                         variant="outline" 
@@ -387,15 +386,15 @@ const DealerRegistration = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 mt-3">
+                <p className="text-xs text-muted-foreground mt-3">
                   After making the payment, please enter the transaction reference/ID in the form below.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 
-                <div className="p-6 bg-green-50 rounded-lg border border-green-200">
-                  <h3 className="text-lg font-bold text-green-700 mb-4">Payment Confirmation</h3>
+                <div className="p-6 bg-accent rounded-lg border border-primary/20">
+                  <h3 className="text-lg font-bold text-primary mb-4">Payment Confirmation</h3>
                   <div>
                     <Label htmlFor="paymentReference">Payment Reference/Transaction ID *</Label>
                     <Input 
@@ -405,14 +404,14 @@ const DealerRegistration = () => {
                       value={paymentReference}
                       onChange={(e) => setPaymentReference(e.target.value)}
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Enter the reference number you received after making the payment
                     </p>
                   </div>
                 </div>
 
-                <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
-                  <h3 className="text-lg font-bold text-blue-700 mb-4 flex items-center">
+                <div className="p-6 bg-accent/60 rounded-lg border border-primary/20">
+                  <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                     <IdCard className="w-5 h-5 mr-2" />
                     ID Card Verification
                   </h3>
@@ -456,13 +455,13 @@ const DealerRegistration = () => {
                         onChange={handleIdCardUpload}
                         className="cursor-pointer"
                       />
-                      <Upload className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                      <Upload className="absolute right-3 top-3 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Upload clear image/scan of your selected ID document (PDF, JPG, PNG - Max 5MB)
                     </p>
                     {idCardFile && (
-                      <p className="text-sm text-green-600 mt-1">
+                      <p className="text-sm text-primary mt-1">
                         ✓ {idCardFile.name} uploaded successfully
                       </p>
                     )}
@@ -470,8 +469,8 @@ const DealerRegistration = () => {
                 </div>
 
                 
-                <div className="mb-6 p-6 bg-purple-50 rounded-lg border border-purple-200">
-                  <h3 className="text-lg font-bold text-purple-700 mb-4">Business Image *</h3>
+                <div className="mb-6 p-6 bg-accent rounded-lg border border-primary/20">
+                  <h3 className="text-lg font-bold text-primary mb-4">Business Image *</h3>
                   <div>
                     <Label htmlFor="businessImage">Upload Business Logo or Photo *</Label>
                     <div className="relative">
@@ -483,13 +482,13 @@ const DealerRegistration = () => {
                         className="cursor-pointer"
                         required
                       />
-                      <Upload className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                      <Upload className="absolute right-3 top-3 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Upload your business logo or a photo of your dealership (JPG, PNG - Max 5MB)
                     </p>
                     {imageFile && (
-                      <p className="text-sm text-green-600 mt-1">
+                      <p className="text-sm text-primary mt-1">
                         ✓ {imageFile.name} uploaded successfully
                       </p>
                     )}
@@ -640,7 +639,7 @@ const DealerRegistration = () => {
                 <div>
                   <Label htmlFor="documents">Supporting Documents</Label>
                   <Input id="documents" type="file" multiple accept=".pdf,.jpg,.png" />
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Upload CAC certificate, Tax clearance, business license (PDF, JPG, PNG)
                   </p>
                 </div>
@@ -648,20 +647,20 @@ const DealerRegistration = () => {
                 <div className="flex items-center space-x-2">
                   <input type="checkbox" id="terms" required />
                   <Label htmlFor="terms" className="text-sm">
-                    I agree to the <a href="#" className="text-red-600 hover:underline">Terms of Service</a> and 
-                    <a href="#" className="text-red-600 hover:underline ml-1">Privacy Policy</a>
+                    I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and 
+                    <a href="#" className="text-primary hover:underline ml-1">Privacy Policy</a>
                   </Label>
                 </div>
 
                 <div className="border-t pt-6">
                   <div className="text-center mb-4">
                     <p className="text-lg font-semibold">Total: ₦35,000/year</p>
-                    <p className="text-sm text-gray-600">Please complete payment before submitting</p>
+                    <p className="text-sm text-muted-foreground">Please complete payment before submitting</p>
                   </div>
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-red-600 hover:bg-red-700 py-3"
+                    className="w-full bg-primary hover:bg-primary/90 py-3"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Submitting..." : "Submit Application"}

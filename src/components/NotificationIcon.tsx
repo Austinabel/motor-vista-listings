@@ -206,7 +206,7 @@ export const NotificationIcon = () => {
                               {notification.title}
                             </p>
                             {!notification.is_read && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                              <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">

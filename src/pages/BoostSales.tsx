@@ -10,7 +10,7 @@ const BoostSales = () => {
       description: "Make your listing stand out at the top of search results",
       price: "₦5,000",
       duration: "7 days",
-      icon: <TrendingUp className="h-8 w-8 text-red-600" />,
+      icon: <TrendingUp className="h-8 w-8 text-primary" />,
       features: ["Top placement in search", "Special badge", "3x more views"]
     },
     {
@@ -18,7 +18,7 @@ const BoostSales = () => {
       description: "Get maximum visibility with homepage feature",
       price: "₦10,000",
       duration: "14 days",
-      icon: <Eye className="h-8 w-8 text-red-600" />,
+      icon: <Eye className="h-8 w-8 text-primary" />,
       features: ["Homepage spotlight", "Social media promotion", "5x more views", "Priority in search"]
     },
     {
@@ -26,18 +26,18 @@ const BoostSales = () => {
       description: "Reach specific buyers interested in your car type",
       price: "₦15,000",
       duration: "30 days",
-      icon: <Target className="h-8 w-8 text-red-600" />,
+      icon: <Target className="h-8 w-8 text-primary" />,
       features: ["Targeted email campaigns", "Push notifications", "Social media ads", "10x more qualified leads"]
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-background py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Zap className="h-6 w-6 text-red-600" />
+              <Zap className="h-6 w-6 text-primary" />
               <span>Boost Your Sales</span>
             </CardTitle>
             <CardDescription>
@@ -63,20 +63,20 @@ const BoostSales = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-red-600">{option.price}</div>
-                    <div className="text-sm text-gray-500">for {option.duration}</div>
+                    <div className="text-3xl font-bold text-primary">{option.price}</div>
+                    <div className="text-sm text-muted-foreground">for {option.duration}</div>
                   </div>
                   
                   <ul className="space-y-2">
                     {option.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-center text-sm">
-                        <div className="w-2 h-2 bg-red-600 rounded-full mr-3"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
                         {feature}
                       </li>
                     ))}
                   </ul>
                   
-                  <Button className="w-full bg-red-600 hover:bg-red-700">
+                  <Button className="w-full bg-primary hover:bg-primary/90">
                     Select Plan
                   </Button>
                 </div>
@@ -88,11 +88,11 @@ const BoostSales = () => {
         <Card className="mt-8">
           <CardContent className="pt-6">
             <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Need help choosing?</h3>
-              <p className="text-gray-500 mb-4">
-                Our sales team can help you select the best promotion package for your listing.
+              <h3 className="text-lg font-medium text-foreground mb-2">Need help choosing?</h3>
+              <p className="text-muted-foreground mb-4">
+                Email us at support@motorcars.ng to discuss promoting your listing.
               </p>
-              <Button variant="outline" className="border-red-600 text-red-600 hover:bg-red-50">
+              <Button variant="outline" className="border-primary text-primary hover:bg-accent">
                 Contact Sales Team
               </Button>
             </div>

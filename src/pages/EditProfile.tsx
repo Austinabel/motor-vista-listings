@@ -150,14 +150,14 @@ const EditProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-4 mb-8">
@@ -213,7 +213,7 @@ const EditProfile = () => {
                     onChange={handleAvatarUpload}
                     className="hidden"
                   />
-                  <p className="text-xs text-gray-500">JPG, PNG up to 5MB</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG up to 5MB</p>
                 </div>
               </div>
 
@@ -247,9 +247,9 @@ const EditProfile = () => {
                   type="email"
                   value={user?.email || ""}
                   disabled
-                  className="bg-gray-100"
+                  className="bg-muted"
                 />
-                <p className="text-sm text-gray-500">Email cannot be changed here.</p>
+                <p className="text-sm text-muted-foreground">Email cannot be changed here.</p>
               </div>
 
               <div className="space-y-2">
@@ -279,7 +279,7 @@ const EditProfile = () => {
 
               <Button 
                 type="submit" 
-                className="w-full bg-red-600 hover:bg-red-700"
+                className="w-full bg-primary hover:bg-primary/90"
                 disabled={updateProfileMutation.isPending}
               >
                 {updateProfileMutation.isPending ? "Updating..." : "Update Profile"}

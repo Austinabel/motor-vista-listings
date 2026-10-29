@@ -68,12 +68,12 @@ const Messages = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-background py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-6 w-6 text-red-600" />
+                <MessageSquare className="h-6 w-6 text-primary" />
                 <span>Messages</span>
               </CardTitle>
               <CardDescription>
@@ -82,14 +82,14 @@ const Messages = () => {
             </CardHeader>
             <CardContent>
               <div className="text-center py-12">
-                <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Sign in required</h3>
-                <p className="text-gray-500 mb-6">
+                <MessageSquare className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">Sign in required</h3>
+                <p className="text-muted-foreground mb-6">
                   Please sign in to view your messages and conversations.
                 </p>
                 <a
                   href="/login"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
                 >
                   Sign In
                 </a>
@@ -102,38 +102,38 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-red-50/20 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-white to-accent/20 py-8">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
-          <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-8">
+        <div className="bg-card/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-primary to-primary px-6 py-8">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-white/20 rounded-lg">
+              <div className="p-2 bg-card/20 rounded-lg">
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Messages</h1>
-                <p className="text-red-100 text-sm">Your conversations with buyers and sellers</p>
+                <p className="text-primary-foreground/80 text-sm">Your conversations with buyers and sellers</p>
               </div>
             </div>
           </div>
           <div className="p-6">
             {loading ? (
               <div className="text-center py-20">
-                <div className="w-12 h-12 mx-auto rounded-full animate-spin border-4 border-t-red-500 border-gray-200"></div>
-                <div className="mt-4 text-gray-600 font-medium">Loading conversations...</div>
+                <div className="w-12 h-12 mx-auto rounded-full animate-spin border-4 border-t-red-500 border-border"></div>
+                <div className="mt-4 text-muted-foreground font-medium">Loading conversations...</div>
               </div>
             ) : conversations.length === 0 ? (
               <div className="flex flex-col items-center py-20">
-                <div className="p-4 bg-red-50 rounded-full mb-6">
-                  <MessageSquare className="h-12 w-12 text-red-400" />
+                <div className="p-4 bg-accent rounded-full mb-6">
+                  <MessageSquare className="h-12 w-12 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">No conversations yet</h3>
-                <p className="text-gray-500 mb-8 max-w-sm text-center leading-relaxed">
+                <h3 className="text-xl font-semibold text-foreground mb-3">No conversations yet</h3>
+                <p className="text-muted-foreground mb-8 max-w-sm text-center leading-relaxed">
                   Start chatting with sellers or buyers about car listings. Your conversations will appear here.
                 </p>
                 <a
                   href="/cars"
-                  className="inline-flex items-center px-6 py-3 rounded-xl text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="inline-flex items-center px-6 py-3 rounded-xl text-white bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-brand-dark transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <Car className="w-4 h-4 mr-2" />
                   Browse Cars
@@ -147,15 +147,15 @@ const Messages = () => {
                   return (
                     <div 
                       key={conversation.id} 
-                      className={`group bg-white rounded-xl border border-gray-100 hover:border-red-200 hover:shadow-md transition-all duration-200 cursor-pointer ${
-                        isSelected ? "ring-2 ring-red-500 border-red-500 shadow-lg" : ""
+                      className={`group bg-card rounded-xl border border-border hover:border-primary/20 hover:shadow-md transition-all duration-200 cursor-pointer ${
+                        isSelected ? "ring-2 ring-ring border-primary shadow-lg" : ""
                       }`}
                       onClick={() => handleOpenChat(conversation)}
                     >
                       <div className="flex items-center space-x-4 p-4">
                         {/* Avatar */}
                         <div className="flex-shrink-0">
-                          <div className="h-11 w-11 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                          <div className="h-11 w-11 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
                             {stringAvatar(getOtherUserName(conversation))}
                           </div>
                         </div>
@@ -163,20 +163,20 @@ const Messages = () => {
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1">
-                            <h4 className="font-semibold text-gray-900 truncate text-sm">
+                            <h4 className="font-semibold text-foreground truncate text-sm">
                               {getCarTitle(conversation)}
                             </h4>
                             {unreadCount > 0 && (
-                              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-bold">
+                              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-white text-xs font-bold">
                                 {unreadCount}
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 truncate mb-1">
+                          <p className="text-sm text-muted-foreground truncate mb-1">
                             With {getOtherUserName(conversation)}
                           </p>
                           {conversation.car_listings?.price && (
-                            <p className="text-xs font-semibold text-red-600">
+                            <p className="text-xs font-semibold text-primary">
                               ₦{conversation.car_listings.price.toLocaleString()}
                             </p>
                           )}
@@ -184,14 +184,14 @@ const Messages = () => {
                         
                         {/* Time & Action */}
                         <div className="flex flex-col items-end space-y-2">
-                          <span className="text-xs text-gray-400 flex items-center">
+                          <span className="text-xs text-muted-foreground/70 flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
                             {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
                           </span>
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-7 px-3 text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 opacity-80 group-hover:opacity-100"
+                            className="h-7 px-3 text-xs bg-accent hover:bg-accent text-primary border border-primary/20 opacity-80 group-hover:opacity-100"
                           >
                             <MessageSquare className="h-3 w-3 mr-1" />
                             Chat
@@ -208,22 +208,22 @@ const Messages = () => {
 
         {/* Chat Dialog */}
         <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-          <DialogContent className="w-full max-w-4xl border-0 rounded-2xl shadow-2xl px-0 py-0 bg-white overflow-hidden h-[85vh] max-h-[85vh] flex flex-col">
+          <DialogContent className="w-full max-w-4xl border-0 rounded-2xl shadow-2xl px-0 py-0 bg-card overflow-hidden h-[85vh] max-h-[85vh] flex flex-col">
             {/* Header */}
-            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex-shrink-0">
+            <div className="bg-gradient-to-r from-primary to-primary px-6 py-4 flex-shrink-0">
               <DialogHeader className="p-0">
                 <DialogTitle className="text-white font-bold text-lg flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" />
                   {selectedConversation && `${getCarTitle(selectedConversation)}`}
                 </DialogTitle>
-                <p className="text-red-100 text-sm">
+                <p className="text-primary-foreground/80 text-sm">
                   {selectedConversation && `Chatting with ${getOtherUserName(selectedConversation)}`}
                 </p>
               </DialogHeader>
             </div>
             
             {/* Chat Interface */}
-            <div className="flex-1 min-h-0 bg-gray-50">
+            <div className="flex-1 min-h-0 bg-background">
               {selectedConversation && (
                 <ChatInterface
                   conversationId={selectedConversation.id}

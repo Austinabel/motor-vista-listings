@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Car, Check, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { BrandLogo } from "@/components/BrandLogo";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +31,9 @@ const Register = () => {
   const { signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Return destination from a listing's sign-in link, passed back to the login page
+  const redirect = searchParams.get('redirect');
 
   useEffect(() => {
     if (user) {
@@ -137,15 +141,12 @@ const Register = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <Link to="/" className="flex items-center justify-center space-x-2 mb-4">
-              <Car className="h-8 w-8 text-red-600" />
-              <span className="text-2xl font-bold text-gray-900">motorcars.ng</span>
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-            <p className="text-gray-600">Join Nigeria's trusted car marketplace</p>
+            <div className="mb-6 flex justify-center"><BrandLogo /></div>
+            <h1 className="text-2xl font-bold text-foreground">Create Account</h1>
+            <p className="text-muted-foreground">Create your Motorcars account</p>
           </div>
 
           <Card>
@@ -212,7 +213,7 @@ const Register = () => {
                     name="userType"
                     value={formData.userType}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-border rounded-md"
                     required
                   >
                     <option value="buyer">Car Buyer</option>
@@ -243,7 +244,7 @@ const Register = () => {
                   </div>
                   {formData.password && (
                     <div className="mt-2 space-y-1">
-                      <div className="text-sm text-gray-600">Password requirements:</div>
+                      <div className="text-sm text-muted-foreground">Password requirements:</div>
                       {[
                         { test: formData.password.length >= 8, text: "At least 8 characters" },
                         { test: /[A-Z]/.test(formData.password), text: "One uppercase letter" },
@@ -251,7 +252,7 @@ const Register = () => {
                         { test: /\d/.test(formData.password), text: "One number" },
                         { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?]/.test(formData.password), text: "One special character" }
                       ].map((req, index) => (
-                        <div key={index} className={`flex items-center text-xs ${req.test ? 'text-green-600' : 'text-red-500'}`}>
+                        <div key={index} className={`flex items-center text-xs ${req.test ? 'text-primary' : 'text-destructive'}`}>
                           {req.test ? <Check className="h-3 w-3 mr-1" /> : <X className="h-3 w-3 mr-1" />}
                           {req.text}
                         </div>
@@ -287,31 +288,31 @@ const Register = () => {
                     id="terms"
                     name="terms"
                     type="checkbox"
-                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary focus:ring-ring border-border rounded"
                     required
                   />
                   <Label htmlFor="terms" className="ml-2 block text-sm">
                     I agree to the{" "}
-                    <Link to="/terms" className="text-red-600 hover:underline">
+                    <Link to="/terms" className="text-primary hover:underline">
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link to="/privacy" className="text-red-600 hover:underline">
+                    <Link to="/privacy" className="text-primary hover:underline">
                       Privacy Policy
                     </Link>
                   </Label>
                 </div>
 
-                <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={loading}>
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
                   {loading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
 
 
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Already have an account?{" "}
-                  <Link to="/login" className="text-red-600 hover:underline font-medium">
+                  <Link to={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"} className="text-primary hover:underline font-medium">
                     Sign in
                   </Link>
                 </p>

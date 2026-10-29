@@ -344,7 +344,7 @@ export const FeaturedListingsManager = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Crown className="h-5 w-5 text-yellow-500" />
+          <Crown className="h-5 w-5 text-gold" />
           Featured Listings Manager
         </CardTitle>
       </CardHeader>
@@ -409,19 +409,19 @@ export const FeaturedListingsManager = () => {
                             </p>
                             <div className="flex gap-2 mt-2">
                               {listing.is_featured && (
-                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                <Badge variant="secondary" className="bg-accent text-accent-foreground">
                                   <Crown className="h-3 w-3 mr-1" />
                                   Featured {formatDate(listing.featured_until)}
                                 </Badge>
                               )}
                               {listing.is_top_listing && (
-                                <Badge variant="secondary" className="bg-red-100 text-red-800">
+                                <Badge variant="secondary" className="bg-destructive/10 text-destructive">
                                   <Star className="h-3 w-3 mr-1" />
                                   Top Listing
                                 </Badge>
                               )}
                               {listing.is_boosted && (
-                                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                <Badge variant="secondary" className="bg-accent/60 text-primary">
                                   <TrendingUp className="h-3 w-3 mr-1" />
                                   Boosted {formatDate(listing.boosted_until)}
                                 </Badge>
@@ -541,7 +541,7 @@ export const FeaturedListingsManager = () => {
                                 {dealer.status}
                               </Badge>
                               {dealer.is_featured && (
-                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                <Badge variant="secondary" className="bg-accent text-accent-foreground">
                                   <Crown className="h-3 w-3 mr-1" />
                                   Featured {formatDate(dealer.featured_until)}
                                 </Badge>

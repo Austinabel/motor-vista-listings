@@ -134,9 +134,9 @@ const SellYourCar = () => {
       price: "Free",
       duration: "30 days",
       listingPrice: 0,
-      features: ["Basic listing visibility","Up to 5 photos","Standard support","Basic contact form"],
+      features: ["Listed in search for 30 days","Up to 5 photos","Buyers contact you directly"],
       icon: Car,
-      color: "bg-gray-100 border-gray-300"
+      color: "bg-muted border-border"
     },
     {
       id: "standard",
@@ -144,9 +144,9 @@ const SellYourCar = () => {
       price: "₦7,500",
       duration: "60 days",
       listingPrice: 7500,
-      features: ["Enhanced visibility","Up to 20 photos","Priority support","Advanced contact options","Social media promotion"],
+      features: ["Listed for 60 days","Up to 20 photos","Priority email support"],
       icon: Star,
-      color: "bg-blue-50 border-blue-300"
+      color: "bg-accent/60 border-primary/30"
     },
     {
       id: "featured",
@@ -154,9 +154,9 @@ const SellYourCar = () => {
       price: "₦35,000",
       duration: "90 days",
       listingPrice: 35000,
-      features: ["Premium placement","Up to 20 photos","24/7 priority support","Featured badge","Homepage visibility","Social media boost","Dedicated agent"],
+      features: ["Listed for 90 days","Up to 20 photos","Featured badge","Eligible for homepage featured placement","Priority email support"],
       icon: Crown,
-      color: "bg-yellow-50 border-yellow-400"
+      color: "bg-accent/50 border-gold/50"
     }
   ];
 
@@ -431,7 +431,7 @@ const SellYourCar = () => {
   if (step === 'payment' && newListing) {
     const planDetails = pricingPlans.find(p => p.id === newListing.listing_plan);
     return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background py-8 flex items-center justify-center px-4">
         <ManualPaymentDetails
           listingId={newListing.id}
           planName={planDetails?.name || 'Listing'}
@@ -444,7 +444,7 @@ const SellYourCar = () => {
 
   if (step === 'success') {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background py-8 flex items-center justify-center px-4">
         <Card className="w-full max-w-md text-center animate-fade-in">
           <CardHeader>
             <CardTitle>Success!</CardTitle>
@@ -454,7 +454,7 @@ const SellYourCar = () => {
             <p>Your listing is now under review and will be activated once payment is confirmed. Thank you!</p>
           </CardContent>
           <CardFooter>
-            <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => navigate('/')}>Back to Home</Button>
+            <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate('/')}>Back to Home</Button>
           </CardFooter>
         </Card>
       </div>
@@ -464,10 +464,10 @@ const SellYourCar = () => {
   // Show loading state while checking dealer status
   if (dealerLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+      <div className="min-h-screen bg-background py-8 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -481,9 +481,9 @@ const SellYourCar = () => {
     const remainingListings = 5 - usedListings;
 
     return (
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="font-semibold text-blue-900 mb-2">Monthly Free Listings</h3>
-        <p className="text-blue-700 text-sm">
+      <div className="mb-6 p-4 bg-accent/60 border border-primary/20 rounded-lg">
+        <h3 className="font-semibold text-primary mb-2">Monthly Free Listings</h3>
+        <p className="text-primary text-sm">
           You have <span className="font-semibold">{remainingListings} free listings</span> remaining this month.
           {remainingListings === 0 && " You can select a paid plan to list more cars."}
         </p>
@@ -492,11 +492,11 @@ const SellYourCar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4">Sell Your Car</h1>
-          <p className="text-gray-600 text-lg">List your car and reach thousands of potential buyers</p>
+          <p className="text-muted-foreground text-lg">List your car with photos and your price. Buyers contact you directly.</p>
         </div>
 
         {user && (!isDealer || dealerInfo?.status !== 'verified') && (
@@ -508,9 +508,9 @@ const SellYourCar = () => {
 
         {/* Show remaining free listings for verified dealers */}
         {user && isDealer && dealerInfo?.status === 'verified' && (
-          <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-700 mb-2">Free Listings Status</h3>
-            <p className="text-blue-600">
+          <div className="mb-8 p-4 bg-accent/60 rounded-lg border border-primary/20">
+            <h3 className="text-lg font-semibold text-primary mb-2">Free Listings Status</h3>
+            <p className="text-primary">
               You have used {dealerInfo.free_listings_used || 0} out of 20 free listings.
               {(20 - (dealerInfo.free_listings_used || 0)) > 0 ? 
                 ` ${20 - (dealerInfo.free_listings_used || 0)} free listings remaining.` :
@@ -534,7 +534,7 @@ const SellYourCar = () => {
                       const isFreeDisabled = plan.id === 'free' && !canCreateFreeListing;
                       
                       return (
-                        <div key={plan.id} className={`p-4 rounded-lg border-2 ${plan.color} ${selectedPlan === plan.id ? 'ring-2 ring-red-500' : ''} ${isFreeDisabled ? 'opacity-50' : ''}`}>
+                        <div key={plan.id} className={`p-4 rounded-lg border-2 ${plan.color} ${selectedPlan === plan.id ? 'ring-2 ring-ring' : ''} ${isFreeDisabled ? 'opacity-50' : ''}`}>
                           <div className="flex items-center space-x-2 mb-3">
                             <RadioGroupItem 
                               value={plan.id} 
@@ -545,19 +545,19 @@ const SellYourCar = () => {
                             <Label htmlFor={plan.id} className="font-semibold">
                               {plan.name}
                               {isFreeDisabled && (
-                                <span className="text-red-500 text-sm ml-2">
+                                <span className="text-destructive text-sm ml-2">
                                   ({isDealer ? 'All 20 free listings used' : 'Monthly limit reached'})
                                 </span>
                               )}
                             </Label>
                           </div>
                         <div className="ml-6">
-                          <div className="text-2xl font-bold text-red-600 mb-1">{plan.price}</div>
-                          <div className="text-sm text-gray-500 mb-3">Valid for {plan.duration}</div>
+                          <div className="text-2xl font-bold text-primary mb-1">{plan.price}</div>
+                          <div className="text-sm text-muted-foreground mb-3">Valid for {plan.duration}</div>
                           <ul className="space-y-1">
                             {plan.features.map((feature, index) => (
                               <li key={index} className="flex items-center text-sm">
-                                <Check className="h-3 w-3 text-green-500 mr-2" />
+                                <Check className="h-3 w-3 text-primary mr-2" />
                                 {feature}
                               </li>
                             ))}
@@ -746,10 +746,10 @@ const SellYourCar = () => {
 
                   <div>
                     <Label>Upload Images</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                      <p className="text-gray-600 mb-2">Drag and drop images here, or click to browse</p>
-                      <p className="text-sm text-gray-500 mb-4">
+                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                      <Upload className="h-12 w-12 mx-auto text-muted-foreground/70 mb-4" />
+                      <p className="text-muted-foreground mb-2">Drag and drop images here, or click to browse</p>
+                      <p className="text-sm text-muted-foreground mb-4">
                         {selectedPlan === "free" ? "Up to 5 images" :
                           selectedPlan === "standard" ? "Up to 20 images" : "Unlimited images"}
                       </p>
@@ -760,12 +760,12 @@ const SellYourCar = () => {
 
                     {selectedImages.length > 0 && (
                       <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-2">{selectedImages.length} image(s) selected:</p>
+                        <p className="text-sm text-muted-foreground mb-2">{selectedImages.length} image(s) selected:</p>
                         <div className="flex gap-2 overflow-x-auto py-2">
                           {selectedImagePreviews.map((src, idx) => (
                             <div key={idx} className="relative w-28 h-20 flex-shrink-0">
                               <img src={src} alt={`preview-${idx}`} className="w-full h-full object-cover rounded" />
-                              <button type="button" onClick={() => removeImage(idx)} className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow">
+                              <button type="button" onClick={() => removeImage(idx)} className="absolute -top-1 -right-1 bg-card rounded-full p-1 shadow">
                                 <X className="h-3 w-3" />
                               </button>
                             </div>
@@ -776,7 +776,7 @@ const SellYourCar = () => {
                   </div>
 
                   {listingPlansEnabled && (
-                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                    <div className="mt-8 p-4 bg-background rounded-lg">
                       <h3 className="font-semibold mb-2">Listing Summary</h3>
                       <div className="space-y-1 text-sm">
                         <div>Plan: <span className="font-medium">{pricingPlans.find(p => p.id === selectedPlan)?.name}</span></div>
@@ -786,7 +786,7 @@ const SellYourCar = () => {
                     </div>
                   )}
 
-                  <Button type="submit" className="w-full mt-6 bg-red-600 hover:bg-red-700" disabled={loading}>
+                  <Button type="submit" className="w-full mt-6 bg-primary hover:bg-primary/90" disabled={loading}>
                     {loading ? "Creating listing..." :
                       (!listingPlansEnabled || selectedPlan === "free") ? "Submit Free Listing" :
                       `Proceed to Payment (${pricingPlans.find(p => p.id === selectedPlan)?.price})`}

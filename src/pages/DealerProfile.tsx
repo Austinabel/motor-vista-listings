@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, ArrowLeft, Calendar, Car, Globe, MapPin, Phone, RefreshCw, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
+import { VerifiedBusinessBadge } from "@/components/VerifiedBusinessBadge";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
 import { fetchPublicDealer } from "@/services/dealers";
@@ -96,6 +97,7 @@ const DealerProfile = () => {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Car stand</p>
               <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">{dealer.businessName}</h1>
+              <VerifiedBusinessBadge className="mt-2 bg-gold/20 text-gold" />
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-primary-foreground/80">
                 {location && (
                   <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />{location}</span>

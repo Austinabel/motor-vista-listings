@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Car, ArrowLeft } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,24 +44,21 @@ const ForgotPassword = () => {
   if (sent) {
     return (
       <>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+        <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4">
           <div className="w-full max-w-md">
             <div className="text-center mb-8">
-              <Link to="/" className="flex items-center justify-center space-x-2 mb-4">
-                <Car className="h-8 w-8 text-red-600" />
-                <span className="text-2xl font-bold text-gray-900">motorcars.ng</span>
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Check Your Email</h1>
-              <p className="text-gray-600">We've sent password reset instructions to {email}</p>
+              <div className="mb-6 flex justify-center"><BrandLogo /></div>
+              <h1 className="text-2xl font-bold text-foreground">Check Your Email</h1>
+              <p className="text-muted-foreground">We've sent password reset instructions to {email}</p>
             </div>
 
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                    <Car className="h-8 w-8 text-green-600" />
+                  <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto">
+                    <Car className="h-8 w-8 text-primary" />
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     If you don't see the email in your inbox, please check your spam folder.
                   </p>
                   <Link to="/login">
@@ -81,15 +79,12 @@ const ForgotPassword = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <Link to="/" className="flex items-center justify-center space-x-2 mb-4">
-              <Car className="h-8 w-8 text-red-600" />
-              <span className="text-2xl font-bold text-gray-900">motorcars.ng</span>
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Reset Password</h1>
-            <p className="text-gray-600">Enter your email to receive reset instructions</p>
+            <div className="mb-6 flex justify-center"><BrandLogo /></div>
+            <h1 className="text-2xl font-bold text-foreground">Reset Password</h1>
+            <p className="text-muted-foreground">Enter your email to receive reset instructions</p>
           </div>
 
           <Card>
@@ -110,13 +105,13 @@ const ForgotPassword = () => {
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={loading}>
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
                   {loading ? "Sending..." : "Send Reset Instructions"}
                 </Button>
               </form>
 
               <div className="mt-6 text-center">
-                <Link to="/login" className="text-sm text-red-600 hover:underline flex items-center justify-center">
+                <Link to="/login" className="text-sm text-primary hover:underline flex items-center justify-center">
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Back to Login
                 </Link>

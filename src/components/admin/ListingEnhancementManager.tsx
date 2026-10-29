@@ -134,9 +134,9 @@ export const ListingEnhancementManager = () => {
 
   const getEnhancementIcon = (type: string) => {
     switch (type) {
-      case 'featured': return <Crown className="h-4 w-4 text-yellow-500" />;
-      case 'boosted': return <TrendingUp className="h-4 w-4 text-blue-500" />;
-      case 'top_listing': return <Star className="h-4 w-4 text-red-500" />;
+      case 'featured': return <Crown className="h-4 w-4 text-gold" />;
+      case 'boosted': return <TrendingUp className="h-4 w-4 text-primary" />;
+      case 'top_listing': return <Star className="h-4 w-4 text-destructive" />;
       default: return null;
     }
   };
@@ -144,11 +144,11 @@ export const ListingEnhancementManager = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-300"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+        return <Badge variant="outline" className="text-gold border-gold/50"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
       case 'approved':
-        return <Badge variant="outline" className="text-green-600 border-green-300"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>;
+        return <Badge variant="outline" className="text-primary border-primary/30"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>;
       case 'rejected':
-        return <Badge variant="outline" className="text-red-600 border-red-300"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+        return <Badge variant="outline" className="text-destructive border-destructive/40"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -192,25 +192,25 @@ export const ListingEnhancementManager = () => {
       <CardContent>
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="border-yellow-200 bg-yellow-50">
+          <Card className="border-gold/50 bg-accent/50">
             <CardContent className="p-4 text-center">
-              <Clock className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+              <Clock className="h-8 w-8 text-gold mx-auto mb-2" />
               <h3 className="font-semibold">Pending</h3>
-              <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
+              <p className="text-2xl font-bold text-gold">{pendingCount}</p>
             </CardContent>
           </Card>
-          <Card className="border-green-200 bg-green-50">
+          <Card className="border-primary/20 bg-accent">
             <CardContent className="p-4 text-center">
-              <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <CheckCircle className="h-8 w-8 text-primary mx-auto mb-2" />
               <h3 className="font-semibold">Approved</h3>
-              <p className="text-2xl font-bold text-green-600">{approvedCount}</p>
+              <p className="text-2xl font-bold text-primary">{approvedCount}</p>
             </CardContent>
           </Card>
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-destructive/40 bg-destructive/10">
             <CardContent className="p-4 text-center">
-              <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+              <XCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
               <h3 className="font-semibold">Rejected</h3>
-              <p className="text-2xl font-bold text-red-600">{rejectedCount}</p>
+              <p className="text-2xl font-bold text-destructive">{rejectedCount}</p>
             </CardContent>
           </Card>
         </div>
@@ -291,7 +291,7 @@ export const ListingEnhancementManager = () => {
                         size="sm"
                         onClick={() => handleRequest(request.id, 'approved')}
                         disabled={processing === request.id}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-primary hover:bg-primary/90"
                       >
                         {processing === request.id ? '...' : 'Approve'}
                       </Button>
@@ -303,7 +303,7 @@ export const ListingEnhancementManager = () => {
                           handleRequest(request.id, 'rejected', notes || undefined);
                         }}
                         disabled={processing === request.id}
-                        className="border-red-300 text-red-600 hover:bg-red-50"
+                        className="border-destructive/40 text-destructive hover:bg-destructive/10"
                       >
                         {processing === request.id ? '...' : 'Reject'}
                       </Button>

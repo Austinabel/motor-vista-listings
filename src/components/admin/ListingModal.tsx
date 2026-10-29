@@ -17,24 +17,24 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>;
+        return <Badge className="bg-primary hover:bg-primary/90">Active</Badge>;
       case 'pending_review':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">Pending Review</Badge>;
+        return <Badge className="bg-gold hover:bg-gold/90">Pending Review</Badge>;
       case 'rejected':
-        return <Badge className="bg-red-500 hover:bg-red-600">Rejected</Badge>;
+        return <Badge className="bg-destructive hover:bg-destructive/90">Rejected</Badge>;
       default:
-        return <Badge className="bg-gray-500 hover:bg-gray-600">{status}</Badge>;
+        return <Badge className="bg-muted-foreground hover:bg-primary">{status}</Badge>;
     }
   };
 
   const getPlanBadge = (plan: string) => {
     switch (plan) {
       case 'featured':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>;
+        return <Badge className="bg-gold hover:bg-gold/90">Featured</Badge>;
       case 'standard':
-        return <Badge className="bg-blue-500 hover:bg-blue-600">Standard</Badge>;
+        return <Badge className="bg-primary hover:bg-primary/90">Standard</Badge>;
       default:
-        return <Badge className="bg-gray-500 hover:bg-gray-600">Free</Badge>;
+        return <Badge className="bg-muted-foreground hover:bg-primary">Free</Badge>;
     }
   };
 
@@ -54,19 +54,19 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {listing.car_listing_images.map((image: any, index: number) => (
                 <div key={image.id || index} className="relative group">
-                  <div className="relative aspect-square overflow-hidden rounded-lg border border-gray-200">
+                  <div className="relative aspect-square overflow-hidden rounded-lg border border-border">
                     <img 
                       src={image.image_url} 
                       alt={`Car image ${index + 1}`}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400&h=300&fit=crop&crop=center';
+                        target.src = '/placeholder.svg';
                       }}
                     />
                     {image.is_primary && (
                       <div className="absolute top-2 left-2">
-                        <Badge className="bg-green-500 hover:bg-green-600 text-xs">
+                        <Badge className="bg-primary hover:bg-primary/90 text-xs">
                           Primary
                         </Badge>
                       </div>
@@ -85,12 +85,12 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
         ) : (
           <div className="space-y-4">
             <h4 className="font-semibold text-lg border-b pb-2">Images</h4>
-            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <div className="text-gray-400 mb-2">
+            <div className="bg-background border-2 border-dashed border-border rounded-lg p-8 text-center">
+              <div className="text-muted-foreground/70 mb-2">
                 <Eye className="w-12 h-12 mx-auto" />
               </div>
-              <p className="text-gray-600 font-medium">No images uploaded</p>
-              <p className="text-sm text-gray-500 mt-1">This listing doesn't have any images yet.</p>
+              <p className="text-muted-foreground font-medium">No images uploaded</p>
+              <p className="text-sm text-muted-foreground mt-1">This listing doesn't have any images yet.</p>
             </div>
           </div>
         )}
@@ -101,23 +101,23 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
             <h4 className="font-semibold text-lg border-b pb-2">Basic Information</h4>
             <div className="space-y-2">
               <div>
-                <Label className="text-sm font-medium text-gray-600">Make & Model:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Make & Model:</Label>
                 <p className="text-sm">{listing.make} {listing.model}</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Year:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Year:</Label>
                 <p className="text-sm">{listing.year}</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Price:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Price:</Label>
                 <p className="text-sm font-semibold">₦{listing.price.toLocaleString()}</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Condition:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Condition:</Label>
                 <p className="text-sm">{listing.condition}</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Location:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Location:</Label>
                 <div className="flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   <p className="text-sm">{listing.location}</p>
@@ -132,13 +132,13 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
             <div className="space-y-2">
               {listing.mileage && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Mileage:</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Mileage:</Label>
                   <p className="text-sm">{listing.mileage} km</p>
                 </div>
               )}
               {listing.fuel_type && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Fuel Type:</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Fuel Type:</Label>
                   <div className="flex items-center gap-1">
                     <Fuel className="w-3 h-3" />
                     <p className="text-sm">{listing.fuel_type}</p>
@@ -147,7 +147,7 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
               )}
               {listing.transmission && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Transmission:</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Transmission:</Label>
                   <div className="flex items-center gap-1">
                     <Settings className="w-3 h-3" />
                     <p className="text-sm">{listing.transmission}</p>
@@ -156,7 +156,7 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
               )}
               {listing.color && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Color:</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Color:</Label>
                   <div className="flex items-center gap-1">
                     <Palette className="w-3 h-3" />
                     <p className="text-sm">{listing.color}</p>
@@ -171,29 +171,29 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
             <h4 className="font-semibold text-lg border-b pb-2">Listing Information</h4>
             <div className="space-y-2">
               <div>
-                <Label className="text-sm font-medium text-gray-600">Status:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Status:</Label>
                 <div className="mt-1">{getStatusBadge(listing.status)}</div>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Plan:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Plan:</Label>
                 <div className="mt-1">{getPlanBadge(listing.listing_plan)}</div>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Listing Price:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Listing Price:</Label>
                 <p className="text-sm">₦{listing.listing_price.toLocaleString()}</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Duration:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Duration:</Label>
                 <p className="text-sm">{listing.listing_duration} days</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Created:</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Created:</Label>
                 <p className="text-sm">{new Date(listing.created_at).toLocaleDateString()}</p>
               </div>
               {listing.payment_reference && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Payment Ref:</Label>
-                  <p className="text-sm font-mono text-xs bg-gray-100 p-1 rounded">{listing.payment_reference}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Payment Ref:</Label>
+                  <p className="text-sm font-mono text-xs bg-muted p-1 rounded">{listing.payment_reference}</p>
                 </div>
               )}
             </div>
@@ -203,15 +203,15 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
         {/* Description */}
         {listing.description && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Description:</Label>
-            <p className="text-sm bg-gray-50 p-3 rounded-md">{listing.description}</p>
+            <Label className="text-sm font-medium text-muted-foreground">Description:</Label>
+            <p className="text-sm bg-background p-3 rounded-md">{listing.description}</p>
           </div>
         )}
 
         {/* Features */}
         {listing.features && listing.features.length > 0 && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Features:</Label>
+            <Label className="text-sm font-medium text-muted-foreground">Features:</Label>
             <div className="flex flex-wrap gap-2">
               {listing.features.map((feature: string, index: number) => (
                 <Badge key={index} variant="outline" className="text-xs">
@@ -240,7 +240,7 @@ export const ListingModal = ({ listing, isOpen, onClose, onUpdateStatus }: Listi
               <Button
                 size="sm"
                 onClick={() => onUpdateStatus(listing.id, 'active')}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Approve

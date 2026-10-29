@@ -540,11 +540,11 @@ const Admin = () => {
     switch (status) {
       case 'verified':
       case 'approved':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
+        return <CheckCircle className="w-4 h-4 text-primary" />;
       case 'rejected':
-        return <XCircle className="w-4 h-4 text-red-600" />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
       default:
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-gold" />;
     }
   };
 
@@ -552,41 +552,41 @@ const Admin = () => {
     switch (status) {
       case 'verified':
       case 'approved':
-        return <Badge className="bg-green-500 hover:bg-green-600">Verified</Badge>;
+        return <Badge className="bg-primary hover:bg-primary/90">Verified</Badge>;
       case 'rejected':
-        return <Badge className="bg-red-500 hover:bg-red-600">Rejected</Badge>;
+        return <Badge className="bg-destructive hover:bg-destructive/90">Rejected</Badge>;
       default:
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">Pending</Badge>;
+        return <Badge className="bg-gold hover:bg-gold/90">Pending</Badge>;
     }
   };
 
   const getPaymentStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500 hover:bg-green-600">Paid</Badge>;
+        return <Badge className="bg-primary hover:bg-primary/90">Paid</Badge>;
       case 'failed':
-        return <Badge className="bg-red-500 hover:bg-red-600">Failed</Badge>;
+        return <Badge className="bg-destructive hover:bg-destructive/90">Failed</Badge>;
       default:
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">Pending</Badge>;
+        return <Badge className="bg-gold hover:bg-gold/90">Pending</Badge>;
     }
   };
 
   const getPlanBadge = (plan: string) => {
     switch (plan) {
       case 'featured':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>;
+        return <Badge className="bg-gold hover:bg-gold/90">Featured</Badge>;
       case 'standard':
-        return <Badge className="bg-blue-500 hover:bg-blue-600">Standard</Badge>;
+        return <Badge className="bg-primary hover:bg-primary/90">Standard</Badge>;
       default:
-        return <Badge className="bg-gray-500 hover:bg-gray-600">Free</Badge>;
+        return <Badge className="bg-muted-foreground hover:bg-primary">Free</Badge>;
     }
   };
 
   if (checkingAccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Shield className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <Shield className="h-8 w-8 mx-auto mb-4 text-destructive" />
           <div>Verifying admin access...</div>
         </div>
       </div>
@@ -599,19 +599,19 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div>Loading admin panel...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               Total Dealers: {dealersPagination.pending.total + dealersPagination.approved.total + dealersPagination.rejected.total} | 
               Car Listings: {listingsPagination.pending.total + listingsPagination.approved.total + listingsPagination.rejected.total}
             </div>
@@ -661,7 +661,7 @@ const Admin = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-yellow-600" />
+                      <Clock className="w-5 h-5 text-gold" />
                       Pending Review Listings
                     </CardTitle>
                   </CardHeader>
@@ -691,14 +691,14 @@ const Admin = () => {
                               return (
                                 <TableRow 
                                   key={listing.id}
-                                  className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                                  className={selectedListing?.id === listing.id ? 'bg-destructive/10' : ''}
                                 >
                                   <TableCell>
                                     <div>
                                       <div className="font-semibold">
                                         {listing.year} {listing.make} {listing.model}
                                       </div>
-                                      <div className="text-sm text-gray-500 flex items-center">
+                                      <div className="text-sm text-muted-foreground flex items-center">
                                         <MapPin className="w-3 h-3 mr-1" />
                                         {listing.location}
                                       </div>
@@ -706,27 +706,27 @@ const Admin = () => {
                                   </TableCell>
                                   <TableCell>
                                     <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                                    <div className="text-sm text-gray-500">{listing.condition}</div>
+                                    <div className="text-sm text-muted-foreground">{listing.condition}</div>
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-1">
                                       {listedBy.type === 'dealer' ? (
-                                        <Building className="w-3 h-3 text-blue-600" />
+                                        <Building className="w-3 h-3 text-primary" />
                                       ) : (
-                                        <User className="w-3 h-3 text-gray-600" />
+                                        <User className="w-3 h-3 text-muted-foreground" />
                                       )}
                                       <div>
                                         <div className="text-sm font-medium">{listedBy.name}</div>
                                         {listedBy.contact && (
-                                          <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                          <div className="text-xs text-muted-foreground">{listedBy.contact}</div>
                                         )}
-                                        <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                        <div className="text-xs text-muted-foreground/70 capitalize">{listedBy.type}</div>
                                       </div>
                                     </div>
                                   </TableCell>
                                   <TableCell>
                                     {getPlanBadge(listing.listing_plan)}
-                                    <div className="text-xs text-gray-500 mt-1">
+                                    <div className="text-xs text-muted-foreground mt-1">
                                       ₦{listing.listing_price.toLocaleString()}
                                     </div>
                                   </TableCell>
@@ -750,7 +750,7 @@ const Admin = () => {
                                       <Button
                                         size="sm"
                                         onClick={() => updateListingStatus(listing.id, 'active')}
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-primary hover:bg-primary/90"
                                       >
                                         <CheckCircle className="w-4 h-4 mr-1" />
                                         Approve
@@ -770,8 +770,8 @@ const Admin = () => {
                             })}
                             {listingsPagination.pending.data.length === 0 && (
                               <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                                  <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                  <Clock className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                                   <div className="font-medium">No pending listings</div>
                                   <div className="text-sm">All listings have been reviewed</div>
                                 </TableCell>
@@ -791,7 +791,7 @@ const Admin = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-primary" />
                       Approved Listings
                     </CardTitle>
                   </CardHeader>
@@ -821,14 +821,14 @@ const Admin = () => {
                               return (
                                 <TableRow 
                                   key={listing.id}
-                                  className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                                  className={selectedListing?.id === listing.id ? 'bg-destructive/10' : ''}
                                 >
                                   <TableCell>
                                     <div>
                                       <div className="font-semibold">
                                         {listing.year} {listing.make} {listing.model}
                                       </div>
-                                      <div className="text-sm text-gray-500 flex items-center">
+                                      <div className="text-sm text-muted-foreground flex items-center">
                                         <MapPin className="w-3 h-3 mr-1" />
                                         {listing.location}
                                       </div>
@@ -836,27 +836,27 @@ const Admin = () => {
                                   </TableCell>
                                   <TableCell>
                                     <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                                    <div className="text-sm text-gray-500">{listing.condition}</div>
+                                    <div className="text-sm text-muted-foreground">{listing.condition}</div>
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-1">
                                       {listedBy.type === 'dealer' ? (
-                                        <Building className="w-3 h-3 text-blue-600" />
+                                        <Building className="w-3 h-3 text-primary" />
                                       ) : (
-                                        <User className="w-3 h-3 text-gray-600" />
+                                        <User className="w-3 h-3 text-muted-foreground" />
                                       )}
                                       <div>
                                         <div className="text-sm font-medium">{listedBy.name}</div>
                                         {listedBy.contact && (
-                                          <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                          <div className="text-xs text-muted-foreground">{listedBy.contact}</div>
                                         )}
-                                        <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                        <div className="text-xs text-muted-foreground/70 capitalize">{listedBy.type}</div>
                                       </div>
                                     </div>
                                   </TableCell>
                                   <TableCell>
                                     {getPlanBadge(listing.listing_plan)}
-                                    <div className="text-xs text-gray-500 mt-1">
+                                    <div className="text-xs text-muted-foreground mt-1">
                                       ₦{listing.listing_price.toLocaleString()}
                                     </div>
                                   </TableCell>
@@ -898,8 +898,8 @@ const Admin = () => {
                             })}
                             {listingsPagination.approved.data.length === 0 && (
                               <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                                  <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                  <CheckCircle className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                                   <div className="font-medium">No approved listings</div>
                                   <div className="text-sm">No active listings found</div>
                                 </TableCell>
@@ -919,7 +919,7 @@ const Admin = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <XCircle className="w-5 h-5 text-red-600" />
+                      <XCircle className="w-5 h-5 text-destructive" />
                       Rejected Listings
                     </CardTitle>
                   </CardHeader>
@@ -949,14 +949,14 @@ const Admin = () => {
                               return (
                                 <TableRow 
                                   key={listing.id}
-                                  className={selectedListing?.id === listing.id ? 'bg-red-50' : ''}
+                                  className={selectedListing?.id === listing.id ? 'bg-destructive/10' : ''}
                                 >
                                   <TableCell>
                                     <div>
                                       <div className="font-semibold">
                                         {listing.year} {listing.make} {listing.model}
                                       </div>
-                                      <div className="text-sm text-gray-500 flex items-center">
+                                      <div className="text-sm text-muted-foreground flex items-center">
                                         <MapPin className="w-3 h-3 mr-1" />
                                         {listing.location}
                                       </div>
@@ -964,27 +964,27 @@ const Admin = () => {
                                   </TableCell>
                                   <TableCell>
                                     <div className="font-semibold">₦{listing.price.toLocaleString()}</div>
-                                    <div className="text-sm text-gray-500">{listing.condition}</div>
+                                    <div className="text-sm text-muted-foreground">{listing.condition}</div>
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-1">
                                       {listedBy.type === 'dealer' ? (
-                                        <Building className="w-3 h-3 text-blue-600" />
+                                        <Building className="w-3 h-3 text-primary" />
                                       ) : (
-                                        <User className="w-3 h-3 text-gray-600" />
+                                        <User className="w-3 h-3 text-muted-foreground" />
                                       )}
                                       <div>
                                         <div className="text-sm font-medium">{listedBy.name}</div>
                                         {listedBy.contact && (
-                                          <div className="text-xs text-gray-500">{listedBy.contact}</div>
+                                          <div className="text-xs text-muted-foreground">{listedBy.contact}</div>
                                         )}
-                                        <div className="text-xs text-gray-400 capitalize">{listedBy.type}</div>
+                                        <div className="text-xs text-muted-foreground/70 capitalize">{listedBy.type}</div>
                                       </div>
                                     </div>
                                   </TableCell>
                                   <TableCell>
                                     {getPlanBadge(listing.listing_plan)}
-                                    <div className="text-xs text-gray-500 mt-1">
+                                    <div className="text-xs text-muted-foreground mt-1">
                                       ₦{listing.listing_price.toLocaleString()}
                                     </div>
                                   </TableCell>
@@ -1008,7 +1008,7 @@ const Admin = () => {
                                        <Button
                                          size="sm"
                                          onClick={() => updateListingStatus(listing.id, 'active')}
-                                         className="bg-green-600 hover:bg-green-700"
+                                         className="bg-primary hover:bg-primary/90"
                                        >
                                          <CheckCircle className="w-4 h-4 mr-1" />
                                          Approve
@@ -1028,8 +1028,8 @@ const Admin = () => {
                             })}
                             {listingsPagination.rejected.data.length === 0 && (
                               <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                                  <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                  <XCircle className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                                   <div className="font-medium">No rejected listings</div>
                                   <div className="text-sm">All listings are in good standing</div>
                                 </TableCell>
@@ -1077,7 +1077,7 @@ const Admin = () => {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-yellow-600" />
+                        <Clock className="w-5 h-5 text-gold" />
                         Pending Applications
                       </CardTitle>
                     </CardHeader>
@@ -1092,20 +1092,20 @@ const Admin = () => {
                                 key={dealer.id}
                                 className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                                   selectedDealer?.id === dealer.id
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-destructive/40 bg-destructive/10'
+                                    : 'border-border hover:border-border'
                                 }`}
                                 onClick={() => setSelectedDealer(dealer)}
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-foreground">
                                       {dealer.business_name}
                                     </h3>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm text-muted-foreground">
                                       {dealer.contact_name} • {dealer.state}
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                       Applied: {new Date(dealer.created_at).toLocaleDateString()}
                                     </p>
                                     <div className="flex items-center space-x-2 mt-2">
@@ -1116,18 +1116,18 @@ const Admin = () => {
                                   <div className="flex items-center space-x-2">
                                     {getStatusIcon(dealer.status)}
                                     {dealer.id_card_number && (
-                                      <IdCard className="w-4 h-4 text-blue-600" />
+                                      <IdCard className="w-4 h-4 text-primary" />
                                     )}
                                     {dealer.payment_status === 'completed' && (
-                                      <CreditCard className="w-4 h-4 text-green-600" />
+                                      <CreditCard className="w-4 h-4 text-primary" />
                                     )}
                                   </div>
                                 </div>
                               </div>
                             ))}
                             {dealersPagination.pending.data.length === 0 && (
-                              <div className="text-center py-8 text-gray-500">
-                                <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                              <div className="text-center py-8 text-muted-foreground">
+                                <Clock className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                                 <div className="font-medium">No pending applications</div>
                                 <div className="text-sm">All applications have been reviewed</div>
                               </div>
@@ -1152,7 +1152,7 @@ const Admin = () => {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <CheckCircle className="w-5 h-5 text-primary" />
                         Verified Dealers
                       </CardTitle>
                     </CardHeader>
@@ -1167,20 +1167,20 @@ const Admin = () => {
                                 key={dealer.id}
                                 className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                                   selectedDealer?.id === dealer.id
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-destructive/40 bg-destructive/10'
+                                    : 'border-border hover:border-border'
                                 }`}
                                 onClick={() => setSelectedDealer(dealer)}
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-foreground">
                                       {dealer.business_name}
                                     </h3>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm text-muted-foreground">
                                       {dealer.contact_name} • {dealer.state}
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                       Verified: {new Date(dealer.created_at).toLocaleDateString()}
                                     </p>
                                     <div className="flex items-center space-x-2 mt-2">
@@ -1191,18 +1191,18 @@ const Admin = () => {
                                   <div className="flex items-center space-x-2">
                                     {getStatusIcon(dealer.status)}
                                     {dealer.id_card_number && (
-                                      <IdCard className="w-4 h-4 text-blue-600" />
+                                      <IdCard className="w-4 h-4 text-primary" />
                                     )}
                                     {dealer.payment_status === 'completed' && (
-                                      <CreditCard className="w-4 h-4 text-green-600" />
+                                      <CreditCard className="w-4 h-4 text-primary" />
                                     )}
                                   </div>
                                 </div>
                               </div>
                             ))}
                             {dealersPagination.approved.data.length === 0 && (
-                              <div className="text-center py-8 text-gray-500">
-                                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                              <div className="text-center py-8 text-muted-foreground">
+                                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                                 <div className="font-medium">No verified dealers</div>
                                 <div className="text-sm">No dealers have been verified yet</div>
                               </div>
@@ -1227,7 +1227,7 @@ const Admin = () => {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <XCircle className="w-5 h-5 text-red-600" />
+                        <XCircle className="w-5 h-5 text-destructive" />
                         Rejected Applications
                       </CardTitle>
                     </CardHeader>
@@ -1242,20 +1242,20 @@ const Admin = () => {
                                 key={dealer.id}
                                 className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                                   selectedDealer?.id === dealer.id
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-destructive/40 bg-destructive/10'
+                                    : 'border-border hover:border-border'
                                 }`}
                                 onClick={() => setSelectedDealer(dealer)}
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-foreground">
                                       {dealer.business_name}
                                     </h3>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm text-muted-foreground">
                                       {dealer.contact_name} • {dealer.state}
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                       Rejected: {new Date(dealer.created_at).toLocaleDateString()}
                                     </p>
                                     <div className="flex items-center space-x-2 mt-2">
@@ -1266,18 +1266,18 @@ const Admin = () => {
                                   <div className="flex items-center space-x-2">
                                     {getStatusIcon(dealer.status)}
                                     {dealer.id_card_number && (
-                                      <IdCard className="w-4 h-4 text-blue-600" />
+                                      <IdCard className="w-4 h-4 text-primary" />
                                     )}
                                     {dealer.payment_status === 'completed' && (
-                                      <CreditCard className="w-4 h-4 text-green-600" />
+                                      <CreditCard className="w-4 h-4 text-primary" />
                                     )}
                                   </div>
                                 </div>
                               </div>
                             ))}
                             {dealersPagination.rejected.data.length === 0 && (
-                              <div className="text-center py-8 text-gray-500">
-                                <XCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                              <div className="text-center py-8 text-muted-foreground">
+                                <XCircle className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                                 <div className="font-medium">No rejected applications</div>
                                 <div className="text-sm">All applications are in good standing</div>
                               </div>
@@ -1340,7 +1340,7 @@ const Admin = () => {
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-1">
                     <Label className="text-base font-medium">Listing Plans</Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Enable or disable pricing plans for car listings. When disabled, all listings are free.
                     </p>
                   </div>
@@ -1350,12 +1350,12 @@ const Admin = () => {
                   />
                 </div>
                 
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-4 bg-accent/60 border border-primary/20 rounded-lg">
                   <div className="flex items-start gap-2">
-                    <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <Shield className="w-5 h-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-medium text-blue-900">Current Status</h4>
-                      <p className="text-sm text-blue-700">
+                      <h4 className="font-medium text-primary">Current Status</h4>
+                      <p className="text-sm text-primary">
                         Listing plans are currently <strong>{listingPlansEnabled ? 'enabled' : 'disabled'}</strong>.
                         {listingPlansEnabled ? ' Users can choose between free, standard, and featured plans.' : ' All listings are free for users.'}
                       </p>
@@ -1371,10 +1371,10 @@ const Admin = () => {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <Clock className="w-8 h-8 text-yellow-600" />
+                    <Clock className="w-8 h-8 text-gold" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Pending Dealers</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Pending Dealers</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {dealersPagination.pending.total}
                       </p>
                     </div>
@@ -1385,10 +1385,10 @@ const Admin = () => {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
+                    <CheckCircle className="w-8 h-8 text-primary" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Verified Dealers</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Verified Dealers</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {dealersPagination.approved.total}
                       </p>
                     </div>
@@ -1399,10 +1399,10 @@ const Admin = () => {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <Car className="w-8 h-8 text-blue-600" />
+                    <Car className="w-8 h-8 text-primary" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Pending Listings</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Pending Listings</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {listingsPagination.pending.total}
                       </p>
                     </div>
@@ -1413,10 +1413,10 @@ const Admin = () => {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
+                    <CheckCircle className="w-8 h-8 text-primary" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Approved Listings</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Approved Listings</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {listingsPagination.approved.total}
                       </p>
                     </div>

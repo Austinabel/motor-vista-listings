@@ -227,7 +227,7 @@ export const NotificationManager = () => {
     const messages = {
       welcome: {
         title: 'Welcome to Motorcars.ng!',
-        message: 'Thank you for joining Nigeria\'s premier automotive marketplace. Start exploring thousands of verified vehicles today!',
+        message: 'Thank you for joining Motorcars. Browse cars from dealers, car stands and private sellers, and contact sellers directly from any listing.',
         type: 'success'
       },
       promo: {
@@ -257,10 +257,10 @@ export const NotificationManager = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'success': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'error': return 'bg-red-500';
-      default: return 'bg-blue-500';
+      case 'success': return 'bg-primary';
+      case 'warning': return 'bg-gold';
+      case 'error': return 'bg-destructive';
+      default: return 'bg-primary';
     }
   };
 

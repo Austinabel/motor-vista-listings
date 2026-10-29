@@ -58,14 +58,14 @@ export const ManualPaymentDetails = ({ listingId, planName, price, onPaymentSubm
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="p-4 bg-gray-100 rounded-lg">
+        <div className="p-4 bg-muted rounded-lg">
           <h3 className="font-semibold text-lg mb-2">Bank Details</h3>
           <p><span className="font-medium">Bank Name:</span> Zenith Bank</p>
           <p><span className="font-medium">Account Name:</span> AutoConnect Africa</p>
           <p><span className="font-medium">Account Number:</span> 1234567890</p>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             After making the payment, please enter the transaction reference or your name below and submit. Your listing will be reviewed and activated upon payment confirmation.
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,7 +79,7 @@ export const ManualPaymentDetails = ({ listingId, planName, price, onPaymentSubm
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={loading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
               {loading ? 'Submitting...' : 'Submit Payment Proof'}
             </Button>
           </form>

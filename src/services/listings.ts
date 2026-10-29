@@ -107,6 +107,21 @@ export async function fetchRecentListings(limit = 8): Promise<ListingSummary[]> 
   return ((data ?? []) as unknown as ListingRow[]).map(toSummary);
 }
 
+/**
+ * Listings by id as this visitor may see them, keyed by id. Ids missing from the result were
+ * removed, rejected or taken down (database policies hide them).
+ */
+export async function fetchListingsByIds(ids: string[]): Promise<Map<string, ListingSummary>> {
+  if (ids.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from("car_listings")
+    .select(SUMMARY_COLUMNS)
+    .eq("status", "active")
+    .in("id", ids);
+  if (error) throw error;
+  return new Map(((data ?? []) as unknown as ListingRow[]).map((row) => [row.id, toSummary(row)]));
+}
+
 /** A seller's active listings, newest first. */
 export async function fetchSellerListings(sellerId: string): Promise<ListingSummary[]> {
   const { data, error } = await publicListings(SUMMARY_COLUMNS)

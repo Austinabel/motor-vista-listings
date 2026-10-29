@@ -47,7 +47,7 @@ export const DealerRegistrationBanner = ({ dealerStatus, onDismiss }: DealerRegi
   const { message, buttonText, variant } = getBannerContent();
 
   return (
-    <Alert className={`mb-4 ${variant === 'destructive' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+    <Alert className={`mb-4 ${variant === 'destructive' ? 'border-primary/20 bg-accent' : 'border-gold/50 bg-accent/50'}`}>
       <AlertTriangle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between w-full">
         <span className="flex-1 mr-4">{message}</span>

@@ -19,8 +19,8 @@ interface DealerDetailsProps {
 
 const DetailItem = ({ label, value }: { label: string; value: string | number | null | undefined }) => (
   <div>
-    <Label className="text-sm font-medium text-gray-500">{label}</Label>
-    <p className="text-sm text-gray-900 break-words">{value || 'N/A'}</p>
+    <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
+    <p className="text-sm text-foreground break-words">{value || 'N/A'}</p>
   </div>
 );
 
@@ -85,8 +85,8 @@ export const DealerDetails = ({ dealer, onUpdateStatus, onDelete }: DealerDetail
             <DetailItem label="Avg. Monthly Inventory" value={dealer.monthly_inventory} />
           </div>
           <div>
-            <Label className="text-sm font-medium text-gray-500">Business Description</Label>
-            <p className="text-sm text-gray-900 whitespace-pre-wrap mt-1">{dealer.description || 'N/A'}</p>
+            <Label className="text-sm font-medium text-muted-foreground">Business Description</Label>
+            <p className="text-sm text-foreground whitespace-pre-wrap mt-1">{dealer.description || 'N/A'}</p>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export const DealerDetails = ({ dealer, onUpdateStatus, onDelete }: DealerDetail
             <DetailItem label="ID Card Number" value={dealer.id_card_number} />
           </div>
           <div className="mt-2">
-            <Label className="text-sm font-medium text-gray-500">ID Card Document</Label>
+            <Label className="text-sm font-medium text-muted-foreground">ID Card Document</Label>
             {loadingUrl && <Skeleton className="h-10 w-48 rounded-md mt-1" />}
             {!loadingUrl && idCardUrl && (
               <Button asChild variant="outline" className="mt-1">
@@ -107,9 +107,9 @@ export const DealerDetails = ({ dealer, onUpdateStatus, onDelete }: DealerDetail
               </Button>
             )}
             {!loadingUrl && !idCardUrl && dealer.id_card_path && (
-              <p className="text-sm text-red-600 mt-1">Could not load ID card.</p>
+              <p className="text-sm text-destructive mt-1">Could not load ID card.</p>
             )}
-            {!dealer.id_card_path && <p className="text-sm text-gray-500 mt-1">No ID card was uploaded.</p>}
+            {!dealer.id_card_path && <p className="text-sm text-muted-foreground mt-1">No ID card was uploaded.</p>}
           </div>
         </div>
 
@@ -127,7 +127,7 @@ export const DealerDetails = ({ dealer, onUpdateStatus, onDelete }: DealerDetail
             <div className="flex gap-2">
               <Button
                 onClick={() => onUpdateStatus?.(dealer.id, 'verified')}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Approve
@@ -154,7 +154,7 @@ export const DealerDetails = ({ dealer, onUpdateStatus, onDelete }: DealerDetail
             <div className="flex gap-2">
               <Button
                 onClick={() => onUpdateStatus?.(dealer.id, 'verified')}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Approve

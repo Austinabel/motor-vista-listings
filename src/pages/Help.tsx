@@ -1,119 +1,89 @@
-
-import { Footer } from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { Mail } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { HelpCircle, MessageCircle, Phone, Mail } from "lucide-react";
-
+import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
+import { CONTACT } from "@/config/contact";
 import { usePageMeta } from "@/hooks/usePageMeta";
+
+// Answers describe what Motorcars actually does today; update them when the product changes.
+const FAQS = [
+  {
+    question: "How do I buy a car on Motorcars?",
+    answer:
+      "Search or browse the cars for sale, open a listing to see its photos and details, then contact the seller from the listing. Arrange to see the car and its papers in person before you pay anything. Motorcars does not handle payment or delivery.",
+  },
+  {
+    question: "Are dealers checked?",
+    answer:
+      "Before a dealer or car stand appears on Motorcars, our team reviews the business registration (CAC) number and the owner's ID document they submit. That review does not check individual cars, so always inspect a car yourself before paying.",
+  },
+  {
+    question: "Are the car details checked?",
+    answer:
+      "No. Specifications, condition and mileage are provided by the seller. Every listing says so. Ask the seller questions and inspect the car before you decide.",
+  },
+  {
+    question: "How do I sell my car?",
+    answer:
+      "Create an account, then fill in the sell form with your car's details and photos. Listings are reviewed by our team before they appear in search.",
+  },
+  {
+    question: "How do I pay for a car?",
+    answer:
+      "You agree payment directly with the seller. Never pay before you have seen the car and its documents in person, and be wary of anyone who asks for a deposit to hold a car you have not seen.",
+  },
+  {
+    question: "Does Motorcars offer financing or insurance?",
+    answer: "Not yet. Some dealers offer their own payment plans; ask them directly.",
+  },
+  {
+    question: "How do I report a suspicious listing or seller?",
+    answer: `Email ${CONTACT.supportEmail} with the listing link and what looks wrong. We review every report.`,
+  },
+];
+
 const Help = () => {
   usePageMeta({ title: "Help centre" });
-  const faqs = [
-    {
-      question: "How do I buy a car on Motorcars.ng?",
-      answer: "Browse our car listings, filter by your preferences, contact the dealer directly through our platform, and arrange for inspection and purchase."
-    },
-    {
-      question: "Are all dealers verified?",
-      answer: "Yes, all dealers on our platform go through a thorough verification process including business registration, location verification, and background checks."
-    },
-    {
-      question: "How do I sell my car?",
-      answer: "You can list your car for free by filling out our sell form with your car details and photos. Our team will review and publish your listing."
-    },
-    {
-      question: "What payment methods are accepted?",
-      answer: "Payment methods vary by dealer. Most accept bank transfers, cash, and some offer financing options. Contact the dealer directly for payment details."
-    },
-    {
-      question: "Do you offer car financing?",
-      answer: "Many of our partner dealers offer financing options. Check with individual dealers for their financing terms and conditions."
-    },
-    {
-      question: "How do I report a problem with a dealer?",
-      answer: "Contact our customer support team immediately through phone, email, or live chat. We take all complaints seriously and investigate promptly."
-    }
-  ];
-
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold text-center mb-8">Help Center</h1>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <Card>
-                <CardHeader className="text-center">
-                  <HelpCircle className="h-12 w-12 text-red-600 mx-auto mb-2" />
-                  <CardTitle>FAQ</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 text-center">Find answers to commonly asked questions</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="text-center">
-                  <MessageCircle className="h-12 w-12 text-red-600 mx-auto mb-2" />
-                  <CardTitle>Live Chat</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 text-center">Chat with our support team in real-time</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="text-center">
-                  <Phone className="h-12 w-12 text-red-600 mx-auto mb-2" />
-                  <CardTitle>Phone Support</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 text-center">Call us at +234 800 MOTOR (66867)</p>
-                </CardContent>
-              </Card>
-            </div>
+    <div className="min-h-screen bg-background">
+      <section className="bg-brand-dark text-primary-foreground">
+        <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-16">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Help centre</p>
+          <h1 className="mt-3 text-4xl font-extrabold md:text-5xl">How can we help?</h1>
+          <p className="mt-3 text-lg text-primary-foreground/80">Answers about buying, selling and staying safe on Motorcars.</p>
+        </div>
+      </section>
 
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Frequently Asked Questions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                  {faqs.map((faq, index) => (
-                    <AccordionItem key={index} value={`item-${index}`}>
-                      <AccordionTrigger>{faq.question}</AccordionTrigger>
-                      <AccordionContent>{faq.answer}</AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <div className="rounded-2xl border bg-card p-2 shadow-sm sm:p-4">
+          <Accordion type="single" collapsible>
+            {FAQS.map((faq) => (
+              <AccordionItem key={faq.question} value={faq.question}>
+                <AccordionTrigger className="px-3 text-left text-base font-semibold">{faq.question}</AccordionTrigger>
+                <AccordionContent className="px-3 text-muted-foreground">{faq.answer}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Still Need Help?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-4">
-                  If you couldn't find the answer you're looking for, our customer support team is here to help.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center">
-                    <Phone className="h-5 w-5 text-red-600 mr-2" />
-                    <span>+234 800 MOTOR (66867)</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Mail className="h-5 w-5 text-red-600 mr-2" />
-                    <span>support@motorcars.ng</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="mt-8 flex flex-col items-start justify-between gap-4 rounded-2xl bg-primary p-6 text-primary-foreground sm:flex-row sm:items-center">
+          <div>
+            <p className="text-xl font-extrabold">Still need help?</p>
+            <p className="text-primary-foreground/80">Email us and we'll get back to you.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild className="bg-gold text-gold-foreground hover:bg-gold/90">
+              <a href={`mailto:${CONTACT.supportEmail}`}><Mail className="mr-2 h-4 w-4" />{CONTACT.supportEmail}</a>
+            </Button>
+            <Button asChild variant="outline" className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+              <Link to="/contact">Contact page</Link>
+            </Button>
           </div>
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 };
 

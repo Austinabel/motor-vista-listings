@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -31,7 +31,6 @@ import CarValuation from "./pages/CarValuation";
 import Insurance from "./pages/Insurance";
 import Financing from "./pages/Financing";
 import AdminLogin from "./pages/AdminLogin";
-import AdminRegister from "./pages/AdminRegister";
 import EditProfile from "./pages/EditProfile";
 import Favorites from "./pages/Favorites";
 import Messages from "./pages/Messages";
@@ -128,7 +127,8 @@ const AppContent = () => {
           <Route path="/insurance" element={<Insurance />} />
           <Route path="/financing" element={<Financing />} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/register" element={<AdminRegister />} />
+          {/* No public admin sign-up: admins are granted in the database */}
+          <Route path="/admin/register" element={<Navigate to="/admin/login" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
