@@ -41,11 +41,17 @@ import EditListing from "./pages/EditListing";
 import AccountSettings from "./pages/AccountSettings";
 import Feedback from "./pages/Feedback";
 import Moatwave from "./pages/Moatwave";
-import { MOATWAVE_PREVIEWS } from "@/config/features";
+import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { safeRedirectPath } from "@/lib/redirect";
+
+// The explainer page is reachable while any Moatwave feature is shown in some form
+const MoatwaveRoute = () => {
+  const modes = useAllFeatureModes();
+  return Object.values(modes).some((mode) => mode !== "off") ? <Moatwave /> : <Navigate to="/" replace />;
+};
 
 const queryClient = new QueryClient();
 
@@ -128,7 +134,7 @@ const AppContent = () => {
           <Route path="/car-valuation" element={<CarValuation />} />
           <Route path="/insurance" element={<Insurance />} />
           <Route path="/financing" element={<Financing />} />
-          <Route path="/moatwave" element={MOATWAVE_PREVIEWS ? <Moatwave /> : <Navigate to="/" replace />} />
+          <Route path="/moatwave" element={<MoatwaveRoute />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           {/* No public admin sign-up: admins are granted in the database */}
           <Route path="/admin/register" element={<Navigate to="/admin/login" replace />} />

@@ -4,19 +4,22 @@ import { Button } from "@/components/ui/button";
 import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { missingListingDetails } from "@/lib/argus";
 import type { MyListing } from "@/services/myListings";
+import type { FeatureModes } from "@/services/platformFeatures";
 import { PreviewPanel } from "./PreviewPanel";
 import { MidIdentityPreview, OpenInventoryPreview } from "./StandPreviews";
 
 const DAY = 24 * 60 * 60 * 1000;
 
 interface SellerToolsPreviewProps {
+  /** Only features set to "preview" are shown here. */
+  modes: FeatureModes;
   listings: MyListing[];
   /** Shown for dealers and stands; private sellers see only the listing tools. */
   business: { name: string; verified: boolean } | null;
 }
 
 /** The Moatwave tools a seller will manage from the dashboard, each shown as a preview. */
-export const SellerToolsPreview = ({ listings, business }: SellerToolsPreviewProps) => {
+export const SellerToolsPreview = ({ modes, listings, business }: SellerToolsPreviewProps) => {
   const live = listings.filter((listing) => listing.status === "active");
   const needsWork = live
     .map((listing) => ({ listing, missing: missingListingDetails(listing) }))
@@ -34,7 +37,7 @@ export const SellerToolsPreview = ({ listings, business }: SellerToolsPreviewPro
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <PreviewPanel feature="wavechat" title="WaveChat inbox" subtitle="Every enquiry with its car attached">
+        {modes.wavechat === "preview" && <PreviewPanel feature="wavechat" title="WaveChat inbox" subtitle="Every enquiry with its car attached">
           <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed bg-background p-6 text-center">
             <Inbox className="h-8 w-8 text-muted-foreground" />
             <p className="text-sm font-semibold">No WaveChat conversations yet</p>
@@ -43,9 +46,9 @@ export const SellerToolsPreview = ({ listings, business }: SellerToolsPreviewPro
               each with the car attached. Today, buyers reach you by WhatsApp, phone or Messages.
             </p>
           </div>
-        </PreviewPanel>
+        </PreviewPanel>}
 
-        <PreviewPanel feature="argus" title="Argus listing check" subtitle="What your live listings are missing">
+        {modes.argus === "preview" && <PreviewPanel feature="argus" title="Argus listing check" subtitle="What your live listings are missing">
           {live.length === 0 ? (
             <p className="text-sm text-muted-foreground">Argus checks your live listings once you have some.</p>
           ) : needsWork.length === 0 ? (
@@ -67,9 +70,9 @@ export const SellerToolsPreview = ({ listings, business }: SellerToolsPreviewPro
             </ul>
           )}
           <p className="mt-3 text-xs text-muted-foreground">Fixed checks for now. Argus will also draft descriptions and summarise enquiries.</p>
-        </PreviewPanel>
+        </PreviewPanel>}
 
-        <PreviewPanel feature="conscience" title="Your trust record" subtitle="Conscience Protocol · built from recorded events">
+        {modes.conscience === "preview" && <PreviewPanel feature="conscience" title="Your trust record" subtitle="Conscience Protocol · built from recorded events">
           <ul className="space-y-2 text-sm">
             {business?.verified && (
               <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />Business reviewed by Motorcars</li>
@@ -86,9 +89,9 @@ export const SellerToolsPreview = ({ listings, business }: SellerToolsPreviewPro
             ))}
           </ul>
           <p className="mt-3 text-xs text-muted-foreground">No score is calculated. Moatwave will set how evidence is weighed.</p>
-        </PreviewPanel>
+        </PreviewPanel>}
 
-        {business && (
+        {business && modes.oio === "preview" && (
           <OpenInventoryPreview
             listed={live.length}
             available={LISTING_LIFECYCLE ? live.filter((listing) => (listing.availabilityStatus ?? "available") === "available").length : undefined}
@@ -96,7 +99,7 @@ export const SellerToolsPreview = ({ listings, business }: SellerToolsPreviewPro
           />
         )}
 
-        {business && <MidIdentityPreview businessName={business.name} verified={business.verified} />}
+        {business && modes.mid === "preview" && <MidIdentityPreview businessName={business.name} verified={business.verified} />}
       </div>
     </section>
   );

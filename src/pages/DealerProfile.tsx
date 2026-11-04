@@ -8,13 +8,16 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
 import { fetchPublicDealer } from "@/services/dealers";
 import { fetchSellerListings } from "@/services/listings";
-import { LISTING_LIFECYCLE, MOATWAVE_PREVIEWS } from "@/config/features";
+import { LISTING_LIFECYCLE } from "@/config/features";
+import { useAllFeatureModes } from "@/hooks/useFeatureMode";
+import { MidBadge } from "@/components/mid/MidBadge";
 import { MidIdentityPreview, OpenInventoryPreview } from "@/components/moatwave/StandPreviews";
 
 const websiteHref = (website: string) => (/^https?:\/\//i.test(website) ? website : `https://${website}`);
 
 const DealerProfile = () => {
   const { id: dealerId } = useParams<{ id: string }>();
+  const modes = useAllFeatureModes();
 
   const dealerQuery = useQuery({
     queryKey: ["dealer", dealerId],
@@ -100,6 +103,11 @@ const DealerProfile = () => {
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Car stand</p>
               <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">{dealer.businessName}</h1>
               <VerifiedBusinessBadge className="mt-2 bg-gold/20 text-gold" />
+              {dealer.userId && (
+                <div className="mt-3">
+                  <MidBadge userId={dealer.userId} tone="dark" />
+                </div>
+              )}
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-primary-foreground/80">
                 {location && (
                   <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />{location}</span>
@@ -158,15 +166,15 @@ const DealerProfile = () => {
           </div>
         </section>
 
-        {MOATWAVE_PREVIEWS && (
+        {(modes.mid === "preview" || modes.oio === "preview") && (
           <section className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-2" aria-label="Coming with Moatwave">
             {/* get_public_dealer returns approved dealers only, so a profile shown here has been reviewed */}
-            <MidIdentityPreview businessName={dealer.businessName} verified />
-            <OpenInventoryPreview
+            {modes.mid === "preview" && <MidIdentityPreview businessName={dealer.businessName} verified />}
+            {modes.oio === "preview" && <OpenInventoryPreview
               listed={listings.length}
               available={LISTING_LIFECYCLE && listingsQuery.data ? listings.filter((item) => item.availabilityStatus !== "reserved").length : undefined}
               reserved={LISTING_LIFECYCLE && listingsQuery.data ? listings.filter((item) => item.availabilityStatus === "reserved").length : undefined}
-            />
+            />}
           </section>
         )}
       </div>

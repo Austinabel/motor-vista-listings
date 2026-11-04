@@ -10,7 +10,7 @@ import { FilterPanel } from "@/components/listings/FilterPanel";
 import { AppliedFilters } from "@/components/listings/AppliedFilters";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
 import { SEARCH_LIMIT, searchListings } from "@/services/listings";
-import { MOATWAVE_PREVIEWS } from "@/config/features";
+import { useFeatureMode } from "@/hooks/useFeatureMode";
 import { ArgusSearchBox } from "@/components/moatwave/ArgusSearchBox";
 import {
   EMPTY_CRITERIA,
@@ -39,6 +39,7 @@ const CarListings = () => {
     title: `${criteria.make ? `${criteria.make} cars` : "Cars"} for sale${place ? ` in ${place}` : " in Nigeria"}`,
     description: `Browse ${criteria.make ? `${criteria.make} ` : ""}cars for sale${place ? ` in ${place}` : " across Nigeria"} from dealers, car stands and private sellers on Motorcars.`,
   });
+  const argusMode = useFeatureMode("argus");
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -137,7 +138,7 @@ const CarListings = () => {
           </div>
         </div>
 
-        {MOATWAVE_PREVIEWS && (
+        {argusMode === "preview" && (
           <div className="mt-4">
             <ArgusSearchBox onApply={(next) => writeCriteria(next)} />
           </div>

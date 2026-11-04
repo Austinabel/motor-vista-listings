@@ -12,7 +12,9 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import MessageSellerButton from "@/components/MessageSellerButton";
 import { ImageGallery } from "@/components/listing/ImageGallery";
 import { ReportListingDialog } from "@/components/listing/ReportListingDialog";
-import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE, MOATWAVE_PREVIEWS } from "@/config/features";
+import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
+import { useAllFeatureModes } from "@/hooks/useFeatureMode";
+import { MidBadge } from "@/components/mid/MidBadge";
 import { WaveChatPreview } from "@/components/moatwave/WaveChatPreview";
 import { TrustRecordPreview } from "@/components/moatwave/TrustRecordPreview";
 import { ArgusListingPreview } from "@/components/moatwave/ArgusListingPreview";
@@ -116,6 +118,9 @@ const SellerCard = ({
                   : "Seller type not available"}
               {seller?.dealer?.state ? ` · ${seller.dealer.state}` : ""}
             </p>
+            <div className="mt-2">
+              <MidBadge userId={listing.userId} />
+            </div>
             {seller?.dealer && (
               <Link to={`/dealer/${seller.dealer.id}`} className="text-sm font-semibold text-primary hover:underline">
                 View dealer profile
@@ -178,6 +183,7 @@ const CarDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const modes = useAllFeatureModes();
 
   const listingQuery = useQuery({
     queryKey: ["listing", id],
@@ -340,17 +346,15 @@ const CarDetail = () => {
               </section>
             )}
 
-            {MOATWAVE_PREVIEWS && (
-              <>
-                <TrustRecordPreview
-                  verifiedBusiness={Boolean(sellerQuery.data?.dealer)}
-                  listedAt={listing.createdAt}
-                  updatedAt={listing.updatedAt}
-                  availabilityConfirmedAt={LISTING_LIFECYCLE ? listing.availabilityConfirmedAt : null}
-                />
-                <ArgusListingPreview listing={{ ...listing, photoCount: listing.images.length }} />
-              </>
+            {modes.conscience === "preview" && (
+              <TrustRecordPreview
+                verifiedBusiness={Boolean(sellerQuery.data?.dealer)}
+                listedAt={listing.createdAt}
+                updatedAt={listing.updatedAt}
+                availabilityConfirmedAt={LISTING_LIFECYCLE ? listing.availabilityConfirmedAt : null}
+              />
             )}
+            {modes.argus === "preview" && <ArgusListingPreview listing={{ ...listing, photoCount: listing.images.length }} />}
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -410,7 +414,7 @@ const CarDetail = () => {
               </Button>
             </div>
 
-            {MOATWAVE_PREVIEWS && !isOwner && (
+            {modes.wavechat === "preview" && !isOwner && (
               <WaveChatPreview title={title} price={listing.price} imageUrl={listing.images[0]?.url ?? null} />
             )}
 

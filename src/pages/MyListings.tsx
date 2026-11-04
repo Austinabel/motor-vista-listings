@@ -13,7 +13,9 @@ import { DealerRegistrationBanner } from "@/components/DealerRegistrationBanner"
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDealer } from "@/contexts/DealerContext";
-import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE, MOATWAVE_PREVIEWS } from "@/config/features";
+import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
+import { useAllFeatureModes } from "@/hooks/useFeatureMode";
+import { MyMidCard } from "@/components/mid/MyMidCard";
 import { SellerToolsPreview } from "@/components/moatwave/SellerToolsPreview";
 import { describeAvailability, type AvailabilityTone } from "@/lib/availability";
 import { formatDate, formatNaira } from "@/lib/format";
@@ -155,6 +157,7 @@ const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
   usePageMeta({ title: dealerView ? "Dealer dashboard" : "My listings", noIndex: true });
   const { user, loading: authLoading } = useAuth();
   const { dealerInfo, isDealer, loading: dealerLoading } = useDealer();
+  const modes = useAllFeatureModes();
 
   const listingsQuery = useQuery({
     queryKey: ["my-listings", user?.id],
@@ -213,6 +216,12 @@ const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
           )}
         </div>
 
+        {(modes.mid === "motorcars" || modes.mid === "moatwave") && (
+          <div className="mt-6">
+            <MyMidCard userId={user.id} />
+          </div>
+        )}
+
         {LISTING_LIFECYCLE && live.length > 0 && (
           <p className="mt-6 rounded-xl bg-accent/60 px-4 py-3 text-sm text-accent-foreground">
             Buyers see when you last confirmed a car is available. Confirm at least every {AVAILABILITY_FRESH_DAYS} days so
@@ -247,8 +256,9 @@ const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
           )}
         </section>
 
-        {MOATWAVE_PREVIEWS && listingsQuery.data && (
+        {listingsQuery.data && Object.values(modes).includes("preview") && (
           <SellerToolsPreview
+            modes={modes}
             listings={listings}
             business={
               dealerView && isDealer && dealerInfo?.business_name

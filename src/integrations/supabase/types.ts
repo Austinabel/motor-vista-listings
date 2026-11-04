@@ -330,6 +330,147 @@ export type Database = {
           },
         ]
       }
+      mid_identities: {
+        Row: {
+          created_at: string
+          issued_by: string
+          mid: string
+          phone_verified: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          issued_by?: string
+          mid: string
+          phone_verified?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          issued_by?: string
+          mid?: string
+          phone_verified?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mid_point_rules: {
+        Row: {
+          event_type: string
+          label: string
+          points: number
+          version_id: number
+        }
+        Insert: {
+          event_type: string
+          label: string
+          points: number
+          version_id: number
+        }
+        Update: {
+          event_type?: string
+          label?: string
+          points?: number
+          version_id?: number
+        }
+        Relationships: []
+      }
+      mid_score_ledger: {
+        Row: {
+          config_version_id: number
+          created_at: string
+          event_key: string
+          event_type: string
+          id: number
+          points: number
+          source_ref: string | null
+          user_id: string
+        }
+        Insert: {
+          config_version_id: number
+          created_at?: string
+          event_key: string
+          event_type: string
+          id?: number
+          points: number
+          source_ref?: string | null
+          user_id: string
+        }
+        Update: {
+          config_version_id?: number
+          created_at?: string
+          event_key?: string
+          event_type?: string
+          id?: number
+          points?: number
+          source_ref?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mid_tiers: {
+        Row: {
+          min_score: number
+          title: string
+          version_id: number
+        }
+        Insert: {
+          min_score: number
+          title: string
+          version_id: number
+        }
+        Update: {
+          min_score?: number
+          title?: string
+          version_id?: number
+        }
+        Relationships: []
+      }
+      platform_features: {
+        Row: {
+          feature: string
+          mode: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          feature: string
+          mode?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          feature?: string
+          mode?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      score_config_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: number
+          is_active: boolean
+          label: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          is_active?: boolean
+          label: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          is_active?: boolean
+          label?: string
+        }
+        Relationships: []
+      }
       listing_reports: {
         Row: {
           admin_notes: string | null
@@ -608,6 +749,25 @@ export type Database = {
           website: string
           year_established: string
         }[]
+      }
+      get_public_mid: {
+        Args: { _user_id: string }
+        Returns: {
+          cycles_sealed: number
+          issued_by: string
+          mid: string | null
+          phone_verified: boolean
+          score: number
+          tier: string
+        }[]
+      }
+      issue_my_mid: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      publish_score_config: {
+        Args: { _label: string; _rules: Json }
+        Returns: number
       }
       get_public_dealer_by_seller: {
         Args: { seller_id: string }

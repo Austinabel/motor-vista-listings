@@ -20,6 +20,7 @@ import { FeaturedListingsManager } from "@/components/admin/FeaturedListingsMana
 import { ListingEnhancementManager } from "@/components/admin/ListingEnhancementManager";
 import { NotificationManager } from "@/components/admin/NotificationManager";
 import { ReportsManager } from "@/components/admin/ReportsManager";
+import { PlatformFeaturesManager } from "@/components/admin/PlatformFeaturesManager";
 import { LISTING_LIFECYCLE } from "@/config/features";
 
 const Admin = () => {
@@ -635,6 +636,7 @@ const Admin = () => {
             {LISTING_LIFECYCLE && <TabsTrigger value="reports">Reports</TabsTrigger>}
             <TabsTrigger value="add-dealer">Add Dealer</TabsTrigger>
             <TabsTrigger value="add-listing">Add Listing</TabsTrigger>
+            <TabsTrigger value="moatwave">Moatwave features</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="stats">Statistics</TabsTrigger>
           </TabsList>
@@ -1326,6 +1328,10 @@ const Admin = () => {
           {/* Add Listing Tab */}
           <TabsContent value="add-listing">
             <AdminCarListingForm onListingCreated={fetchCarListings} />
+          </TabsContent>
+
+          <TabsContent value="moatwave">
+            <PlatformFeaturesManager />
           </TabsContent>
 
           <TabsContent value="settings">

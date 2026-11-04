@@ -14,7 +14,7 @@ import { HowItWorks } from "@/components/home/HowItWorks";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { SellSection } from "@/components/home/SellSection";
 import { MoatwaveSection } from "@/components/home/MoatwaveSection";
-import { MOATWAVE_PREVIEWS } from "@/config/features";
+import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { HOMEPAGE_BUDGET, fetchHomepageListings } from "@/services/listings";
 import { formatNaira } from "@/lib/format";
 
@@ -23,6 +23,7 @@ const container = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
 
 const Index = () => {
   usePageMeta({});
+  const modes = useAllFeatureModes();
   const { hash } = useLocation();
 
   // Links such as /#services land on a homepage section
@@ -139,7 +140,7 @@ const Index = () => {
 
       <SellSection />
       <ServicesSection />
-      {MOATWAVE_PREVIEWS && <MoatwaveSection />}
+      {Object.values(modes).some((mode) => mode !== "off") && <MoatwaveSection />}
       <HowItWorks />
       <Footer />
     </div>
