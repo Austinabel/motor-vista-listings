@@ -8,6 +8,8 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
 import { fetchPublicDealer } from "@/services/dealers";
 import { fetchSellerListings } from "@/services/listings";
+import { LISTING_LIFECYCLE, MOATWAVE_PREVIEWS } from "@/config/features";
+import { MidIdentityPreview, OpenInventoryPreview } from "@/components/moatwave/StandPreviews";
 
 const websiteHref = (website: string) => (/^https?:\/\//i.test(website) ? website : `https://${website}`);
 
@@ -155,6 +157,18 @@ const DealerProfile = () => {
             )}
           </div>
         </section>
+
+        {MOATWAVE_PREVIEWS && (
+          <section className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-2" aria-label="Coming with Moatwave">
+            {/* get_public_dealer returns approved dealers only, so a profile shown here has been reviewed */}
+            <MidIdentityPreview businessName={dealer.businessName} verified />
+            <OpenInventoryPreview
+              listed={listings.length}
+              available={LISTING_LIFECYCLE && listingsQuery.data ? listings.filter((item) => item.availabilityStatus !== "reserved").length : undefined}
+              reserved={LISTING_LIFECYCLE && listingsQuery.data ? listings.filter((item) => item.availabilityStatus === "reserved").length : undefined}
+            />
+          </section>
+        )}
       </div>
       <Footer />
     </div>

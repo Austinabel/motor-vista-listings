@@ -10,3 +10,10 @@ export const LISTING_LIFECYCLE = import.meta.env.VITE_LISTING_LIFECYCLE === "tru
 
 /** Days after which a seller's availability confirmation is treated as stale. */
 export const AVAILABILITY_FRESH_DAYS = 14;
+
+/**
+ * Labelled previews of the Moatwave features (MID, WaveChat, Open Inventory, Conscience Protocol,
+ * Argus) that show how Motorcars will work once Moatwave is connected. None of them is active.
+ * On by default; hide them all with VITE_MOATWAVE_PREVIEWS=false.
+ */
+export const MOATWAVE_PREVIEWS = import.meta.env.VITE_MOATWAVE_PREVIEWS !== "false";

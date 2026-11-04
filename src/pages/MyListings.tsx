@@ -13,7 +13,8 @@ import { DealerRegistrationBanner } from "@/components/DealerRegistrationBanner"
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDealer } from "@/contexts/DealerContext";
-import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
+import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE, MOATWAVE_PREVIEWS } from "@/config/features";
+import { SellerToolsPreview } from "@/components/moatwave/SellerToolsPreview";
 import { describeAvailability, type AvailabilityTone } from "@/lib/availability";
 import { formatDate, formatNaira } from "@/lib/format";
 import { loginPathFor } from "@/lib/redirect";
@@ -245,6 +246,17 @@ const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
             </ul>
           )}
         </section>
+
+        {MOATWAVE_PREVIEWS && listingsQuery.data && (
+          <SellerToolsPreview
+            listings={listings}
+            business={
+              dealerView && isDealer && dealerInfo?.business_name
+                ? { name: dealerInfo.business_name, verified: dealerInfo.status === "verified" }
+                : null
+            }
+          />
+        )}
       </div>
       <Footer />
     </div>

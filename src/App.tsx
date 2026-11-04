@@ -40,6 +40,8 @@ import MyListings from "./pages/MyListings";
 import EditListing from "./pages/EditListing";
 import AccountSettings from "./pages/AccountSettings";
 import Feedback from "./pages/Feedback";
+import Moatwave from "./pages/Moatwave";
+import { MOATWAVE_PREVIEWS } from "@/config/features";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -126,6 +128,7 @@ const AppContent = () => {
           <Route path="/car-valuation" element={<CarValuation />} />
           <Route path="/insurance" element={<Insurance />} />
           <Route path="/financing" element={<Financing />} />
+          <Route path="/moatwave" element={MOATWAVE_PREVIEWS ? <Moatwave /> : <Navigate to="/" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           {/* No public admin sign-up: admins are granted in the database */}
           <Route path="/admin/register" element={<Navigate to="/admin/login" replace />} />

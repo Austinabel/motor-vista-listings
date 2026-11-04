@@ -13,6 +13,8 @@ import { PopularMakes } from "@/components/home/PopularMakes";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { SellSection } from "@/components/home/SellSection";
+import { MoatwaveSection } from "@/components/home/MoatwaveSection";
+import { MOATWAVE_PREVIEWS } from "@/config/features";
 import { HOMEPAGE_BUDGET, fetchHomepageListings } from "@/services/listings";
 import { formatNaira } from "@/lib/format";
 
@@ -137,6 +139,7 @@ const Index = () => {
 
       <SellSection />
       <ServicesSection />
+      {MOATWAVE_PREVIEWS && <MoatwaveSection />}
       <HowItWorks />
       <Footer />
     </div>

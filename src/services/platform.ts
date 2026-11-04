@@ -27,6 +27,21 @@ export const platformCapabilities = {
     moatwaveConnected: false,
     note: "In-app notifications table; Moatwave notifications later",
   },
+  inventory: {
+    provider: "supabase",
+    moatwaveConnected: false,
+    note: "Listings and seller-confirmed availability in car_listings; Open Inventory (OIO) later",
+  },
+  integrity: {
+    provider: "supabase",
+    moatwaveConnected: false,
+    note: "Recorded facts only (business review, listing dates); Conscience Protocol later. No score is computed",
+  },
+  intelligence: {
+    provider: "in-app",
+    moatwaveConnected: false,
+    note: "Fixed rules in lib/argus.ts; Argus later",
+  },
   serviceDirectory: {
     provider: "unavailable",
     moatwaveConnected: false,

@@ -12,7 +12,10 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import MessageSellerButton from "@/components/MessageSellerButton";
 import { ImageGallery } from "@/components/listing/ImageGallery";
 import { ReportListingDialog } from "@/components/listing/ReportListingDialog";
-import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
+import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE, MOATWAVE_PREVIEWS } from "@/config/features";
+import { WaveChatPreview } from "@/components/moatwave/WaveChatPreview";
+import { TrustRecordPreview } from "@/components/moatwave/TrustRecordPreview";
+import { ArgusListingPreview } from "@/components/moatwave/ArgusListingPreview";
 import { describeAvailability } from "@/lib/availability";
 import { VehicleCard } from "@/components/home/VehicleCard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -336,6 +339,18 @@ const CarDetail = () => {
                 </ul>
               </section>
             )}
+
+            {MOATWAVE_PREVIEWS && (
+              <>
+                <TrustRecordPreview
+                  verifiedBusiness={Boolean(sellerQuery.data?.dealer)}
+                  listedAt={listing.createdAt}
+                  updatedAt={listing.updatedAt}
+                  availabilityConfirmedAt={LISTING_LIFECYCLE ? listing.availabilityConfirmedAt : null}
+                />
+                <ArgusListingPreview listing={{ ...listing, photoCount: listing.images.length }} />
+              </>
+            )}
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -394,6 +409,10 @@ const CarDetail = () => {
                 Share
               </Button>
             </div>
+
+            {MOATWAVE_PREVIEWS && !isOwner && (
+              <WaveChatPreview title={title} price={listing.price} imageUrl={listing.images[0]?.url ?? null} />
+            )}
 
             {LISTING_LIFECYCLE && !isOwner && (
               <div className="pt-1 text-center">

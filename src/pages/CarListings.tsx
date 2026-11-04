@@ -10,6 +10,8 @@ import { FilterPanel } from "@/components/listings/FilterPanel";
 import { AppliedFilters } from "@/components/listings/AppliedFilters";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
 import { SEARCH_LIMIT, searchListings } from "@/services/listings";
+import { MOATWAVE_PREVIEWS } from "@/config/features";
+import { ArgusSearchBox } from "@/components/moatwave/ArgusSearchBox";
 import {
   EMPTY_CRITERIA,
   SORT_OPTIONS,
@@ -134,6 +136,12 @@ const CarListings = () => {
             </select>
           </div>
         </div>
+
+        {MOATWAVE_PREVIEWS && (
+          <div className="mt-4">
+            <ArgusSearchBox onApply={(next) => writeCriteria(next)} />
+          </div>
+        )}
 
         <div className="mt-4">
           <AppliedFilters criteria={criteria} onChange={updateCriteria} onClearAll={clearAll} />
