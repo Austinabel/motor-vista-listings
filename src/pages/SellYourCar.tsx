@@ -16,6 +16,9 @@ import { ManualPaymentDetails } from "@/components/ManualPaymentDetails";
 import { useDealer } from "@/contexts/DealerContext";
 import { DealerRegistrationBanner } from "@/components/DealerRegistrationBanner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFeatureMode } from "@/hooks/useFeatureMode";
+import { normaliseVin } from "@/lib/inventory";
+import { vinError } from "@/services/inventory";
 
 import { usePageMeta } from "@/hooks/usePageMeta";
 const SellYourCar = () => {
@@ -27,6 +30,9 @@ const SellYourCar = () => {
   // UI / form state
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [loading, setLoading] = useState(false);
+  const oioMode = useFeatureMode("oio");
+  const oioLive = oioMode === "motorcars" || oioMode === "moatwave";
+  const [vin, setVin] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [selectedImagePreviews, setSelectedImagePreviews] = useState<string[]>([]);
   const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
@@ -342,6 +348,14 @@ const SellYourCar = () => {
       // Check if this is a free listing to increment count
       const isFreeListing = (!listingPlansEnabled || selectedPlan === 'free');
 
+      // Open Inventory: the VIN is sent only when that feature is live (the column exists from its migration)
+      const cleanVin = oioLive && vin.trim() ? normaliseVin(vin) : null;
+      if (oioLive && vin.trim() && !cleanVin) {
+        toast.error("Check the VIN: it has 17 letters and numbers, and never contains I, O or Q.");
+        setLoading(false);
+        return;
+      }
+
       // 1) Insert the car listing WITHOUT images (we need listing.id for file paths)
       const { data: createdListing, error: listingError } = await supabase
         .from('car_listings')
@@ -363,14 +377,15 @@ const SellYourCar = () => {
           listing_price: listingPlansEnabled ? (selectedPlanDetails?.listingPrice || 0) : 0,
           listing_duration: durationInDays,
           expires_at: expiresAt.toISOString(),
-          status: listingStatus
+          status: listingStatus,
+          ...(cleanVin ? { vin: cleanVin } : {}),
         })
         .select()
         .single();
 
       if (listingError || !createdListing) {
         console.error('Listing insert error:', listingError);
-        toast.error("Failed to create listing. Please try again.");
+        toast.error(cleanVin && listingError?.code === "23505" ? vinError(listingError.message, listingError.code) : "Failed to create listing. Please try again.");
         setLoading(false);
         return;
       }
@@ -630,6 +645,14 @@ const SellYourCar = () => {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {oioLive && (
+                      <div className="md:col-span-2">
+                        <Label htmlFor="vin">VIN (optional)</Label>
+                        <Input id="vin" value={vin} onChange={(e) => setVin(e.target.value)} placeholder="17 characters, on the dashboard or door frame" className="font-mono uppercase" />
+                        <p className="mt-1 text-xs text-muted-foreground">Ties the listing to one car so it can't be listed twice. It can't be changed later.</p>
+                      </div>
+                    )}
 
                     <div>
                       <Label htmlFor="mileage">Mileage (km)</Label>

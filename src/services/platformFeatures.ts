@@ -22,7 +22,7 @@ export const FEATURE_MODES: { id: FeatureMode; label: string }[] = [
 export const MOTORCARS_BUILT: Record<MoatwaveFeatureId, boolean> = {
   mid: true,
   wavechat: false,
-  oio: false,
+  oio: true,
   conscience: false,
   argus: false,
 };

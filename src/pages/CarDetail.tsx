@@ -15,6 +15,7 @@ import { ReportListingDialog } from "@/components/listing/ReportListingDialog";
 import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { MidBadge } from "@/components/mid/MidBadge";
+import { ListingHistory } from "@/components/inventory/ListingHistory";
 import { WaveChatPreview } from "@/components/moatwave/WaveChatPreview";
 import { TrustRecordPreview } from "@/components/moatwave/TrustRecordPreview";
 import { ArgusListingPreview } from "@/components/moatwave/ArgusListingPreview";
@@ -345,6 +346,8 @@ const CarDetail = () => {
                 </ul>
               </section>
             )}
+
+            <ListingHistory listingId={listing.id} />
 
             {modes.conscience === "preview" && (
               <TrustRecordPreview

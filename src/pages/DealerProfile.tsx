@@ -11,6 +11,7 @@ import { fetchSellerListings } from "@/services/listings";
 import { LISTING_LIFECYCLE } from "@/config/features";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { MidBadge } from "@/components/mid/MidBadge";
+import { StandInventory } from "@/components/inventory/StandInventory";
 import { MidIdentityPreview, OpenInventoryPreview } from "@/components/moatwave/StandPreviews";
 
 const websiteHref = (website: string) => (/^https?:\/\//i.test(website) ? website : `https://${website}`);
@@ -132,6 +133,12 @@ const DealerProfile = () => {
             </div>
           </div>
         </section>
+
+        {dealer.userId && (modes.oio === "motorcars" || modes.oio === "moatwave") && (
+          <div className="mt-8">
+            <StandInventory sellerId={dealer.userId} />
+          </div>
+        )}
 
         <section className="mt-10">
           <h2 className="text-2xl font-extrabold md:text-3xl">

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  AlertCircle, Car, CheckCircle2, ChevronDown, Eye, LogIn, Pencil, PlusCircle, RefreshCw, RotateCcw,
+  AlertCircle, Car, CheckCircle2, ChevronDown, Eye, History, LogIn, Pencil, PlusCircle, RefreshCw, RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,10 @@ import { useDealer } from "@/contexts/DealerContext";
 import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { MyMidCard } from "@/components/mid/MyMidCard";
+import { ListingHistory } from "@/components/inventory/ListingHistory";
+import { StandInventory } from "@/components/inventory/StandInventory";
+import { useFeatureMode } from "@/hooks/useFeatureMode";
+import { useState } from "react";
 import { SellerToolsPreview } from "@/components/moatwave/SellerToolsPreview";
 import { describeAvailability, type AvailabilityTone } from "@/lib/availability";
 import { formatDate, formatNaira } from "@/lib/format";
@@ -48,6 +52,8 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
 
 const ListingRow = ({ listing, userId }: { listing: MyListing; userId: string }) => {
   const queryClient = useQueryClient();
+  const oioMode = useFeatureMode("oio");
+  const [showHistory, setShowHistory] = useState(false);
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["my-listings"] });
 
   const run = useMutation({
@@ -98,6 +104,20 @@ const ListingRow = ({ listing, userId }: { listing: MyListing; userId: string })
         )}
         {listing.status === "rejected" && (
           <p className="mt-1 text-sm text-muted-foreground">Contact support if you think this was a mistake.</p>
+        )}
+        {(oioMode === "motorcars" || oioMode === "moatwave") && (
+          <>
+            <button
+              type="button"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+              aria-expanded={showHistory}
+              onClick={() => setShowHistory((open) => !open)}
+            >
+              <History className="h-4 w-4" />
+              {showHistory ? "Hide history" : "History"}
+            </button>
+            {showHistory && <ListingHistory listingId={listing.id} compact />}
+          </>
         )}
       </div>
 
@@ -219,6 +239,12 @@ const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
         {(modes.mid === "motorcars" || modes.mid === "moatwave") && (
           <div className="mt-6">
             <MyMidCard userId={user.id} />
+          </div>
+        )}
+
+        {dealerView && (modes.oio === "motorcars" || modes.oio === "moatwave") && (
+          <div className="mt-6">
+            <StandInventory sellerId={user.id} title="Your stock" />
           </div>
         )}
 

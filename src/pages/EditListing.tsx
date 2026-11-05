@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { loginPathFor } from "@/lib/redirect";
 import { FUEL_TYPES, TRANSMISSIONS } from "@/lib/vehicleSearch";
 import { fetchMyListing, updateMyListing, type MyListing } from "@/services/myListings";
+import { VinField } from "@/components/inventory/VinField";
 
 import { usePageMeta } from "@/hooks/usePageMeta";
 const selectClass =
@@ -132,6 +133,8 @@ const EditListing = () => {
             </p>
           </div>
         </div>
+
+        <VinField listingId={id!} />
 
         <form onSubmit={onSubmit} className="mt-6 space-y-5 rounded-2xl border bg-card p-6 shadow-sm">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

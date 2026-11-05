@@ -108,6 +108,7 @@ export type Database = {
           transmission: string | null
           updated_at: string
           user_id: string | null
+          vin: string | null
           year: string
         }
         Insert: {
@@ -144,6 +145,7 @@ export type Database = {
           transmission?: string | null
           updated_at?: string
           user_id?: string | null
+          vin?: string | null
           year: string
         }
         Update: {
@@ -180,6 +182,7 @@ export type Database = {
           transmission?: string | null
           updated_at?: string
           user_id?: string | null
+          vin?: string | null
           year?: string
         }
         Relationships: []
@@ -471,6 +474,48 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_events: {
+        Row: {
+          actor_id: string | null
+          backfilled: boolean
+          car_title: string
+          event_type: string
+          from_value: Json | null
+          id: number
+          listing_id: string
+          occurred_at: string
+          seller_id: string | null
+          synced_to_moatwave_at: string | null
+          to_value: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          backfilled?: boolean
+          car_title: string
+          event_type: string
+          from_value?: Json | null
+          id?: number
+          listing_id: string
+          occurred_at?: string
+          seller_id?: string | null
+          synced_to_moatwave_at?: string | null
+          to_value?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          backfilled?: boolean
+          car_title?: string
+          event_type?: string
+          from_value?: Json | null
+          id?: number
+          listing_id?: string
+          occurred_at?: string
+          seller_id?: string | null
+          synced_to_moatwave_at?: string | null
+          to_value?: Json | null
+        }
+        Relationships: []
+      }
       listing_reports: {
         Row: {
           admin_notes: string | null
@@ -748,6 +793,25 @@ export type Database = {
           user_id: string
           website: string
           year_established: string
+        }[]
+      }
+      get_listing_history: {
+        Args: { _listing_id: string }
+        Returns: {
+          backfilled: boolean
+          event_type: string
+          from_value: Json
+          occurred_at: string
+          to_value: Json
+        }[]
+      }
+      get_stand_inventory: {
+        Args: { _seller_id: string }
+        Returns: {
+          available: number
+          last_activity_at: string | null
+          reserved: number
+          sold_recorded: number
         }[]
       }
       get_public_mid: {
