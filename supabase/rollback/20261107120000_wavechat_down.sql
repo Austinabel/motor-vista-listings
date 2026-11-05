@@ -22,6 +22,8 @@ DROP TRIGGER IF EXISTS a_guard_message ON public.messages;
 DROP FUNCTION IF EXISTS public.guard_message();
 DROP TRIGGER IF EXISTS a_guard_conversation ON public.conversations;
 DROP FUNCTION IF EXISTS public.guard_conversation();
+DROP FUNCTION IF EXISTS public.seller_accepts_messages(uuid);
+DROP FUNCTION IF EXISTS public.listing_open_for_chat(uuid, uuid);
 DROP TABLE IF EXISTS public.sale_receipts;
 DROP SEQUENCE IF EXISTS public.sale_receipt_number_seq;
 

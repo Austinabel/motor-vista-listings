@@ -68,11 +68,32 @@ CREATE POLICY "Buyer and seller read their receipts" ON public.sale_receipts
 -- ---------------------------------------------------------------------------
 -- 3. Guards on the original tables
 -- ---------------------------------------------------------------------------
+-- Reads what the guard below needs but the caller's row-level access may hide.
+CREATE OR REPLACE FUNCTION public.listing_open_for_chat(_listing_id uuid, _seller_id uuid)
+RETURNS boolean
+LANGUAGE sql STABLE
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT EXISTS (SELECT 1 FROM public.car_listings
+                 WHERE id = _listing_id AND user_id = _seller_id AND status = 'active')
+$$;
+
+CREATE OR REPLACE FUNCTION public.seller_accepts_messages(_seller_id uuid)
+RETURNS boolean
+LANGUAGE sql STABLE
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = _seller_id AND allow_messages = false)
+$$;
+
 -- A conversation is between a buyer and the seller of a live listing that accepts messages.
+-- Must NOT be SECURITY DEFINER: is_restricted_api_caller() reads current_user, which would then be
+-- the function owner, and every check here would be skipped.
 CREATE OR REPLACE FUNCTION public.guard_conversation()
 RETURNS trigger
 LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
 BEGIN
@@ -82,11 +103,10 @@ BEGIN
     IF NEW.buyer_id = NEW.seller_id THEN
       RAISE EXCEPTION 'You cannot message yourself';
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM public.car_listings
-                   WHERE id = NEW.listing_id AND user_id = NEW.seller_id AND status = 'active') THEN
+    IF NOT public.listing_open_for_chat(NEW.listing_id, NEW.seller_id) THEN
       RAISE EXCEPTION 'This listing is not available for messages';
     END IF;
-    IF EXISTS (SELECT 1 FROM public.profiles WHERE id = NEW.seller_id AND allow_messages = false) THEN
+    IF NOT public.seller_accepts_messages(NEW.seller_id) THEN
       RAISE EXCEPTION 'This seller has turned off messages';
     END IF;
     NEW.stage := 'enquiry';
