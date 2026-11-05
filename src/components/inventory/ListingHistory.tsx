@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { History } from "lucide-react";
 import { useFeatureMode } from "@/hooks/useFeatureMode";
 import { formatDate } from "@/lib/format";
@@ -35,10 +36,10 @@ export const ListingHistory = ({ listingId, compact = false }: ListingHistoryPro
     <>
       {isLoading && <div className="h-16 animate-pulse rounded-lg bg-muted" />}
       {isError && <p className="text-sm text-muted-foreground">The history couldn't be loaded.</p>}
-      {data && data.length === 0 && <p className="text-sm text-muted-foreground">No history recorded yet.</p>}
-      {data && data.length > 0 && (
+      {data && data.events.length === 0 && <p className="text-sm text-muted-foreground">No history recorded yet.</p>}
+      {data && data.events.length > 0 && (
         <ol className="relative space-y-3 border-l pl-5">
-          {data.slice(0, compact ? 6 : 20).map((event, index) => {
+          {data.events.slice(0, compact ? 6 : 20).map((event, index) => {
             const { label, tone } = describeInventoryEvent(event);
             return (
               <li key={`${event.occurredAt}-${index}`} className="relative">
@@ -52,6 +53,12 @@ export const ListingHistory = ({ listingId, compact = false }: ListingHistoryPro
             );
           })}
         </ol>
+      )}
+      {compact && data && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          {data.pricesPublic ? "Buyers can see this car's price changes." : "Buyers see this history without prices or price changes."}{" "}
+          <Link to="/account/settings" className="font-semibold text-primary hover:underline">Change</Link>
+        </p>
       )}
     </>
   );

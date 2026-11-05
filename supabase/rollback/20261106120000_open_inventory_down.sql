@@ -14,6 +14,7 @@ UPDATE public.platform_features SET mode = 'preview' WHERE feature = 'oio' AND m
 
 DROP FUNCTION IF EXISTS public.get_stand_inventory(uuid);
 DROP FUNCTION IF EXISTS public.get_listing_history(uuid);
+ALTER TABLE public.profiles DROP COLUMN IF EXISTS show_price_history;
 DROP TRIGGER IF EXISTS z_record_inventory_events ON public.car_listings;
 DROP FUNCTION IF EXISTS public.record_inventory_events();
 DROP TRIGGER IF EXISTS a_guard_listing_vin ON public.car_listings;

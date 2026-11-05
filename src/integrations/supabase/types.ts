@@ -694,6 +694,7 @@ export type Database = {
           monthly_listings_used: number | null
           phone: string | null
           show_phone_number: boolean | null
+          show_price_history: boolean
           show_profile: boolean | null
           updated_at: string | null
           user_type: string | null
@@ -709,6 +710,7 @@ export type Database = {
           monthly_listings_used?: number | null
           phone?: string | null
           show_phone_number?: boolean | null
+          show_price_history?: boolean
           show_profile?: boolean | null
           updated_at?: string | null
           user_type?: string | null
@@ -724,6 +726,7 @@ export type Database = {
           monthly_listings_used?: number | null
           phone?: string | null
           show_phone_number?: boolean | null
+          show_price_history?: boolean
           show_profile?: boolean | null
           updated_at?: string | null
           user_type?: string | null
@@ -802,6 +805,7 @@ export type Database = {
           event_type: string
           from_value: Json
           occurred_at: string
+          prices_public: boolean
           to_value: Json
         }[]
       }

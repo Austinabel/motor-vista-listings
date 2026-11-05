@@ -13,8 +13,16 @@ export interface StandInventory {
   lastActivityAt: string | null;
 }
 
+export interface ListingHistoryResult {
+  events: InventoryEvent[];
+  /** Whether the seller lets buyers see price changes and recorded prices. */
+  pricesPublic: boolean;
+}
+
 export interface InventoryService {
-  getListingHistory(listingId: string): Promise<InventoryEvent[]>;
+  getListingHistory(listingId: string): Promise<ListingHistoryResult>;
+  getPriceHistoryPublic(userId: string): Promise<boolean>;
+  setPriceHistoryPublic(userId: string, value: boolean): Promise<void>;
   getStandInventory(sellerId: string): Promise<StandInventory | null>;
   getVin(listingId: string): Promise<string | null>;
   setVin(listingId: string, vin: string): Promise<void>;
@@ -33,13 +41,28 @@ const motorcarsInventory: InventoryService = {
   async getListingHistory(listingId) {
     const { data, error } = await supabase.rpc("get_listing_history", { _listing_id: listingId });
     if (error) throw new Error(error.message);
-    return (data ?? []).map((row) => ({
-      eventType: row.event_type as InventoryEventType,
-      occurredAt: row.occurred_at,
-      fromValue: asRecord(row.from_value),
-      toValue: asRecord(row.to_value),
-      backfilled: row.backfilled,
-    }));
+    const rows = data ?? [];
+    return {
+      events: rows.map((row) => ({
+        eventType: row.event_type as InventoryEventType,
+        occurredAt: row.occurred_at,
+        fromValue: asRecord(row.from_value),
+        toValue: asRecord(row.to_value),
+        backfilled: row.backfilled,
+      })),
+      pricesPublic: rows[0]?.prices_public ?? false,
+    };
+  },
+
+  async getPriceHistoryPublic(userId) {
+    const { data, error } = await supabase.from("profiles").select("show_price_history").eq("id", userId).maybeSingle();
+    if (error) throw new Error(error.message);
+    return data?.show_price_history ?? false;
+  },
+
+  async setPriceHistoryPublic(userId, value) {
+    const { error } = await supabase.from("profiles").update({ show_price_history: value }).eq("id", userId);
+    if (error) throw new Error(error.message);
   },
 
   async getStandInventory(sellerId) {
@@ -73,6 +96,8 @@ const notConnected = async (): Promise<never> => {
 
 const moatwaveInventory: InventoryService = {
   getListingHistory: notConnected,
+  getPriceHistoryPublic: notConnected,
+  setPriceHistoryPublic: notConnected,
   getStandInventory: notConnected,
   getVin: notConnected,
   setVin: notConnected,

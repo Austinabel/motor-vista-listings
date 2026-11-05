@@ -10,6 +10,7 @@
 --   backfilled, because their earlier history was never recorded.
 -- * Adds an optional VIN per car: one live listing per VIN, locked once set.
 -- * Awards MID points for confirming availability (once per car per day) and for marking a car sold.
+-- * Adds profiles.show_price_history: each seller chooses whether buyers see price changes (off by default).
 -- Reverse with supabase/rollback/20261106120000_open_inventory_down.sql.
 
 BEGIN;
@@ -200,21 +201,37 @@ WHERE l.sold_at IS NOT NULL
 -- ---------------------------------------------------------------------------
 -- 5. Reading
 -- ---------------------------------------------------------------------------
+-- Each seller decides whether buyers see their cars' price history. Off by default.
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS show_price_history boolean NOT NULL DEFAULT false;
+
 -- A car's public history: shown for live listings (and to their owner and admins).
--- Who acted is never exposed; submissions and VIN entries are left out.
+-- Who acted is never exposed; submissions and VIN entries are left out. Unless the seller
+-- chose to show price history, buyers see no price changes and no recorded prices at all.
+-- prices_public tells the owner's screen what buyers can see.
 CREATE OR REPLACE FUNCTION public.get_listing_history(_listing_id uuid)
-RETURNS TABLE (event_type text, occurred_at timestamptz, from_value jsonb, to_value jsonb, backfilled boolean)
+RETURNS TABLE (event_type text, occurred_at timestamptz, from_value jsonb, to_value jsonb, backfilled boolean, prices_public boolean)
 LANGUAGE sql STABLE
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
-  SELECT e.event_type, e.occurred_at, e.from_value, e.to_value, e.backfilled
-  FROM public.inventory_events e
-  JOIN public.car_listings l ON l.id = e.listing_id
+  WITH listing AS (
+    SELECT l.status,
+           (l.user_id = auth.uid() OR public.is_admin()) AS full_view,
+           coalesce(p.show_price_history, false) AS prices_public
+    FROM public.car_listings l
+    LEFT JOIN public.profiles p ON p.id = l.user_id
+    WHERE l.id = _listing_id
+  )
+  SELECT e.event_type, e.occurred_at,
+         CASE WHEN v.full_view OR v.prices_public THEN e.from_value ELSE e.from_value - 'price' END,
+         CASE WHEN v.full_view OR v.prices_public THEN e.to_value ELSE e.to_value - 'price' END,
+         e.backfilled, v.prices_public
+  FROM public.inventory_events e, listing v
   WHERE e.listing_id = _listing_id
     AND public.feature_mode('oio') = 'motorcars'
-    AND (l.status = 'active' OR l.user_id = auth.uid() OR public.is_admin())
+    AND (v.status = 'active' OR v.full_view)
     AND e.event_type NOT IN ('submitted', 'vin_added')
+    AND (v.full_view OR v.prices_public OR e.event_type <> 'price_changed')
   ORDER BY e.occurred_at DESC, e.id DESC
   LIMIT 100
 $$;
