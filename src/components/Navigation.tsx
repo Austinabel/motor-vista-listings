@@ -10,6 +10,7 @@ import {
 import { Car, ChevronDown, Edit, Heart, LayoutDashboard, LogOut, MessageSquare, Search, Settings, User, Zap } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUnreadMessages } from "@/components/wavechat/WaveChatNotifier";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +60,7 @@ const BrandMark = () => (
 export const Navigation = () => {
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
+  const unreadMessages = useUnreadMessages();
   const { toast } = useToast();
   const isDealer = user?.user_metadata?.user_type === "dealer";
 
@@ -223,6 +225,18 @@ export const Navigation = () => {
             <div className="h-8 w-20 animate-pulse rounded bg-primary-foreground/10" />
           ) : user ? (
             <>
+              {unreadMessages > 0 && (
+                <Link
+                  to="/messages"
+                  aria-label={`${unreadMessages} unread ${unreadMessages === 1 ? "message" : "messages"}`}
+                  className="relative flex h-9 w-9 items-center justify-center rounded-lg text-primary-foreground/85 transition hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">
+                    {unreadMessages > 99 ? "99+" : unreadMessages}
+                  </span>
+                </Link>
+              )}
               <div className="text-primary-foreground [&_button:hover]:bg-primary-foreground/10 [&_button:hover]:text-primary-foreground">
                 <NotificationIcon />
               </div>

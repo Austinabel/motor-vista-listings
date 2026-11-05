@@ -42,6 +42,7 @@ import AccountSettings from "./pages/AccountSettings";
 import Feedback from "./pages/Feedback";
 import Moatwave from "./pages/Moatwave";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
+import { WaveChatNotifier } from "@/components/wavechat/WaveChatNotifier";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -103,6 +104,7 @@ const AppContent = () => {
     <>
       {/* Navigation is sticky and in the page flow, so content needs no top offset */}
       {!isAuthPage && !isAdminPage && <Navigation />}
+      <WaveChatNotifier />
       <div className={!isAuthPage && !isAdminPage ? "pb-20 lg:pb-0" : ""}>
         <Routes>
           <Route path="/" element={<Index />} />

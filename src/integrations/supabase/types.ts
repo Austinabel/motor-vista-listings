@@ -441,6 +441,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_promises: {
+        Row: {
+          amount: number
+          buyer_id: string
+          cancelled_at: string | null
+          conversation_id: string
+          created_at: string
+          due_date: string
+          id: string
+          kept_at: string | null
+          kept_on_time: boolean | null
+          seller_id: string
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          cancelled_at?: string | null
+          conversation_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          kept_at?: string | null
+          kept_on_time?: boolean | null
+          seller_id: string
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          cancelled_at?: string | null
+          conversation_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          kept_at?: string | null
+          kept_on_time?: boolean | null
+          seller_id?: string
+        }
+        Relationships: []
+      }
       platform_features: {
         Row: {
           feature: string
@@ -471,6 +510,7 @@ export type Database = {
           conversation_id: string
           id: string
           issued_at: string
+          kind: string
           listing_id: string
           payment_method: string
           receipt_number: string
@@ -485,6 +525,7 @@ export type Database = {
           conversation_id: string
           id?: string
           issued_at?: string
+          kind?: string
           listing_id: string
           payment_method: string
           receipt_number: string
@@ -499,6 +540,7 @@ export type Database = {
           conversation_id?: string
           id?: string
           issued_at?: string
+          kind?: string
           listing_id?: string
           payment_method?: string
           receipt_number?: string
@@ -528,6 +570,33 @@ export type Database = {
           id?: number
           is_active?: boolean
           label?: string
+        }
+        Relationships: []
+      }
+      handover_items: {
+        Row: {
+          buyer_confirmed_at: string | null
+          conversation_id: string
+          item_key: string
+          label: string
+          position: number
+          seller_confirmed_at: string | null
+        }
+        Insert: {
+          buyer_confirmed_at?: string | null
+          conversation_id: string
+          item_key: string
+          label: string
+          position: number
+          seller_confirmed_at?: string | null
+        }
+        Update: {
+          buyer_confirmed_at?: string | null
+          conversation_id?: string
+          item_key?: string
+          label?: string
+          position?: number
+          seller_confirmed_at?: string | null
         }
         Relationships: []
       }
@@ -668,41 +737,89 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          message_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           action: string | null
+          attachment_duration: number | null
+          attachment_name: string | null
+          attachment_path: string | null
+          attachment_size: number | null
+          attachment_type: string | null
           client_event_id: string | null
           content: string
           conversation_id: string
           created_at: string
+          deleted_at: string | null
+          delivered_at: string | null
           id: string
           is_read: boolean
           kind: string
           payload: Json | null
+          read_at: string | null
+          reply_to_id: string | null
           sender_id: string
         }
         Insert: {
           action?: string | null
+          attachment_duration?: number | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
           client_event_id?: string | null
           content: string
           conversation_id: string
           created_at?: string
+          deleted_at?: string | null
+          delivered_at?: string | null
           id?: string
           is_read?: boolean
           kind?: string
           payload?: Json | null
+          read_at?: string | null
+          reply_to_id?: string | null
           sender_id: string
         }
         Update: {
           action?: string | null
+          attachment_duration?: number | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
           client_event_id?: string | null
           content?: string
           conversation_id?: string
           created_at?: string
+          deleted_at?: string | null
+          delivered_at?: string | null
           id?: string
           is_read?: boolean
           kind?: string
           payload?: Json | null
+          read_at?: string | null
+          reply_to_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -877,6 +994,30 @@ export type Database = {
       wavechat_action: {
         Args: { _conversation_id: string; _action: string; _payload?: Json; _client_event_id?: string }
         Returns: string
+      }
+      count_unread_messages: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      delete_my_message: {
+        Args: { _message_id: string }
+        Returns: string | null
+      }
+      get_chat_partner_last_seen: {
+        Args: { _conversation_id: string }
+        Returns: string | null
+      }
+      mark_conversation_delivered: {
+        Args: { _conversation_id: string }
+        Returns: undefined
+      }
+      mark_conversation_read: {
+        Args: { _conversation_id: string }
+        Returns: undefined
+      }
+      touch_presence: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_listing_history: {
         Args: { _listing_id: string }

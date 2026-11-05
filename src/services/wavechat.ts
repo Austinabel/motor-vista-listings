@@ -8,6 +8,8 @@ import type { FeatureMode } from "@/services/platformFeatures";
 // conversations/messages tables the old inbox used, so history carries over); the Moatwave version
 // isn't connected yet. Screens call waveChatService(mode).
 
+const BUCKET = "wavechat";
+
 export interface ChatCar {
   id: string;
   title: string;
@@ -30,6 +32,17 @@ export interface ChatConversation {
   unread: number;
 }
 
+export type AttachmentType = "image" | "file" | "voice";
+
+export interface ChatAttachment {
+  path: string;
+  type: AttachmentType;
+  name: string;
+  size: number;
+  /** Seconds, for voice notes */
+  duration: number | null;
+}
+
 export interface ChatMessage {
   id: string;
   senderId: string;
@@ -37,13 +50,25 @@ export interface ChatMessage {
   kind: MessageKind;
   action: WaveChatAction | null;
   payload: Record<string, unknown> | null;
+  replyToId: string | null;
+  attachment: ChatAttachment | null;
   isRead: boolean;
+  deliveredAt: string | null;
+  readAt: string | null;
+  deletedAt: string | null;
   createdAt: string;
+}
+
+export interface ChatReaction {
+  messageId: string;
+  userId: string;
+  emoji: string;
 }
 
 export interface ChatReceipt {
   id: string;
   receiptNumber: string;
+  kind: "deposit" | "part_payment" | "final";
   carTitle: string;
   amount: number;
   paymentMethod: PaymentMethod;
@@ -51,17 +76,59 @@ export interface ChatReceipt {
   buyerConfirmedAt: string | null;
 }
 
+export interface ChatPromise {
+  id: string;
+  amount: number;
+  dueDate: string;
+  createdAt: string;
+  keptAt: string | null;
+  keptOnTime: boolean | null;
+  cancelledAt: string | null;
+}
+
+export interface HandoverItem {
+  key: string;
+  label: string;
+  sellerConfirmedAt: string | null;
+  buyerConfirmedAt: string | null;
+}
+
+export interface PresenceHandle {
+  setTyping(typing: boolean): void;
+  leave(): void;
+}
+
+export interface SendOptions {
+  replyToId?: string | null;
+  attachment?: ChatAttachment | null;
+}
+
 export interface WaveChatService {
   listConversations(userId: string): Promise<ChatConversation[]>;
   getConversation(id: string, userId: string): Promise<ChatConversation | null>;
   listMessages(conversationId: string): Promise<ChatMessage[]>;
-  getReceipt(conversationId: string): Promise<ChatReceipt | null>;
+  listReactions(messageIds: string[]): Promise<ChatReaction[]>;
+  listReceipts(conversationId: string): Promise<ChatReceipt[]>;
+  listPromises(conversationId: string): Promise<ChatPromise[]>;
+  listHandover(conversationId: string): Promise<HandoverItem[]>;
   start(listingId: string): Promise<string>;
-  sendText(conversationId: string, senderId: string, content: string): Promise<void>;
+  sendText(conversationId: string, senderId: string, content: string, options?: SendOptions): Promise<void>;
+  uploadAttachment(conversationId: string, file: Blob, type: AttachmentType, name: string, duration?: number): Promise<ChatAttachment>;
+  attachmentUrl(path: string): Promise<string>;
   act(conversationId: string, action: WaveChatAction, payload?: Record<string, unknown>): Promise<void>;
-  markRead(conversationId: string, userId: string): Promise<void>;
-  /** Calls onChange whenever a message arrives or the conversation changes. Returns an unsubscribe. */
+  react(messageId: string, userId: string, emoji: string | null): Promise<void>;
+  deleteMessage(messageId: string): Promise<void>;
+  markRead(conversationId: string): Promise<void>;
+  markDelivered(conversationId: string): Promise<void>;
+  countUnread(): Promise<number>;
+  touchPresence(): Promise<void>;
+  partnerLastSeen(conversationId: string): Promise<string | null>;
+  /** Calls onChange whenever something in the conversation changes. Returns an unsubscribe. */
   subscribe(conversationId: string, onChange: () => void): () => void;
+  /** Live "online" and "typing…" for the other person, while both have the conversation open. */
+  joinPresence(conversationId: string, userId: string, onChange: (state: { online: boolean; typing: boolean }) => void): PresenceHandle;
+  /** Calls onMessage for each new message from someone else, in any conversation. */
+  onIncoming(userId: string, onMessage: (message: { conversationId: string; content: string; kind: string }) => void): () => void;
 }
 
 type ConversationRow = {
@@ -85,6 +152,15 @@ const displayName = (profile?: { first_name: string | null; last_name: string | 
   return initial ? `${first} ${initial}.` : first;
 };
 
+/** How a message reads in the conversation list. */
+const previewOf = (message: { content: string; attachment_type: string | null; deleted_at: string | null }) => {
+  if (message.deleted_at) return "Message deleted";
+  if (message.content) return message.content;
+  if (message.attachment_type === "voice") return "Voice note";
+  if (message.attachment_type === "image") return "Photo";
+  return message.attachment_type ? "Document" : null;
+};
+
 const enrich = async (rows: ConversationRow[], userId: string): Promise<ChatConversation[]> => {
   if (rows.length === 0) return [];
   const listingIds = [...new Set(rows.map((row) => row.listing_id))];
@@ -103,7 +179,7 @@ const enrich = async (rows: ConversationRow[], userId: string): Promise<ChatConv
     ).then((pairs) => new Map(pairs)),
     supabase
       .from("messages")
-      .select("conversation_id, sender_id, content, is_read, created_at")
+      .select("conversation_id, sender_id, content, attachment_type, deleted_at, is_read, created_at")
       .in("conversation_id", rows.map((row) => row.id))
       .order("created_at", { ascending: false })
       .limit(500),
@@ -135,8 +211,8 @@ const enrich = async (rows: ConversationRow[], userId: string): Promise<ChatConv
             availabilityStatus: listing.availability_status,
           }
         : null,
-      lastMessage: thread[0]?.content ?? null,
-      unread: thread.filter((message) => message.sender_id !== userId && !message.is_read).length,
+      lastMessage: thread[0] ? previewOf(thread[0]) : null,
+      unread: thread.filter((message) => message.sender_id !== userId && !message.is_read && !message.deleted_at).length,
     };
   });
 };
@@ -165,7 +241,7 @@ const motorcarsChat: WaveChatService = {
   async listMessages(conversationId) {
     const { data, error } = await supabase
       .from("messages")
-      .select("id, sender_id, content, kind, action, payload, is_read, created_at")
+      .select("id, sender_id, content, kind, action, payload, reply_to_id, attachment_path, attachment_type, attachment_name, attachment_size, attachment_duration, is_read, delivered_at, read_at, deleted_at, created_at")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
@@ -176,28 +252,81 @@ const motorcarsChat: WaveChatService = {
       kind: row.kind as MessageKind,
       action: (row.action as WaveChatAction | null) ?? null,
       payload: asRecord(row.payload),
+      replyToId: row.reply_to_id,
+      attachment: row.attachment_path
+        ? {
+            path: row.attachment_path,
+            type: row.attachment_type as AttachmentType,
+            name: row.attachment_name ?? "Attachment",
+            size: row.attachment_size ?? 0,
+            duration: row.attachment_duration,
+          }
+        : null,
       isRead: row.is_read,
+      deliveredAt: row.delivered_at,
+      readAt: row.read_at,
+      deletedAt: row.deleted_at,
       createdAt: row.created_at,
     }));
   },
 
-  async getReceipt(conversationId) {
+  async listReactions(messageIds) {
+    if (messageIds.length === 0) return [];
+    const { data, error } = await supabase.from("message_reactions").select("message_id, user_id, emoji").in("message_id", messageIds);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((row) => ({ messageId: row.message_id, userId: row.user_id, emoji: row.emoji }));
+  },
+
+  async listReceipts(conversationId) {
     const { data, error } = await supabase
       .from("sale_receipts")
-      .select("id, receipt_number, car_title, amount, payment_method, issued_at, buyer_confirmed_at")
+      .select("id, receipt_number, kind, car_title, amount, payment_method, issued_at, buyer_confirmed_at")
       .eq("conversation_id", conversationId)
-      .maybeSingle();
+      .order("issued_at", { ascending: true });
     if (error) throw new Error(error.message);
-    if (!data) return null;
-    return {
-      id: data.id,
-      receiptNumber: data.receipt_number,
-      carTitle: data.car_title,
-      amount: Number(data.amount),
-      paymentMethod: data.payment_method as PaymentMethod,
-      issuedAt: data.issued_at,
-      buyerConfirmedAt: data.buyer_confirmed_at,
-    };
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      receiptNumber: row.receipt_number,
+      kind: row.kind as ChatReceipt["kind"],
+      carTitle: row.car_title,
+      amount: Number(row.amount),
+      paymentMethod: row.payment_method as PaymentMethod,
+      issuedAt: row.issued_at,
+      buyerConfirmedAt: row.buyer_confirmed_at,
+    }));
+  },
+
+  async listPromises(conversationId) {
+    const { data, error } = await supabase
+      .from("payment_promises")
+      .select("id, amount, due_date, created_at, kept_at, kept_on_time, cancelled_at")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      amount: Number(row.amount),
+      dueDate: row.due_date,
+      createdAt: row.created_at,
+      keptAt: row.kept_at,
+      keptOnTime: row.kept_on_time,
+      cancelledAt: row.cancelled_at,
+    }));
+  },
+
+  async listHandover(conversationId) {
+    const { data, error } = await supabase
+      .from("handover_items")
+      .select("item_key, label, seller_confirmed_at, buyer_confirmed_at")
+      .eq("conversation_id", conversationId)
+      .order("position", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((row) => ({
+      key: row.item_key,
+      label: row.label,
+      sellerConfirmedAt: row.seller_confirmed_at,
+      buyerConfirmedAt: row.buyer_confirmed_at,
+    }));
   },
 
   async start(listingId) {
@@ -206,9 +335,34 @@ const motorcarsChat: WaveChatService = {
     return data;
   },
 
-  async sendText(conversationId, senderId, content) {
-    const { error } = await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: senderId, content: content.trim() });
+  async sendText(conversationId, senderId, content, options = {}) {
+    const { attachment, replyToId } = options;
+    const { error } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      sender_id: senderId,
+      content: content.trim(),
+      reply_to_id: replyToId ?? null,
+      attachment_path: attachment?.path ?? null,
+      attachment_type: attachment?.type ?? null,
+      attachment_name: attachment?.name ?? null,
+      attachment_size: attachment?.size ?? null,
+      attachment_duration: attachment?.duration ?? null,
+    });
     if (error) throw new Error(error.message);
+  },
+
+  async uploadAttachment(conversationId, file, type, name, duration) {
+    const safeName = name.replace(/[^\w.-]+/g, "_").slice(-80);
+    const path = `${conversationId}/${crypto.randomUUID()}-${safeName}`;
+    const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type || undefined });
+    if (error) throw new Error(error.message);
+    return { path, type, name, size: file.size, duration: duration ?? null };
+  },
+
+  async attachmentUrl(path) {
+    const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
+    if (error || !data) throw new Error(error?.message ?? "The attachment couldn't be opened");
+    return data.signedUrl;
   },
 
   async act(conversationId, action, payload = {}) {
@@ -222,20 +376,91 @@ const motorcarsChat: WaveChatService = {
     if (error) throw new Error(error.message);
   },
 
-  async markRead(conversationId, userId) {
-    await supabase
-      .from("messages")
-      .update({ is_read: true })
-      .eq("conversation_id", conversationId)
-      .neq("sender_id", userId)
-      .eq("is_read", false);
+  async react(messageId, userId, emoji) {
+    const { error } = emoji
+      ? await supabase.from("message_reactions").upsert({ message_id: messageId, user_id: userId, emoji })
+      : await supabase.from("message_reactions").delete().eq("message_id", messageId).eq("user_id", userId);
+    if (error) throw new Error(error.message);
+  },
+
+  async deleteMessage(messageId) {
+    const { data, error } = await supabase.rpc("delete_my_message", { _message_id: messageId });
+    if (error) throw new Error(error.message);
+    if (data) await supabase.storage.from(BUCKET).remove([data]);
+  },
+
+  async markRead(conversationId) {
+    await supabase.rpc("mark_conversation_read", { _conversation_id: conversationId });
+  },
+
+  async markDelivered(conversationId) {
+    await supabase.rpc("mark_conversation_delivered", { _conversation_id: conversationId });
+  },
+
+  async countUnread() {
+    const { data, error } = await supabase.rpc("count_unread_messages");
+    if (error) throw new Error(error.message);
+    return data ?? 0;
+  },
+
+  async touchPresence() {
+    await supabase.rpc("touch_presence");
+  },
+
+  async partnerLastSeen(conversationId) {
+    const { data } = await supabase.rpc("get_chat_partner_last_seen", { _conversation_id: conversationId });
+    return data ?? null;
   },
 
   subscribe(conversationId, onChange) {
     const channel = supabase
       .channel(`wavechat-${conversationId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, onChange)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations", filter: `id=eq.${conversationId}` }, onChange)
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversations", filter: `id=eq.${conversationId}` }, onChange)
+      .on("postgres_changes", { event: "*", schema: "public", table: "handover_items", filter: `conversation_id=eq.${conversationId}` }, onChange)
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, onChange)
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  },
+
+  joinPresence(conversationId, userId, onChange) {
+    const channel = supabase.channel(`wavechat-presence-${conversationId}`, { config: { presence: { key: userId } } });
+    let joined = false;
+    const report = () => {
+      const others = Object.entries(channel.presenceState<{ typing?: boolean }>()).filter(([key]) => key !== userId);
+      onChange({
+        online: others.length > 0,
+        typing: others.some(([, metas]) => metas.some((meta) => meta.typing)),
+      });
+    };
+    channel
+      .on("presence", { event: "sync" }, report)
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          joined = true;
+          channel.track({ typing: false });
+        }
+      });
+    return {
+      setTyping: (typing) => {
+        if (joined) channel.track({ typing });
+      },
+      leave: () => {
+        supabase.removeChannel(channel);
+      },
+    };
+  },
+
+  onIncoming(userId, onMessage) {
+    // Row-level security means this only ever receives messages from the person's own conversations
+    const channel = supabase
+      .channel(`wavechat-incoming-${userId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (change) => {
+        const row = change.new as { conversation_id: string; sender_id: string; content: string; kind: string };
+        if (row.sender_id !== userId) onMessage({ conversationId: row.conversation_id, content: row.content, kind: row.kind });
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -251,12 +476,25 @@ const moatwaveChat: WaveChatService = {
   listConversations: notConnected,
   getConversation: notConnected,
   listMessages: notConnected,
-  getReceipt: notConnected,
+  listReactions: notConnected,
+  listReceipts: notConnected,
+  listPromises: notConnected,
+  listHandover: notConnected,
   start: notConnected,
   sendText: notConnected,
+  uploadAttachment: notConnected,
+  attachmentUrl: notConnected,
   act: notConnected,
+  react: notConnected,
+  deleteMessage: notConnected,
   markRead: notConnected,
+  markDelivered: notConnected,
+  countUnread: notConnected,
+  touchPresence: notConnected,
+  partnerLastSeen: notConnected,
   subscribe: () => () => undefined,
+  joinPresence: () => ({ setTyping: () => undefined, leave: () => undefined }),
+  onIncoming: () => () => undefined,
 };
 
 export const waveChatService = (mode: FeatureMode): WaveChatService => (mode === "moatwave" ? moatwaveChat : motorcarsChat);
