@@ -21,7 +21,7 @@ export const FEATURE_MODES: { id: FeatureMode; label: string }[] = [
 /** Features whose Motorcars version exists. Mirrors motorcars_feature_built() in the database. */
 export const MOTORCARS_BUILT: Record<MoatwaveFeatureId, boolean> = {
   mid: true,
-  wavechat: false,
+  wavechat: true,
   oio: true,
   conscience: false,
   argus: false,

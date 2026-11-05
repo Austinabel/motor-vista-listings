@@ -189,27 +189,39 @@ export type Database = {
       }
       conversations: {
         Row: {
+          agreed_price: number | null
           buyer_id: string
           created_at: string
           id: string
+          inspection_at: string | null
+          inspection_confirmed: boolean
           listing_id: string
           seller_id: string
+          stage: string
           updated_at: string
         }
         Insert: {
+          agreed_price?: number | null
           buyer_id: string
           created_at?: string
           id?: string
+          inspection_at?: string | null
+          inspection_confirmed?: boolean
           listing_id: string
           seller_id: string
+          stage?: string
           updated_at?: string
         }
         Update: {
+          agreed_price?: number | null
           buyer_id?: string
           created_at?: string
           id?: string
+          inspection_at?: string | null
+          inspection_confirmed?: boolean
           listing_id?: string
           seller_id?: string
+          stage?: string
           updated_at?: string
         }
         Relationships: []
@@ -450,6 +462,51 @@ export type Database = {
         }
         Relationships: []
       }
+      sale_receipts: {
+        Row: {
+          amount: number
+          buyer_confirmed_at: string | null
+          buyer_id: string
+          car_title: string
+          conversation_id: string
+          id: string
+          issued_at: string
+          listing_id: string
+          payment_method: string
+          receipt_number: string
+          seller_id: string
+          synced_to_moatwave_at: string | null
+        }
+        Insert: {
+          amount: number
+          buyer_confirmed_at?: string | null
+          buyer_id: string
+          car_title: string
+          conversation_id: string
+          id?: string
+          issued_at?: string
+          listing_id: string
+          payment_method: string
+          receipt_number: string
+          seller_id: string
+          synced_to_moatwave_at?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_confirmed_at?: string | null
+          buyer_id?: string
+          car_title?: string
+          conversation_id?: string
+          id?: string
+          issued_at?: string
+          listing_id?: string
+          payment_method?: string
+          receipt_number?: string
+          seller_id?: string
+          synced_to_moatwave_at?: string | null
+        }
+        Relationships: []
+      }
       score_config_versions: {
         Row: {
           created_at: string
@@ -613,27 +670,39 @@ export type Database = {
       }
       messages: {
         Row: {
+          action: string | null
+          client_event_id: string | null
           content: string
           conversation_id: string
           created_at: string
           id: string
           is_read: boolean
+          kind: string
+          payload: Json | null
           sender_id: string
         }
         Insert: {
+          action?: string | null
+          client_event_id?: string | null
           content: string
           conversation_id: string
           created_at?: string
           id?: string
           is_read?: boolean
+          kind?: string
+          payload?: Json | null
           sender_id: string
         }
         Update: {
+          action?: string | null
+          client_event_id?: string | null
           content?: string
           conversation_id?: string
           created_at?: string
           id?: string
           is_read?: boolean
+          kind?: string
+          payload?: Json | null
           sender_id?: string
         }
         Relationships: [
@@ -800,6 +869,14 @@ export type Database = {
           website: string
           year_established: string
         }[]
+      }
+      start_wavechat: {
+        Args: { _listing_id: string }
+        Returns: string
+      }
+      wavechat_action: {
+        Args: { _conversation_id: string; _action: string; _payload?: Json; _client_event_id?: string }
+        Returns: string
       }
       get_listing_history: {
         Args: { _listing_id: string }

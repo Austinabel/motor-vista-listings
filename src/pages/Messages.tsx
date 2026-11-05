@@ -9,6 +9,9 @@ import ChatInterface from "@/components/ChatInterface";
 import { formatDistanceToNow } from "date-fns";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { Separator } from "@/components/ui/separator"; // <-- NEW
+import { useFeatureMode } from "@/hooks/useFeatureMode";
+import { WaveChatInbox } from "@/components/wavechat/WaveChatInbox";
+import { Footer } from "@/components/Footer";
 
 function stringAvatar(name?: string) {
   // Generate initials from name or fallback
@@ -24,12 +27,27 @@ const Messages = () => {
   const { conversations, loading, fetchConversations, messages } = useMessaging();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const chatMode = useFeatureMode("wavechat");
+  const waveChatLive = chatMode === "motorcars" || chatMode === "moatwave";
 
   useEffect(() => {
     if (user) {
       fetchConversations();
     }
   }, [user]);
+
+  if (user && waveChatLive) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-extrabold md:text-4xl">Messages</h1>
+          <p className="mb-6 mt-1 text-muted-foreground">Your WaveChat conversations, each with its car attached.</p>
+          <WaveChatInbox userId={user.id} />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleOpenChat = (conversation: Conversation) => {
     setSelectedConversation(conversation);

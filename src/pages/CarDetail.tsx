@@ -16,6 +16,7 @@ import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { MidBadge } from "@/components/mid/MidBadge";
 import { ListingHistory } from "@/components/inventory/ListingHistory";
+import { WaveChatStart } from "@/components/wavechat/WaveChatStart";
 import { WaveChatPreview } from "@/components/moatwave/WaveChatPreview";
 import { TrustRecordPreview } from "@/components/moatwave/TrustRecordPreview";
 import { ArgusListingPreview } from "@/components/moatwave/ArgusListingPreview";
@@ -80,12 +81,15 @@ const SellerCard = ({
   sellerLoading,
   isOwner,
   signedIn,
+  waveChatLive,
 }: {
   listing: ListingDetail;
   seller: SellerPublicInfo | undefined;
   sellerLoading: boolean;
   isOwner: boolean;
   signedIn: boolean;
+  /** WaveChat replaces the old message button when it is live */
+  waveChatLive: boolean;
 }) => {
   const title = titleOf(listing);
   const isDealer = seller?.kind === "dealer";
@@ -151,7 +155,9 @@ const SellerCard = ({
                 </a>
               </Button>
             )}
-            <MessageSellerButton listingId={listing.id} sellerId={listing.userId} carTitle={title} sellerName={name} />
+            {!waveChatLive && (
+              <MessageSellerButton listingId={listing.id} sellerId={listing.userId} carTitle={title} sellerName={name} />
+            )}
             {!sellerLoading && !seller?.phone && (
               <p className="text-xs text-muted-foreground">This seller has not shared a phone number. Send a message instead.</p>
             )}
@@ -407,7 +413,12 @@ const CarDetail = () => {
               sellerLoading={sellerQuery.isLoading}
               isOwner={isOwner}
               signedIn={Boolean(user)}
+              waveChatLive={modes.wavechat === "motorcars" || modes.wavechat === "moatwave"}
             />
+
+            {(modes.wavechat === "motorcars" || modes.wavechat === "moatwave") && user && !isOwner && listing.status === "active" && (
+              <WaveChatStart listingId={listing.id} />
+            )}
 
             <div className="flex gap-2">
               <FavoriteButton listingId={listing.id} size="default" className="flex-1 border" />
