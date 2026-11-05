@@ -9,7 +9,8 @@ import type { FeatureMode } from "@/services/platformFeatures";
 export interface StandInventory {
   available: number;
   reserved: number;
-  soldRecorded: number;
+  /** Null when the seller keeps their sales count private. */
+  soldRecorded: number | null;
   lastActivityAt: string | null;
 }
 
@@ -19,10 +20,16 @@ export interface ListingHistoryResult {
   pricesPublic: boolean;
 }
 
+/** What a seller lets buyers see. Both off by default. */
+export interface InventoryPrivacy {
+  priceHistory: boolean;
+  salesCount: boolean;
+}
+
 export interface InventoryService {
   getListingHistory(listingId: string): Promise<ListingHistoryResult>;
-  getPriceHistoryPublic(userId: string): Promise<boolean>;
-  setPriceHistoryPublic(userId: string, value: boolean): Promise<void>;
+  getPrivacy(userId: string): Promise<InventoryPrivacy>;
+  setPrivacy(userId: string, change: Partial<InventoryPrivacy>): Promise<void>;
   getStandInventory(sellerId: string): Promise<StandInventory | null>;
   getVin(listingId: string): Promise<string | null>;
   setVin(listingId: string, vin: string): Promise<void>;
@@ -54,14 +61,21 @@ const motorcarsInventory: InventoryService = {
     };
   },
 
-  async getPriceHistoryPublic(userId) {
-    const { data, error } = await supabase.from("profiles").select("show_price_history").eq("id", userId).maybeSingle();
+  async getPrivacy(userId) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("show_price_history, show_sales_count")
+      .eq("id", userId)
+      .maybeSingle();
     if (error) throw new Error(error.message);
-    return data?.show_price_history ?? false;
+    return { priceHistory: data?.show_price_history ?? false, salesCount: data?.show_sales_count ?? false };
   },
 
-  async setPriceHistoryPublic(userId, value) {
-    const { error } = await supabase.from("profiles").update({ show_price_history: value }).eq("id", userId);
+  async setPrivacy(userId, change) {
+    const update: { show_price_history?: boolean; show_sales_count?: boolean } = {};
+    if (change.priceHistory !== undefined) update.show_price_history = change.priceHistory;
+    if (change.salesCount !== undefined) update.show_sales_count = change.salesCount;
+    const { error } = await supabase.from("profiles").update(update).eq("id", userId);
     if (error) throw new Error(error.message);
   },
 
@@ -96,8 +110,8 @@ const notConnected = async (): Promise<never> => {
 
 const moatwaveInventory: InventoryService = {
   getListingHistory: notConnected,
-  getPriceHistoryPublic: notConnected,
-  setPriceHistoryPublic: notConnected,
+  getPrivacy: notConnected,
+  setPrivacy: notConnected,
   getStandInventory: notConnected,
   getVin: notConnected,
   setVin: notConnected,

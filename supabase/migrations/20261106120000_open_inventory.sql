@@ -10,7 +10,8 @@
 --   backfilled, because their earlier history was never recorded.
 -- * Adds an optional VIN per car: one live listing per VIN, locked once set.
 -- * Awards MID points for confirming availability (once per car per day) and for marking a car sold.
--- * Adds profiles.show_price_history: each seller chooses whether buyers see price changes (off by default).
+-- * Adds profiles.show_price_history and profiles.show_sales_count: each seller chooses whether buyers see
+--   price changes and how many cars they have sold through Motorcars (both off by default).
 -- Reverse with supabase/rollback/20261106120000_open_inventory_down.sql.
 
 BEGIN;
@@ -201,8 +202,9 @@ WHERE l.sold_at IS NOT NULL
 -- ---------------------------------------------------------------------------
 -- 5. Reading
 -- ---------------------------------------------------------------------------
--- Each seller decides whether buyers see their cars' price history. Off by default.
+-- Each seller decides whether buyers see their cars' price history and their sales count. Off by default.
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS show_price_history boolean NOT NULL DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS show_sales_count boolean NOT NULL DEFAULT false;
 
 -- A car's public history: shown for live listings (and to their owner and admins).
 -- Who acted is never exposed; submissions and VIN entries are left out. Unless the seller
@@ -237,7 +239,8 @@ AS $$
 $$;
 GRANT EXECUTE ON FUNCTION public.get_listing_history(uuid) TO anon, authenticated;
 
--- A stand's live stock at a glance, worked out from listings and events.
+-- A stand's live stock at a glance, worked out from listings and events. The sold count is
+-- returned only to the seller, admins, or anyone when the seller chose to show it.
 CREATE OR REPLACE FUNCTION public.get_stand_inventory(_seller_id uuid)
 RETURNS TABLE (available integer, reserved integer, sold_recorded integer, last_activity_at timestamptz)
 LANGUAGE sql STABLE
@@ -249,8 +252,11 @@ AS $$
       WHERE user_id = _seller_id AND status = 'active' AND availability_status = 'available'),
     (SELECT count(*)::int FROM public.car_listings
       WHERE user_id = _seller_id AND status = 'active' AND availability_status = 'reserved'),
-    (SELECT count(DISTINCT listing_id)::int FROM public.inventory_events
-      WHERE seller_id = _seller_id AND event_type = 'sold'),
+    CASE WHEN _seller_id = auth.uid() OR public.is_admin()
+              OR coalesce((SELECT show_sales_count FROM public.profiles WHERE id = _seller_id), false)
+         THEN (SELECT count(DISTINCT listing_id)::int FROM public.inventory_events
+                WHERE seller_id = _seller_id AND event_type = 'sold')
+    END,
     (SELECT max(occurred_at) FROM public.inventory_events
       WHERE seller_id = _seller_id AND event_type <> 'submitted' AND NOT backfilled)
   WHERE public.feature_mode('oio') = 'motorcars'

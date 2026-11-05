@@ -24,11 +24,11 @@ export const StandInventory = ({ sellerId, title = "Stock on this stand" }: { se
         <Boxes className="h-5 w-5 text-primary" />
         {title}
       </h2>
-      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+      <div className={`mt-4 grid gap-3 text-center ${data.soldRecorded === null ? "grid-cols-2" : "grid-cols-3"}`}>
         {[
           ["Available", data.available],
           ["Reserved", data.reserved],
-          ["Sold through Motorcars", data.soldRecorded],
+          ...(data.soldRecorded === null ? [] : [["Sold through Motorcars", data.soldRecorded]]),
         ].map(([label, value]) => (
           <div key={label as string} className="rounded-xl bg-muted px-2 py-3">
             <p className="text-2xl font-extrabold">{value}</p>

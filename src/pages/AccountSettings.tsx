@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PriceHistoryToggle } from "@/components/inventory/PriceHistoryToggle";
+import { InventoryPrivacySettings } from "@/components/inventory/InventoryPrivacySettings";
 
 const AccountSettings = () => {
   const { user } = useAuth();
@@ -245,7 +245,7 @@ const AccountSettings = () => {
                   />
                 </div>
 
-                {user && <PriceHistoryToggle userId={user.id} />}
+                {user && <InventoryPrivacySettings userId={user.id} />}
               </CardContent>
             </Card>
           </TabsContent>

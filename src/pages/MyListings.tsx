@@ -18,7 +18,7 @@ import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { MyMidCard } from "@/components/mid/MyMidCard";
 import { ListingHistory } from "@/components/inventory/ListingHistory";
 import { StandInventory } from "@/components/inventory/StandInventory";
-import { PriceHistoryToggle } from "@/components/inventory/PriceHistoryToggle";
+import { InventoryPrivacySettings } from "@/components/inventory/InventoryPrivacySettings";
 import { useFeatureMode } from "@/hooks/useFeatureMode";
 import { useState } from "react";
 import { SellerToolsPreview } from "@/components/moatwave/SellerToolsPreview";
@@ -247,7 +247,7 @@ const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
           <div className="mt-6">
             <StandInventory sellerId={user.id} title="Your stock" />
             <div className="mt-4 rounded-2xl border bg-card p-5 shadow-sm">
-              <PriceHistoryToggle userId={user.id} />
+              <InventoryPrivacySettings userId={user.id} />
             </div>
           </div>
         )}

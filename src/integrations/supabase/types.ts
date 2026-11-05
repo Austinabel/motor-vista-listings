@@ -695,6 +695,7 @@ export type Database = {
           phone: string | null
           show_phone_number: boolean | null
           show_price_history: boolean
+          show_sales_count: boolean
           show_profile: boolean | null
           updated_at: string | null
           user_type: string | null
@@ -711,6 +712,7 @@ export type Database = {
           phone?: string | null
           show_phone_number?: boolean | null
           show_price_history?: boolean
+          show_sales_count?: boolean
           show_profile?: boolean | null
           updated_at?: string | null
           user_type?: string | null
@@ -727,6 +729,7 @@ export type Database = {
           phone?: string | null
           show_phone_number?: boolean | null
           show_price_history?: boolean
+          show_sales_count?: boolean
           show_profile?: boolean | null
           updated_at?: string | null
           user_type?: string | null
@@ -815,7 +818,7 @@ export type Database = {
           available: number
           last_activity_at: string | null
           reserved: number
-          sold_recorded: number
+          sold_recorded: number | null
         }[]
       }
       get_public_mid: {
