@@ -5,6 +5,31 @@ import { CAR_MAKES, EMPTY_CRITERIA, type SearchCriteria } from "@/lib/vehicleSea
 // Simple rules that stand in for Argus until Moatwave's Argus is connected. They only read
 // what the buyer typed or what the seller filled in: nothing here invents cars, prices or results.
 
+// ── Replies from the Claude version ──────────────────────────
+
+export interface ArgusCar {
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+}
+
+export type ArgusFallback = "sign_in" | "not_configured" | "budget" | "daily_limit" | "off" | "unavailable";
+
+export type ArgusReply = { answer: string; cars: ArgusCar[] } | { fallback: ArgusFallback };
+
+/** Why Claude wasn't used, in words for the buyer. */
+export const argusFallbackMessage = (reason: ArgusFallback) => {
+  switch (reason) {
+    case "sign_in":
+      return "Sign in to ask Argus questions. For now, simple rules read your words.";
+    case "daily_limit":
+      return "You've reached today's limit of questions for Argus. Try again tomorrow.";
+    default:
+      return "Argus's full answers aren't available right now. Simple rules read your words instead.";
+  }
+};
+
 // ── Listing completeness ─────────────────────────────────────
 
 export interface ListingDetailsInput {

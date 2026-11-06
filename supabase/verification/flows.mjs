@@ -1,5 +1,5 @@
 // Runs supabase/staging/bootstrap.sql on a throwaway Postgres, then the real flows as simulated
-// signed-in users: feature switches, MID, Open Inventory, WaveChat, Conscience, and who is refused what.
+// signed-in users: feature switches, MID, Open Inventory, WaveChat, Conscience, Argus' limits, and who is refused what.
 // Touches no Supabase project. PGlite is not a project dependency, so to run this:
 //   npm i --no-save @electric-sql/pglite@0.3.15
 //   node scripts/build-staging-bootstrap.mjs
@@ -56,8 +56,8 @@ console.log("users ready");
 
 // Feature switches
 await refused("moatwave mode is refused", () => as(admin, () => q("UPDATE platform_features SET mode='moatwave' WHERE feature='mid'")), /not connected/);
-await refused("unbuilt feature is refused", () => as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature='argus'")), /not built/);
-await step("admin turns on mid, oio, wavechat, conscience", () => as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature IN ('mid','oio','wavechat','conscience')")));
+ok("an unknown feature counts as not built", (await q("SELECT public.motorcars_feature_built('nonsense') b"))[0].b === false);
+await step("admin turns on all five features", () => as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature IN ('mid','oio','wavechat','conscience','argus')")));
 ok("non-admin can't change a feature", (await as(stranger, () => q("UPDATE platform_features SET mode='off' WHERE feature='mid' RETURNING feature"))).length === 0);
 
 // MID
@@ -296,5 +296,29 @@ ok("public record shows sealed and clean counts", pubC.cycles_sealed === 6 && pu
 await step("turning Conscience off pauses it", async () => { await as(admin, () => q("UPDATE platform_features SET mode='preview' WHERE feature='conscience'")); await refresh(); });
 ok("public record is hidden while off", (await as(null, () => q("SELECT * FROM get_public_conscience($1)", [seller]))).length === 0);
 await as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature='conscience'"));
+
+// Argus: the gate and the usage record belong to the server function alone
+const asService = async (fn) => { await db.exec("SET ROLE service_role"); try { return await fn(); } finally { await db.exec("RESET ROLE"); } };
+const gate = async (u = buyer) => (await asService(() => q("SELECT public.argus_gate($1) g", [u])))[0].g;
+const spend = (u, cost, outcome = "answered") => asService(() => q("SELECT public.argus_record_usage($1,'search','claude-opus-5-5',100,10,$2,$3)", [u, cost, outcome]));
+ok("nothing is spent until a cap is set", (await gate()) === "budget", await gate());
+await refused("users can't check the gate", () => as(buyer, () => q("SELECT public.argus_gate($1)", [buyer])));
+await refused("users can't record usage", () => as(buyer, () => q("SELECT public.argus_record_usage($1,'search','m',1,1,0,'answered')", [buyer])));
+ok("users can't raise the cap", (await as(buyer, () => q("UPDATE argus_settings SET monthly_cap_usd=1000 RETURNING id"))).length === 0);
+await refused("users can't see spending", () => as(buyer, () => q("SELECT * FROM get_argus_budget()")), /Only admins/);
+ok("users can't read usage", (await as(buyer, () => q("SELECT id FROM argus_usage"))).length === 0);
+await step("admin sets a cap", () => as(admin, () => q("UPDATE argus_settings SET monthly_cap_usd=1, daily_questions_per_user=2")));
+ok("under the cap Claude may be used", (await gate()) === "ok", await gate());
+await step("two questions are recorded, one failed", async () => { await spend(buyer, 0.1); await spend(buyer, 0.1, "failed"); });
+ok("failed questions count towards the daily limit", (await gate()) === "daily_limit", await gate());
+ok("someone else can still ask", (await gate(stranger)) === "ok");
+await spend(stranger, 0.8);
+ok("at the cap everyone stops", (await gate(stranger)) === "budget" && (await gate(admin)) === "budget");
+const budget = (await as(admin, () => q("SELECT * FROM get_argus_budget()")))[0];
+ok("admin sees the month's spending", Number(budget.spent_this_month_usd) === 1 && budget.questions_this_month === 3, JSON.stringify(budget));
+ok("no question text is stored", !(await q("SELECT column_name FROM information_schema.columns WHERE table_name='argus_usage'")).some((c) => /question|prompt|content/.test(c.column_name)));
+await as(admin, () => q("UPDATE platform_features SET mode='preview' WHERE feature='argus'"));
+ok("switched off, Claude is never called", (await gate(stranger)) === "off");
+await as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature='argus'"));
 
 console.log(`\n${pass} passed, ${fail} failed`);

@@ -21,6 +21,7 @@ import { WaveChatStart } from "@/components/wavechat/WaveChatStart";
 import { WaveChatPreview } from "@/components/moatwave/WaveChatPreview";
 import { TrustRecordPreview } from "@/components/moatwave/TrustRecordPreview";
 import { ArgusListingPreview } from "@/components/moatwave/ArgusListingPreview";
+import { ArgusCarPanel } from "@/components/argus/ArgusCarPanel";
 import { describeAvailability } from "@/lib/availability";
 import { VehicleCard } from "@/components/home/VehicleCard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -366,6 +367,9 @@ const CarDetail = () => {
               />
             )}
             {modes.argus === "preview" && <ArgusListingPreview listing={{ ...listing, photoCount: listing.images.length }} />}
+            {(modes.argus === "motorcars" || modes.argus === "moatwave") && (
+              <ArgusCarPanel listingId={listing.id} listing={{ ...listing, photoCount: listing.images.length }} />
+            )}
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

@@ -40,7 +40,7 @@ export const platformCapabilities = {
   intelligence: {
     provider: "in-app",
     moatwaveConnected: false,
-    note: "Fixed rules in lib/argus.ts; Argus later",
+    note: "Claude through the argus server function, capped, falling back to fixed rules in lib/argus.ts; Moatwave's Argus later",
   },
   serviceDirectory: {
     provider: "unavailable",

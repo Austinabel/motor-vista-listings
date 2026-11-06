@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { MOATWAVE_FEATURES, type MoatwaveFeatureId } from "@/config/moatwave";
 import { conscienceService } from "@/services/conscience";
+import { ArgusBudgetSettings } from "./ArgusBudgetSettings";
 import { FEATURE_MODES_KEY, useFeatureModes } from "@/hooks/useFeatureMode";
 import {
   FEATURE_MODES, MOATWAVE_CONNECTED, MOTORCARS_BUILT, setFeatureMode, type FeatureMode,
@@ -155,6 +156,8 @@ export const PlatformFeaturesManager = () => {
             Every feature shows its preview until then.
           </p>
         )}
+
+        {data?.modes.argus === "motorcars" && <ArgusBudgetSettings />}
 
         {conscienceMode === "motorcars" && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2">

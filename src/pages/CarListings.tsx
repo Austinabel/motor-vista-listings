@@ -11,6 +11,7 @@ import { AppliedFilters } from "@/components/listings/AppliedFilters";
 import { VehicleCard, VehicleCardSkeleton } from "@/components/home/VehicleCard";
 import { SEARCH_LIMIT, searchListings } from "@/services/listings";
 import { useFeatureMode } from "@/hooks/useFeatureMode";
+import { ArgusSearchAssistant } from "@/components/argus/ArgusSearchAssistant";
 import { ArgusSearchBox } from "@/components/moatwave/ArgusSearchBox";
 import {
   EMPTY_CRITERIA,
@@ -141,6 +142,11 @@ const CarListings = () => {
         {argusMode === "preview" && (
           <div className="mt-4">
             <ArgusSearchBox onApply={(next) => writeCriteria(next)} />
+          </div>
+        )}
+        {(argusMode === "motorcars" || argusMode === "moatwave") && (
+          <div className="mt-4">
+            <ArgusSearchAssistant onApply={(next) => writeCriteria(next)} />
           </div>
         )}
 

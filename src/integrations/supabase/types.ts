@@ -687,6 +687,66 @@ export type Database = {
         }
         Relationships: []
       }
+      argus_settings: {
+        Row: {
+          daily_questions_per_user: number
+          id: boolean
+          monthly_cap_usd: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          daily_questions_per_user?: number
+          id?: boolean
+          monthly_cap_usd?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          daily_questions_per_user?: number
+          id?: boolean
+          monthly_cap_usd?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      argus_usage: {
+        Row: {
+          cost_usd: number
+          created_at: string
+          id: number
+          input_tokens: number
+          model: string
+          outcome: string
+          output_tokens: number
+          surface: string
+          user_id: string
+        }
+        Insert: {
+          cost_usd?: number
+          created_at?: string
+          id?: number
+          input_tokens?: number
+          model: string
+          outcome: string
+          output_tokens?: number
+          surface: string
+          user_id: string
+        }
+        Update: {
+          cost_usd?: number
+          created_at?: string
+          id?: number
+          input_tokens?: number
+          model?: string
+          outcome?: string
+          output_tokens?: number
+          surface?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       inventory_events: {
         Row: {
           actor_id: string | null
@@ -1137,6 +1197,15 @@ export type Database = {
       conscience_uphold_report: {
         Args: { _report_id: string; _note: string }
         Returns: string
+      }
+      get_argus_budget: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          daily_questions_per_user: number
+          monthly_cap_usd: number
+          questions_this_month: number
+          spent_this_month_usd: number
+        }[]
       }
       get_stand_inventory: {
         Args: { _seller_id: string }

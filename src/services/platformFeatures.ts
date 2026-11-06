@@ -24,7 +24,7 @@ export const MOTORCARS_BUILT: Record<MoatwaveFeatureId, boolean> = {
   wavechat: true,
   oio: true,
   conscience: true,
-  argus: false,
+  argus: true,
 };
 
 /** Mirrors moatwave_connected() in the database. */
