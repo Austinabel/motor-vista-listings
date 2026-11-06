@@ -25,3 +25,4 @@ dist-ssr
 
 # Staging keys stay on this machine
 .env.staging
+.env.livedb

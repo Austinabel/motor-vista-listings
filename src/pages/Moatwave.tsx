@@ -93,11 +93,11 @@ const OioSample = () => (
 const ConscienceSample = () => (
   <SampleScreen>
     <ul className="space-y-2 rounded-xl border bg-card p-4 text-sm">
-      {["Business reviewed: CAC number and owner ID", "Availability confirmed 2 days ago", "Usually replies to buyers the same day", "Inspection recorded for this car", "4 completed sales recorded this year"].map((text) => (
+      {["Business reviewed: CAC number and owner ID", "Availability confirmed 2 days ago", "Cycle 5 under way: day 9 of 14", "4 of 4 sealed cycles clean"].map((text) => (
         <li key={text} className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />{text}</li>
       ))}
     </ul>
-    <p className="mt-2 text-xs text-muted-foreground">Each line links to the recorded event behind it. No headline score.</p>
+    <p className="mt-2 text-xs text-muted-foreground">12 days observed, 48 hours to put things right, then sealed for good. Sample figures.</p>
   </SampleScreen>
 );
 

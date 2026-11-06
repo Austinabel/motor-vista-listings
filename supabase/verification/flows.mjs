@@ -1,5 +1,5 @@
 // Runs supabase/staging/bootstrap.sql on a throwaway Postgres, then the real flows as simulated
-// signed-in users: feature switches, MID, Open Inventory, WaveChat, and who is refused what.
+// signed-in users: feature switches, MID, Open Inventory, WaveChat, Conscience, and who is refused what.
 // Touches no Supabase project. PGlite is not a project dependency, so to run this:
 //   npm i --no-save @electric-sql/pglite@0.3.15
 //   node scripts/build-staging-bootstrap.mjs
@@ -57,7 +57,7 @@ console.log("users ready");
 // Feature switches
 await refused("moatwave mode is refused", () => as(admin, () => q("UPDATE platform_features SET mode='moatwave' WHERE feature='mid'")), /not connected/);
 await refused("unbuilt feature is refused", () => as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature='argus'")), /not built/);
-await step("admin turns on mid, oio, wavechat", () => as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature IN ('mid','oio','wavechat')")));
+await step("admin turns on mid, oio, wavechat, conscience", () => as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature IN ('mid','oio','wavechat','conscience')")));
 ok("non-admin can't change a feature", (await as(stranger, () => q("UPDATE platform_features SET mode='off' WHERE feature='mid' RETURNING feature"))).length === 0);
 
 // MID
@@ -164,5 +164,137 @@ await refused("offers can't be deleted", () => as(buyer, () => q("SELECT public.
 ok("stranger sees no messages", (await as(stranger, () => q("SELECT id FROM messages WHERE conversation_id=$1", [conv]))).length === 0);
 ok("stranger sees no receipts", (await as(stranger, () => q("SELECT id FROM sale_receipts WHERE conversation_id=$1", [conv]))).length === 0);
 await step("presence and unread counts run", async () => { await as(buyer, () => q("SELECT public.touch_presence()")); await as(seller, () => q("SELECT public.get_chat_partner_last_seen($1), public.count_unread_messages()", [conv])); });
+
+// Conscience: cycles are moved through time by shifting their dates back, as the owner
+const newCar = async (make, vin) => {
+  const row = (await as(seller, () => q(`INSERT INTO car_listings (user_id, make, model, year, price, condition, location, listing_plan, listing_price, listing_duration, status, vin)
+    VALUES ($1,$2,'Test','2019',9000000,'foreign_used','Lagos','standard',0,30,'pending_review',$3) RETURNING id`, [seller, make, vin])))[0];
+  await as(admin, () => q("UPDATE car_listings SET status='active' WHERE id=$1", [row.id]));
+  return row.id;
+};
+const cycle = async () => (await q("SELECT * FROM conscience_cycles WHERE seller_id=$1 AND status<>'sealed'", [seller]))[0];
+const lastSealed = async () => (await q("SELECT * FROM conscience_cycles WHERE seller_id=$1 AND status='sealed' ORDER BY cycle_number DESC LIMIT 1", [seller]))[0];
+const shift = (id, sql) => q(`UPDATE conscience_cycles SET ${sql} WHERE id=$1`, [id]);
+const toDay12 = async (c) => { await new Promise((r) => setTimeout(r, 30)); await shift(c.id, "observation_ends_at=now()-interval '10 milliseconds', reconcile_ends_at=now()-interval '10 milliseconds'"); };
+const toDay14 = (c) => shift(c.id, "reconcile_ends_at=now()-interval '1 minute'");
+const refresh = (u = seller) => as(u, () => q("SELECT public.refresh_my_conscience()"));
+const findings = (id) => q("SELECT * FROM conscience_findings WHERE cycle_id=$1 ORDER BY kind", [id]);
+const confirmCar = (id) => as(seller, () => q("UPDATE car_listings SET availability_confirmed_at=now() WHERE id=$1", [id]));
+
+const carA = await newCar("Honda", "JH4KA7650MC000001");
+const carB = await newCar("Kia", "KNAFK4A63E5000002");
+await step("seller's first cycle starts", () => refresh());
+const c1 = await cycle();
+ok("first cycle is observing, 12 + 2 days", c1?.status === "observing" && Math.round((new Date(c1.reconcile_ends_at) - new Date(c1.starts_at)) / 864e5) === 14, JSON.stringify(c1));
+await step("refreshing again changes nothing", () => refresh());
+ok("still one open cycle", (await q("SELECT count(*)::int n FROM conscience_cycles WHERE seller_id=$1", [seller]))[0].n === 1);
+ok("sellers can't edit their cycle directly", (await as(seller, () => q("UPDATE conscience_cycles SET status='sealed', outcome='clean' WHERE id=$1 RETURNING id", [c1.id]))).length === 0);
+await refused("sellers can't write findings", () => as(seller, () => q("INSERT INTO conscience_findings (cycle_id,seller_id,listing_id,car_title,kind) VALUES ($1,$2,$3,'x','not_confirmed')", [c1.id, seller, carA])));
+await refused("sellers can't run every cycle", () => as(seller, () => q("SELECT public.conscience_run()")), /Only admins/);
+await refused("visitors can't run every cycle", () => as(null, () => q("SELECT public.conscience_run()")));
+await refused("sellers can't call the internal step", () => as(seller, () => q("SELECT public.conscience_advance($1)", [seller])));
+await refused("visitors can't refresh", () => as(null, () => q("SELECT public.refresh_my_conscience()")));
+
+// Clean cycle: both cars were listed inside the window
+await shift(c1.id, "starts_at=starts_at-interval '1 hour'");
+await toDay12(c1);
+await step("admin runs cycles at day 12", () => as(admin, () => q("SELECT public.conscience_run()")));
+const c1b = (await q("SELECT * FROM conscience_cycles WHERE id=$1", [c1.id]))[0];
+ok("cycle moves to reconciling", c1b.status === "reconciling", c1b.status);
+ok("a late run still leaves 48 hours", new Date(c1b.reconcile_ends_at) - Date.now() > 47 * 36e5, c1b.reconcile_ends_at);
+ok("cars listed in the window need no finding", (await findings(c1.id)).length === 0);
+const before1 = await points(seller);
+await toDay14(c1);
+await step("clean cycle seals", () => refresh());
+const s1 = await lastSealed();
+ok("outcome is clean", s1?.outcome === "clean", s1?.outcome);
+ok("clean cycle earns 6", (await points(seller)) - before1 === 6, (await points(seller)) - before1);
+await step("refreshing after sealing is harmless", () => refresh());
+ok("no double award", (await points(seller)) - before1 === 6);
+const c2 = await cycle();
+ok("next cycle starts at once", c2?.cycle_number === 2 && c2.status === "observing", JSON.stringify(c2));
+await refused("sealed cycles can't be changed, even by the database owner", () => q("UPDATE conscience_cycles SET outcome='flagged' WHERE id=$1", [c1.id]), /cannot be changed/);
+await refused("cycles can't be deleted", () => q("DELETE FROM conscience_cycles WHERE id=$1", [c1.id]), /cannot be deleted/);
+ok("MID ring counts the sealed cycle", Number((await as(buyer, () => q("SELECT * FROM get_public_mid($1)", [seller])))[0].cycles_sealed) === 1);
+
+// Second clean cycle in the same month earns the bonus
+await step("seller confirms both cars", async () => { await confirmCar(carA); await confirmCar(carB); });
+await toDay12(c2); await refresh();
+ok("confirmed cars raise no finding", (await findings(c2.id)).length === 0);
+const before2 = await points(seller);
+await toDay14(c2); await refresh();
+ok("two clean cycles in a month earn 6 + 8", (await points(seller)) - before2 === 14, (await points(seller)) - before2);
+
+// Forgotten confirmations: first put right in time, then ignored
+const c3 = await cycle();
+await toDay12(c3); await refresh();
+const f3 = await findings(c3.id);
+ok("both unconfirmed cars are found", f3.length === 2 && f3.every((f) => f.kind === "not_confirmed" && f.status === "open"), JSON.stringify(f3));
+ok("seller sees their own findings", (await as(seller, () => q("SELECT id FROM conscience_findings WHERE cycle_id=$1", [c3.id]))).length === 2);
+ok("others can't see findings", (await as(buyer, () => q("SELECT id FROM conscience_findings WHERE cycle_id=$1", [c3.id]))).length === 0);
+ok("seller is told", (await q("SELECT count(*)::int n FROM notifications WHERE user_id=$1 AND title LIKE '%needs attention%'", [seller]))[0].n === 1);
+await step("seller reconciles both cars in the window", async () => { await confirmCar(carA); await confirmCar(carB); });
+await refresh();
+ok("a fix shows straight away, before the window ends", (await findings(c3.id)).every((f) => f.status === "reconciled"));
+ok("the cycle waits for its 48 hours", (await q("SELECT status FROM conscience_cycles WHERE id=$1", [c3.id]))[0].status === "reconciling");
+const before3 = await points(seller);
+await toDay14(c3); await refresh();
+ok("reconciled in time is still clean", (await lastSealed()).outcome === "clean", (await lastSealed()).outcome);
+ok("findings close as reconciled", (await findings(c3.id)).every((f) => f.status === "reconciled"));
+ok("third clean cycle earns 6, month bonus only once", (await points(seller)) - before3 === 6, (await points(seller)) - before3);
+await refused("sealed findings can't be changed", () => q("UPDATE conscience_findings SET status='open' WHERE cycle_id=$1", [c3.id]), /cannot be changed/);
+
+const c4 = await cycle();
+await toDay12(c4); await refresh();
+const before4 = await points(seller);
+await toDay14(c4); await refresh();
+ok("ignored confirmations flag the cycle", (await lastSealed()).outcome === "flagged");
+ok("two forgotten cars cost -6 once, not per car", (await points(seller)) - before4 === -6, (await points(seller)) - before4);
+
+// Contradictions: said gone in chat, and took a deposit, with the cars still listed available
+const conv2 = (await as(buyer, () => q("SELECT public.start_wavechat($1) id", [carA])))[0].id;
+const conv3 = (await as(buyer, () => q("SELECT public.start_wavechat($1) id", [carB])))[0].id;
+await step("seller says car A is gone in chat", () => act(seller, conv2, "reply_not_available"));
+await step("seller takes a deposit on car B", () => act(seller, conv3, "record_payment", { amount: 500000, payment_method: "cash" }));
+await step("seller confirms car B", () => confirmCar(carB));
+const c5 = await cycle();
+await toDay12(c5); await refresh();
+const f5 = await findings(c5.id);
+ok("chat contradiction is found", f5.some((f) => f.kind === "chat_says_unavailable" && f.listing_id === carA), JSON.stringify(f5.map((f) => f.kind)));
+ok("a deposit isn't cleared by confirming", f5.some((f) => f.kind === "paid_still_available" && f.listing_id === carB), JSON.stringify(f5.map((f) => f.kind)));
+await step("seller reserves car B", () => as(seller, () => q("UPDATE car_listings SET availability_status='reserved' WHERE id=$1", [carB])));
+const before5 = await points(seller);
+await toDay14(c5); await refresh();
+const f5b = await findings(c5.id);
+ok("reserved car is reconciled", f5b.find((f) => f.kind === "paid_still_available")?.status === "reconciled");
+ok("chat contradiction stays unreconciled", f5b.find((f) => f.kind === "chat_says_unavailable")?.status === "unreconciled");
+ok("the contradiction costs -6, and car A's missed confirmation -6 more", Math.round((await points(seller)) - before5) === -12, (await points(seller)) - before5);
+ok("cycle is flagged", (await lastSealed()).outcome === "flagged");
+
+// An upheld report
+const report = async (reason) => (await as(buyer, () => q("INSERT INTO listing_reports (listing_id, reporter_id, reason) VALUES ($1,$2,$3) RETURNING id", [carA, buyer, reason])))[0].id;
+const rWrong = await report("wrong_details");
+await refused("only an admin can uphold", () => as(seller, () => q("SELECT public.conscience_uphold_report($1,'x')", [rWrong])), /Only admins/);
+await refused("only sold-or-unavailable reports count", () => as(admin, () => q("SELECT public.conscience_uphold_report($1,'x')", [rWrong])), /Only a report/);
+await q("UPDATE listing_reports SET status='dismissed' WHERE id=$1", [rWrong]);
+const rSold = await report("sold_or_unavailable");
+await refused("an evidence note is required", () => as(admin, () => q("SELECT public.conscience_uphold_report($1,'  ')", [rSold])), /evidence/);
+await step("admin upholds the report", () => as(admin, () => q("SELECT public.conscience_uphold_report($1,'Buyer sent the sale photo')", [rSold])));
+ok("report is resolved", (await q("SELECT status FROM listing_reports WHERE id=$1", [rSold]))[0].status === "resolved");
+const c6 = await cycle();
+ok("the lie is on the open cycle", (await findings(c6.id)).some((f) => f.kind === "availability_lie" && f.status === "upheld"));
+await step("seller marks the car sold", () => as(seller, () => q("UPDATE car_listings SET availability_status='sold' WHERE id=$1", [carA])));
+await step("seller confirms car B", () => confirmCar(carB));
+await toDay12(c6); await refresh();
+const before6 = await points(seller);
+await toDay14(c6); await refresh();
+ok("an upheld lie still costs -8 after the car is fixed", (await points(seller)) - before6 === -8, (await points(seller)) - before6);
+ok("a cycle with a lie is flagged", (await lastSealed()).outcome === "flagged");
+
+const pubC = (await as(null, () => q("SELECT * FROM get_public_conscience($1)", [seller])))[0];
+ok("public record shows sealed and clean counts", pubC.cycles_sealed === 6 && pubC.clean_cycles === 3, JSON.stringify(pubC));
+await step("turning Conscience off pauses it", async () => { await as(admin, () => q("UPDATE platform_features SET mode='preview' WHERE feature='conscience'")); await refresh(); });
+ok("public record is hidden while off", (await as(null, () => q("SELECT * FROM get_public_conscience($1)", [seller]))).length === 0);
+await as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature='conscience'"));
 
 console.log(`\n${pass} passed, ${fail} failed`);

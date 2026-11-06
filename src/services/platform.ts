@@ -35,7 +35,7 @@ export const platformCapabilities = {
   integrity: {
     provider: "supabase",
     moatwaveConnected: false,
-    note: "Recorded facts only (business review, listing dates); Conscience Protocol later. No score is computed",
+    note: "14-day cycles built from recorded events, run in Motorcars' own database; Moatwave's Conscience Protocol later",
   },
   intelligence: {
     provider: "in-app",

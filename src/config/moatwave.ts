@@ -70,11 +70,11 @@ export const MOATWAVE_FEATURES: MoatwaveFeature[] = [
     icon: ShieldCheck,
     tagline: "Trust built from what actually happened.",
     summary:
-      "Integrity indicators built only from recorded evidence: listing updates, availability confirmations, response times, inspections, completed sales and buyer feedback. Moatwave defines how they are weighed.",
+      "Each seller runs 14-day cycles: 12 days observed, then 48 hours to put things right, then sealed for good. Everything comes from recorded evidence, and a car shown available after it has gone costs the seller points.",
     forBuyers: ["See a seller's track record, not just their claims", "Every indicator links back to recorded events"],
     forDealers: ["Good conduct is recorded and shown", "One fair standard for every seller"],
     seenOn: ["Every car page", "Dealer dashboard"],
-    today: "Motorcars shows only what it has recorded, such as the Verified business badge and listing dates. It calculates no trust score.",
+    today: "Motorcars shows only what it has recorded, such as the Verified business badge and listing dates.",
   },
   {
     id: "argus",

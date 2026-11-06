@@ -23,7 +23,7 @@ export const MOTORCARS_BUILT: Record<MoatwaveFeatureId, boolean> = {
   mid: true,
   wavechat: true,
   oio: true,
-  conscience: false,
+  conscience: true,
   argus: false,
 };
 

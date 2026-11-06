@@ -11,6 +11,7 @@ import { fetchSellerListings } from "@/services/listings";
 import { LISTING_LIFECYCLE } from "@/config/features";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
 import { MidBadge } from "@/components/mid/MidBadge";
+import { SellerConscience } from "@/components/conscience/SellerConscience";
 import { StandInventory } from "@/components/inventory/StandInventory";
 import { MidIdentityPreview, OpenInventoryPreview } from "@/components/moatwave/StandPreviews";
 
@@ -137,6 +138,12 @@ const DealerProfile = () => {
         {dealer.userId && (modes.oio === "motorcars" || modes.oio === "moatwave") && (
           <div className="mt-8">
             <StandInventory sellerId={dealer.userId} />
+          </div>
+        )}
+
+        {dealer.userId && (
+          <div className="mt-8">
+            <SellerConscience sellerId={dealer.userId} />
           </div>
         )}
 

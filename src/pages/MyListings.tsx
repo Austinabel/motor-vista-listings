@@ -15,6 +15,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDealer } from "@/contexts/DealerContext";
 import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
+import { MyConscienceCard } from "@/components/conscience/MyConscienceCard";
 import { MyMidCard } from "@/components/mid/MyMidCard";
 import { ListingHistory } from "@/components/inventory/ListingHistory";
 import { StandInventory } from "@/components/inventory/StandInventory";
@@ -55,7 +56,10 @@ const ListingRow = ({ listing, userId }: { listing: MyListing; userId: string })
   const queryClient = useQueryClient();
   const oioMode = useFeatureMode("oio");
   const [showHistory, setShowHistory] = useState(false);
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ["my-listings"] });
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["my-listings"] });
+    queryClient.invalidateQueries({ queryKey: ["conscience", "mine"] });
+  };
 
   const run = useMutation({
     mutationFn: async (action: () => Promise<unknown>) => action(),
@@ -240,6 +244,12 @@ const MyListings = ({ dealerView = false }: { dealerView?: boolean }) => {
         {(modes.mid === "motorcars" || modes.mid === "moatwave") && (
           <div className="mt-6">
             <MyMidCard userId={user.id} />
+          </div>
+        )}
+
+        {(modes.conscience === "motorcars" || modes.conscience === "moatwave") && (
+          <div className="mt-6">
+            <MyConscienceCard userId={user.id} />
           </div>
         )}
 

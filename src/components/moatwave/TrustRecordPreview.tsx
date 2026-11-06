@@ -63,7 +63,7 @@ export const TrustRecordPreview = ({ verifiedBusiness, listedAt, updatedAt, avai
         </div>
       </div>
       <p className="mt-4 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
-        There is no trust score. Conscience will build indicators only from recorded events, using rules set by Moatwave.
+        Conscience works in sealed 14-day cycles: 12 days observed, then 48 hours to put things right. It uses recorded events only.
       </p>
     </PreviewPanel>
   );

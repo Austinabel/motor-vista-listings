@@ -1,18 +1,30 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, ExternalLink, Flag, RefreshCw, XCircle } from "lucide-react";
+import { CheckCircle, ExternalLink, Flag, RefreshCw, ShieldAlert, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFeatureMode } from "@/hooks/useFeatureMode";
 import { formatDate } from "@/lib/format";
+import { conscienceService } from "@/services/conscience";
 import { fetchOpenReports, reportReasonLabel, resolveReport, type ListingReport } from "@/services/reports";
 
 const ReportCard = ({ report, adminId }: { report: ListingReport; adminId: string }) => {
   const queryClient = useQueryClient();
   const [notes, setNotes] = useState("");
+  const conscienceMode = useFeatureMode("conscience");
+  const canUphold = report.reason === "sold_or_unavailable" && (conscienceMode === "motorcars" || conscienceMode === "moatwave");
+  const uphold = useMutation({
+    mutationFn: () => conscienceService(conscienceMode).upholdReport(report.id, notes),
+    onSuccess: () => {
+      toast.success("Upheld. The deduction lands when the seller's cycle seals.");
+      queryClient.invalidateQueries({ queryKey: ["admin", "reports"] });
+    },
+    onError: (error: Error) => toast.error(error.message || "Couldn't uphold the report"),
+  });
   const resolve = useMutation({
     mutationFn: (outcome: "resolved" | "dismissed") => resolveReport(report.id, outcome, adminId, notes),
     onSuccess: (_, outcome) => {
@@ -49,7 +61,18 @@ const ReportCard = ({ report, adminId }: { report: ListingReport; adminId: strin
         <Button size="sm" variant="outline" onClick={() => resolve.mutate("dismissed")} disabled={resolve.isPending}>
           <XCircle className="mr-2 h-4 w-4" />Dismiss
         </Button>
+        {canUphold && (
+          <Button size="sm" variant="destructive" onClick={() => uphold.mutate()} disabled={uphold.isPending || !notes.trim()}>
+            <ShieldAlert className="mr-2 h-4 w-4" />Uphold as availability lie
+          </Button>
+        )}
       </div>
+      {canUphold && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Uphold only with evidence that the car had gone while it was shown as available, and record that evidence in the notes.
+          It goes on the seller's Conscience record and can't be undone once the cycle seals.
+        </p>
+      )}
     </li>
   );
 };

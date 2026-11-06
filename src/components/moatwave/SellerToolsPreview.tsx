@@ -88,7 +88,7 @@ export const SellerToolsPreview = ({ modes, listings, business }: SellerToolsPre
               <li key={text} className="flex gap-2 text-muted-foreground"><Circle className="h-4 w-4 shrink-0" />{text} · not recorded yet</li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-muted-foreground">No score is calculated. Moatwave will set how evidence is weighed.</p>
+          <p className="mt-3 text-xs text-muted-foreground">Once active, this runs in sealed 14-day cycles built from recorded events.</p>
         </PreviewPanel>}
 
         {business && modes.oio === "preview" && (

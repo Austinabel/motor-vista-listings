@@ -14,6 +14,7 @@ import { ImageGallery } from "@/components/listing/ImageGallery";
 import { ReportListingDialog } from "@/components/listing/ReportListingDialog";
 import { AVAILABILITY_FRESH_DAYS, LISTING_LIFECYCLE } from "@/config/features";
 import { useAllFeatureModes } from "@/hooks/useFeatureMode";
+import { SellerConscience } from "@/components/conscience/SellerConscience";
 import { MidBadge } from "@/components/mid/MidBadge";
 import { ListingHistory } from "@/components/inventory/ListingHistory";
 import { WaveChatStart } from "@/components/wavechat/WaveChatStart";
@@ -354,6 +355,7 @@ const CarDetail = () => {
             )}
 
             <ListingHistory listingId={listing.id} />
+            {listing.userId && <SellerConscience sellerId={listing.userId} />}
 
             {modes.conscience === "preview" && (
               <TrustRecordPreview

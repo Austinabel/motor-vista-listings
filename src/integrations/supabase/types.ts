@@ -600,6 +600,93 @@ export type Database = {
         }
         Relationships: []
       }
+      conscience_cycles: {
+        Row: {
+          cars_confirmed: number
+          cars_tracked: number
+          cycle_number: number
+          id: string
+          observation_ends_at: string
+          outcome: string | null
+          points_awarded: number
+          reconcile_ends_at: string
+          sealed_at: string | null
+          seller_id: string
+          starts_at: string
+          status: string
+          synced_to_moatwave_at: string | null
+        }
+        Insert: {
+          cars_confirmed?: number
+          cars_tracked?: number
+          cycle_number: number
+          id?: string
+          observation_ends_at?: string
+          outcome?: string | null
+          points_awarded?: number
+          reconcile_ends_at?: string
+          sealed_at?: string | null
+          seller_id: string
+          starts_at?: string
+          status?: string
+          synced_to_moatwave_at?: string | null
+        }
+        Update: {
+          cars_confirmed?: number
+          cars_tracked?: number
+          cycle_number?: number
+          id?: string
+          observation_ends_at?: string
+          outcome?: string | null
+          points_awarded?: number
+          reconcile_ends_at?: string
+          sealed_at?: string | null
+          seller_id?: string
+          starts_at?: string
+          status?: string
+          synced_to_moatwave_at?: string | null
+        }
+        Relationships: []
+      }
+      conscience_findings: {
+        Row: {
+          car_title: string
+          closed_at: string | null
+          cycle_id: string
+          evidence: Json
+          id: string
+          kind: string
+          listing_id: string
+          opened_at: string
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          car_title: string
+          closed_at?: string | null
+          cycle_id: string
+          evidence?: Json
+          id?: string
+          kind: string
+          listing_id: string
+          opened_at?: string
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          car_title?: string
+          closed_at?: string | null
+          cycle_id?: string
+          evidence?: Json
+          id?: string
+          kind?: string
+          listing_id?: string
+          opened_at?: string
+          seller_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       inventory_events: {
         Row: {
           actor_id: string | null
@@ -1029,6 +1116,27 @@ export type Database = {
           prices_public: boolean
           to_value: Json
         }[]
+      }
+      get_public_conscience: {
+        Args: { _seller_id: string }
+        Returns: {
+          clean_cycles: number
+          cycle_in_progress: boolean
+          cycles_sealed: number
+          last_sealed_at: string | null
+        }[]
+      }
+      refresh_my_conscience: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      conscience_run: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      conscience_uphold_report: {
+        Args: { _report_id: string; _note: string }
+        Returns: string
       }
       get_stand_inventory: {
         Args: { _seller_id: string }

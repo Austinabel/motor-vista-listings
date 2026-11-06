@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { MOATWAVE_FEATURES, type MoatwaveFeatureId } from "@/config/moatwave";
+import { conscienceService } from "@/services/conscience";
 import { FEATURE_MODES_KEY, useFeatureModes } from "@/hooks/useFeatureMode";
 import {
   FEATURE_MODES, MOATWAVE_CONNECTED, MOTORCARS_BUILT, setFeatureMode, type FeatureMode,
@@ -131,6 +132,12 @@ export const PlatformFeaturesManager = () => {
   });
 
   const fallback = data?.source === "fallback";
+  const conscienceMode = data?.modes.conscience;
+  const runCycles = useMutation({
+    mutationFn: () => conscienceService(conscienceMode ?? "motorcars").runCycles(),
+    onSuccess: (sellers) => toast.success(`Conscience cycles checked for ${sellers} ${sellers === 1 ? "seller" : "sellers"}`),
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   return (
     <div className="space-y-8">
@@ -147,6 +154,17 @@ export const PlatformFeaturesManager = () => {
             These settings can't be changed until migration 20261105120000_platform_features_and_mid.sql is applied.
             Every feature shows its preview until then.
           </p>
+        )}
+
+        {conscienceMode === "motorcars" && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Conscience cycles move on hourly where the database supports it, and when a seller opens their record.
+            </p>
+            <Button size="sm" variant="outline" onClick={() => runCycles.mutate()} disabled={runCycles.isPending}>
+              {runCycles.isPending ? "Checking…" : "Check all cycles now"}
+            </Button>
+          </div>
         )}
 
         {isLoading ? (
