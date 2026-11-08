@@ -1,5 +1,5 @@
 // Runs supabase/staging/bootstrap.sql on a throwaway Postgres, then the real flows as simulated
-// signed-in users: feature switches, MID, Open Inventory, WaveChat, Conscience, Argus' limits, and who is refused what.
+// signed-in users: feature switches, MID, Open Inventory, WaveChat, Conscience, Argus' limits, the test-data cleanup, and who is refused what.
 // Touches no Supabase project. PGlite is not a project dependency, so to run this:
 //   npm i --no-save @electric-sql/pglite@0.3.15
 //   node scripts/build-staging-bootstrap.mjs
@@ -320,5 +320,69 @@ ok("no question text is stored", !(await q("SELECT column_name FROM information_
 await as(admin, () => q("UPDATE platform_features SET mode='preview' WHERE feature='argus'"));
 ok("switched off, Claude is never called", (await gate(stranger)) === "off");
 await as(admin, () => q("UPDATE platform_features SET mode='motorcars' WHERE feature='argus'"));
+
+// ── Cleanup file test (supabase/live): runs last, as it deletes the test buyer ──
+{
+  const finder = readFileSync("supabase/live/01_find_test_data.sql", "utf8");
+  const rows = await q(finder);
+  ok("finder lists accounts, dealers and cars", ["account", "car"].every((k) => rows.some((r) => r.kind === k)), JSON.stringify(rows.slice(0, 3)));
+  ok("finder marks the admin", rows.some((r) => r.name === "a@x.ng" && /ADMIN/.test(r.details)));
+
+  const base = readFileSync("supabase/live/02_cleanup_test_data.sql", "utf8");
+  const withSettings = (emails, go, listingIds = []) => base
+    .replace("'test-account@example.com'", emails.map((e) => `'${e}'`).join(", "))
+    .replace("ARRAY[]::uuid[] AS listing_ids", `ARRAY[${listingIds.map((i) => `'${i}'`).join(",")}]::uuid[] AS listing_ids`)
+    .replace("false AS really_delete", `${go} AS really_delete`);
+  const run = async (sql) => { try { const res = await db.exec(sql); return res.at(-1).rows; } catch (e) { await db.exec("ROLLBACK"); throw e; } };
+  const count = async (sqlText) => Number((await q(sqlText))[0].n);
+  const snapshot = async () => ({
+    users: await count("SELECT count(*) n FROM auth.users"),
+    listings: await count("SELECT count(*) n FROM car_listings"),
+    convs: await count("SELECT count(*) n FROM conversations"),
+    receipts: await count("SELECT count(*) n FROM sale_receipts"),
+    events: await count("SELECT count(*) n FROM inventory_events"),
+    ledger: await count("SELECT count(*) n FROM mid_score_ledger"),
+  });
+
+  const before = await snapshot();
+  console.log("before cleanup", JSON.stringify(before));
+  ok("there are receipts and chats to clean", before.receipts > 0 && before.convs > 0);
+
+  await refused("an unknown email stops the cleanup", () => run(withSettings(["nobody@x.ng"], true)), /No account with this email/);
+  await refused("an admin account is refused", () => run(withSettings(["a@x.ng"], true)), /Refusing to remove an admin/);
+  ok("refusals changed nothing", JSON.stringify(await snapshot()) === JSON.stringify(before));
+
+  const dry = await run(withSettings(["b@x.ng"], false));
+  console.log("dry run", JSON.stringify(dry));
+  ok("dry run reports what would go", dry.length > 0 && dry.every((r) => /Would remove/.test(r.result)));
+  ok("dry run changes nothing", JSON.stringify(await snapshot()) === JSON.stringify(before));
+
+  const sellerPointsBefore = await count(`SELECT coalesce(sum(points),0) n FROM mid_score_ledger WHERE user_id='${seller}'`);
+  const sellerReceiptPoints = await count(`SELECT coalesce(sum(points),0) n FROM mid_score_ledger WHERE user_id='${seller}' AND source_ref IN (SELECT 'sale_receipts:'||id FROM sale_receipts WHERE buyer_id='${buyer}')`);
+  const sellerListings = await count(`SELECT count(*) n FROM car_listings WHERE user_id='${seller}'`);
+
+  const done = await run(withSettings(["b@x.ng"], true));
+  console.log("real run", JSON.stringify(done));
+  ok("real run reports removals", done.length > 0 && done.every((r) => r.result === "Removed"));
+  ok("the test buyer is gone everywhere",
+    (await count(`SELECT count(*) n FROM auth.users WHERE id='${buyer}'`)) === 0
+    && (await count(`SELECT count(*) n FROM conversations WHERE buyer_id='${buyer}'`)) === 0
+    && (await count(`SELECT count(*) n FROM sale_receipts WHERE buyer_id='${buyer}'`)) === 0
+    && (await count(`SELECT count(*) n FROM mid_score_ledger WHERE user_id='${buyer}'`)) === 0
+    && (await count(`SELECT count(*) n FROM profiles WHERE id='${buyer}'`)) === 0);
+  ok("the real seller keeps their cars", (await count(`SELECT count(*) n FROM car_listings WHERE user_id='${seller}'`)) === sellerListings);
+  ok("the seller loses only points earned from the test buyer",
+    Math.round((await count(`SELECT coalesce(sum(points),0) n FROM mid_score_ledger WHERE user_id='${seller}'`)) * 100) === Math.round((sellerPointsBefore - sellerReceiptPoints) * 100),
+    `${sellerPointsBefore} - ${sellerReceiptPoints} vs ${await count(`SELECT coalesce(sum(points),0) n FROM mid_score_ledger WHERE user_id='${seller}'`)}`);
+  await refused("history is locked again afterwards", () => q("DELETE FROM inventory_events WHERE id = (SELECT min(id) FROM inventory_events)"), /cannot be changed or deleted/);
+  ok("all four locks are back on", (await count("SELECT count(*) n FROM pg_trigger WHERE tgname IN ('keep_inventory_events','keep_sale_receipts','keep_conscience_cycles','keep_conscience_findings') AND tgenabled = 'O'")) === 4);
+
+  const oneCar = (await q(`SELECT id FROM car_listings WHERE user_id='${seller}' LIMIT 1`))[0].id;
+  await run(withSettings([], true, [oneCar]));
+  ok("a single car can be removed on its own, with its history",
+    (await count(`SELECT count(*) n FROM car_listings WHERE id='${oneCar}'`)) === 0
+    && (await count(`SELECT count(*) n FROM inventory_events WHERE listing_id='${oneCar}'`)) === 0
+    && (await count(`SELECT count(*) n FROM auth.users WHERE id='${seller}'`)) === 1);
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
