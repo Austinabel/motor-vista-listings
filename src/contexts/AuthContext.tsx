@@ -43,8 +43,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         if (event === 'SIGNED_IN') {
           setLastAuthEvent(event);
-          // Check admin status after sign in
+          // Check admin status after sign in; null until known, so sign-in redirects wait for the answer
           if (session?.user) {
+            setIsAdmin(null);
             checkAdminStatus(session.user.id);
           }
         } else if (event === 'SIGNED_OUT') {

@@ -67,6 +67,7 @@ const AppContent = () => {
 
     const onAuthPage = ['/login', '/register'].includes(location.pathname);
     const onAdminAuthPage = ['/admin/login', '/admin/register'].includes(location.pathname);
+    const inAdminArea = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
     const justSignedIn = lastAuthEvent === 'SIGNED_IN';
     // Where the buyer was before signing in, e.g. a listing (validated to stay on this site)
     const returnTo = safeRedirectPath(new URLSearchParams(location.search).get('redirect'));
@@ -74,9 +75,10 @@ const AppContent = () => {
     if (justSignedIn) {
       clearLastAuthEvent();
 
-      // Check if user came from admin login and is admin
-      if (isAdmin && onAdminAuthPage) {
-        navigate('/admin', { replace: true });
+      // Admins signing in through the admin pages stay in admin, even if the account is also a dealer.
+      // The admin login has usually moved on to /admin already by the time this runs.
+      if (isAdmin && inAdminArea) {
+        if (location.pathname !== '/admin') navigate('/admin', { replace: true });
         return;
       }
 
