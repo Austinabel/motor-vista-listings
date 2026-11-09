@@ -38,9 +38,9 @@ export const DealerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         .from('dealers')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+      if (error) {
         console.error('Error fetching dealer info:', error);
       }
 

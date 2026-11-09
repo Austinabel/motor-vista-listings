@@ -226,7 +226,9 @@ const CarDetail = () => {
   });
 
   // Opening a similar car reuses this page, so start it at the top
-  useEffect(() => window.scrollTo(0, 0), [id]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   // Back returns to the results with their filters when the visitor came from inside the site
   const goBack = () => (location.key !== "default" ? navigate(-1) : navigate("/cars"));

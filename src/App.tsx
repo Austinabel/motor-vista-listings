@@ -67,21 +67,22 @@ const AppContent = () => {
 
     const onAuthPage = ['/login', '/register'].includes(location.pathname);
     const onAdminAuthPage = ['/admin/login', '/admin/register'].includes(location.pathname);
-    const inAdminArea = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
     const justSignedIn = lastAuthEvent === 'SIGNED_IN';
     // Where the buyer was before signing in, e.g. a listing (validated to stay on this site)
     const returnTo = safeRedirectPath(new URLSearchParams(location.search).get('redirect'));
 
+    if (justSignedIn) clearLastAuthEvent();
+
+    // Supabase also reports SIGNED_IN when it restores a saved session (opening or reloading a page,
+    // returning to the tab), so redirects happen only on the sign-in pages. Elsewhere people stay put.
+    if (!onAuthPage && !onAdminAuthPage) return;
+
+    if (onAdminAuthPage) {
+      if (isAdmin) navigate('/admin', { replace: true });
+      return;
+    }
+
     if (justSignedIn) {
-      clearLastAuthEvent();
-
-      // Admins signing in through the admin pages stay in admin, even if the account is also a dealer.
-      // The admin login has usually moved on to /admin already by the time this runs.
-      if (isAdmin && inAdminArea) {
-        if (location.pathname !== '/admin') navigate('/admin', { replace: true });
-        return;
-      }
-
       const userType = user.user_metadata?.user_type;
       if (userType === 'dealer') {
         if (dealerInfo) {
@@ -93,8 +94,8 @@ const AppContent = () => {
         // Return regular users to the page they came from, or the homepage
         navigate(returnTo ?? '/', { replace: true });
       }
-    } else if (onAuthPage && !onAdminAuthPage) {
-      // Already signed in on an auth page: go where they were heading, or the homepage
+    } else {
+      // Already signed in on a sign-in page: go where they were heading, or the homepage
       navigate(returnTo ?? '/', { replace: true });
     }
   }, [user, isAdmin, lastAuthEvent, authLoading, dealerLoading, dealerInfo, location.pathname, location.search, navigate, clearLastAuthEvent]);

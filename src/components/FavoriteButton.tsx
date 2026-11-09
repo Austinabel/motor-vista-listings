@@ -32,7 +32,7 @@ export const FavoriteButton = ({ listingId, className = "", size = "sm" }: Favor
         .select('id')
         .eq('user_id', user.id)
         .eq('listing_id', listingId)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
         setIsFavorite(true);
