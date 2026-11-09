@@ -122,7 +122,7 @@ export const WaveChatThread = ({ conversationId, userId, onBack }: WaveChatThrea
   });
 
   const conversation = conversationQuery.data;
-  if (conversationQuery.isLoading) return <div className="h-full min-h-[420px] animate-pulse rounded-2xl bg-muted" />;
+  if (conversationQuery.isLoading) return <div className="min-h-0 flex-1 animate-pulse bg-muted lg:rounded-2xl" />;
   if (!conversation) return <p className="p-6 text-muted-foreground">This conversation couldn't be loaded.</p>;
 
   const receipts = receiptsQuery.data ?? [];
@@ -152,7 +152,7 @@ export const WaveChatThread = ({ conversationId, userId, onBack }: WaveChatThrea
   };
 
   return (
-    <div className="flex h-[calc(100vh-11rem)] min-h-[560px] flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-card lg:rounded-2xl lg:border lg:shadow-sm">
       {/* The car stays in view for the whole conversation */}
       <div className="border-b p-3">
         <div className="flex items-center gap-3">

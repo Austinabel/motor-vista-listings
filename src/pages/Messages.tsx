@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { MessageSquare, Car, Clock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { Separator } from "@/components/ui/separator"; // <-- NEW
 import { useFeatureMode } from "@/hooks/useFeatureMode";
-import { WaveChatInbox } from "@/components/wavechat/WaveChatInbox";
-import { Footer } from "@/components/Footer";
+import { WAVECHAT_PATH } from "@/lib/wavechat";
 
 function stringAvatar(name?: string) {
   // Generate initials from name or fallback
@@ -29,6 +29,7 @@ const Messages = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const chatMode = useFeatureMode("wavechat");
   const waveChatLive = chatMode === "motorcars" || chatMode === "moatwave";
+  const { search } = useLocation();
 
   useEffect(() => {
     if (user) {
@@ -36,18 +37,8 @@ const Messages = () => {
     }
   }, [user]);
 
-  if (user && waveChatLive) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-extrabold md:text-4xl">Messages</h1>
-          <p className="mb-6 mt-1 text-muted-foreground">Your WaveChat conversations, each with its car attached.</p>
-          <WaveChatInbox userId={user.id} />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  // With WaveChat on, messages live in WaveChat's own space; ?c= carries an open conversation across
+  if (waveChatLive) return <Navigate to={`${WAVECHAT_PATH}${search}`} replace />;
 
   const handleOpenChat = (conversation: Conversation) => {
     setSelectedConversation(conversation);

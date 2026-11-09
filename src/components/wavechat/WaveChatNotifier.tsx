@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFeatureMode } from "@/hooks/useFeatureMode";
+import { WAVECHAT_PATH, waveChatLink } from "@/lib/wavechat";
 import { waveChatService } from "@/services/wavechat";
 
 const PREVIEW: Record<string, string> = {
@@ -13,12 +14,12 @@ const PREVIEW: Record<string, string> = {
   promise: "New payment promise",
 };
 
-const useWaveChatLive = () => {
+export const useWaveChatLive = () => {
   const mode = useFeatureMode("wavechat");
   return { mode, live: mode === "motorcars" || mode === "moatwave" };
 };
 
-/** Unread WaveChat messages for the badge on the Messages link. */
+/** Unread WaveChat messages for the badges on the WaveChat links. */
 export const useUnreadMessages = () => {
   const { user } = useAuth();
   const { mode, live } = useWaveChatLive();
@@ -43,7 +44,7 @@ export const WaveChatNotifier = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const userId = user?.id;
-  const openConversation = pathname === "/messages" ? new URLSearchParams(search).get("c") : null;
+  const openConversation = pathname === WAVECHAT_PATH ? new URLSearchParams(search).get("c") : null;
 
   useEffect(() => {
     if (!live || !userId) return;
@@ -63,7 +64,7 @@ export const WaveChatNotifier = () => {
       if (conversationId === openConversation) return;
       toast(PREVIEW[kind] ?? "New message", {
         description: content ? content.slice(0, 80) : "Attachment",
-        action: { label: "Open", onClick: () => navigate(`/messages?c=${conversationId}`) },
+        action: { label: "Open", onClick: () => navigate(waveChatLink(conversationId)) },
       });
     });
   }, [live, mode, userId, openConversation, navigate, queryClient]);

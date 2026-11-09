@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFeatureMode } from "@/hooks/useFeatureMode";
-import { ACTION_LABELS, type WaveChatAction } from "@/lib/wavechat";
+import { ACTION_LABELS, waveChatLink, type WaveChatAction } from "@/lib/wavechat";
 import { waveChatService } from "@/services/wavechat";
 
 const START_ACTIONS: { action: WaveChatAction; icon: typeof CircleHelp }[] = [
@@ -30,7 +30,7 @@ export const WaveChatStart = ({ listingId }: { listingId: string }) => {
       if (action) await service.act(conversationId, action, payload);
       return conversationId;
     },
-    onSuccess: (conversationId) => navigate(`/messages?c=${conversationId}`),
+    onSuccess: (conversationId) => navigate(waveChatLink(conversationId)),
     onError: (error: Error) => toast.error(error.message),
   });
 

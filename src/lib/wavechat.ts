@@ -36,6 +36,11 @@ export type WaveChatAction =
   | "start_handover"
   | "confirm_handover_item";
 
+/** WaveChat's own page; ?c= opens a conversation. */
+export const WAVECHAT_PATH = "/wavechat";
+export const waveChatLink = (conversationId?: string) =>
+  conversationId ? `${WAVECHAT_PATH}?c=${conversationId}` : WAVECHAT_PATH;
+
 export const STAGES: { id: ChatStage; label: string }[] = [
   { id: "enquiry", label: "Enquiry" },
   { id: "inspection", label: "Inspection" },

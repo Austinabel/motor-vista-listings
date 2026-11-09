@@ -34,6 +34,8 @@ import AdminLogin from "./pages/AdminLogin";
 import EditProfile from "./pages/EditProfile";
 import Favorites from "./pages/Favorites";
 import Messages from "./pages/Messages";
+import WaveChat from "./pages/WaveChat";
+import { WAVECHAT_PATH } from "@/lib/wavechat";
 import BoostSales from "./pages/BoostSales";
 import DealerDashboard from "./pages/DealerDashboard";
 import MyListings from "./pages/MyListings";
@@ -108,7 +110,8 @@ const AppContent = () => {
       {/* Navigation is sticky and in the page flow, so content needs no top offset */}
       {!isAuthPage && !isAdminPage && <Navigation />}
       <WaveChatNotifier />
-      <div className={!isAuthPage && !isAdminPage ? "pb-20 lg:pb-0" : ""}>
+      {/* WaveChat fills the screen and makes room for the bottom menu itself */}
+      <div className={!isAuthPage && !isAdminPage && location.pathname !== WAVECHAT_PATH ? "pb-20 lg:pb-0" : ""}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cars" element={<CarListings />} />
@@ -128,6 +131,7 @@ const AppContent = () => {
           <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/profile/favorites" element={<Favorites />} />
           <Route path="/messages" element={<Messages />} />
+          <Route path="/wavechat" element={<WaveChat />} />
           <Route path="/profile/boost-sales" element={<BoostSales />} />
           <Route path="/account/settings" element={<AccountSettings />} />
           <Route path="/feedback" element={<Feedback />} />

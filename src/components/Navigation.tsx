@@ -10,7 +10,8 @@ import {
 import { Car, ChevronDown, Edit, Heart, LayoutDashboard, LogOut, MessageSquare, Search, Settings, User, Zap } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUnreadMessages } from "@/components/wavechat/WaveChatNotifier";
+import { useUnreadMessages, useWaveChatLive } from "@/components/wavechat/WaveChatNotifier";
+import { WAVECHAT_PATH } from "@/lib/wavechat";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +62,8 @@ export const Navigation = () => {
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const unreadMessages = useUnreadMessages();
+  const { live: waveChatLive } = useWaveChatLive();
+  const chatPath = waveChatLive ? WAVECHAT_PATH : "/messages";
   const { toast } = useToast();
   const isDealer = user?.user_metadata?.user_type === "dealer";
 
@@ -143,7 +146,7 @@ export const Navigation = () => {
           <Link to="/profile/favorites"><Heart className="mr-2 h-4 w-4" />Saved cars</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/messages"><MessageSquare className="mr-2 h-4 w-4" />Messages</Link>
+          <Link to={chatPath}><MessageSquare className="mr-2 h-4 w-4" />{waveChatLive ? "WaveChat" : "Messages"}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/profile/boost-sales"><Zap className="mr-2 h-4 w-4" />Boost sales</Link>
@@ -210,6 +213,7 @@ export const Navigation = () => {
             Auto services
           </Link>
           <NavLink to="/sell" className={navLinkClass}>Sell your car</NavLink>
+          {user && waveChatLive && <NavLink to={WAVECHAT_PATH} className={navLinkClass}>WaveChat</NavLink>}
         </div>
 
         {/* Account area */}
@@ -225,16 +229,22 @@ export const Navigation = () => {
             <div className="h-8 w-20 animate-pulse rounded bg-primary-foreground/10" />
           ) : user ? (
             <>
-              {unreadMessages > 0 && (
+              {(waveChatLive || unreadMessages > 0) && (
                 <Link
-                  to="/messages"
-                  aria-label={`${unreadMessages} unread ${unreadMessages === 1 ? "message" : "messages"}`}
+                  to={chatPath}
+                  aria-label={
+                    unreadMessages > 0
+                      ? `${waveChatLive ? "WaveChat" : "Messages"}: ${unreadMessages} unread ${unreadMessages === 1 ? "message" : "messages"}`
+                      : "WaveChat"
+                  }
                   className="relative flex h-9 w-9 items-center justify-center rounded-lg text-primary-foreground/85 transition hover:bg-primary-foreground/10 hover:text-primary-foreground"
                 >
                   <MessageSquare className="h-5 w-5" />
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">
-                    {unreadMessages > 99 ? "99+" : unreadMessages}
-                  </span>
+                  {unreadMessages > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">
+                      {unreadMessages > 99 ? "99+" : unreadMessages}
+                    </span>
+                  )}
                 </Link>
               )}
               <div className="text-primary-foreground [&_button:hover]:bg-primary-foreground/10 [&_button:hover]:text-primary-foreground">
